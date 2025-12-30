@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BakeryHouse - Home</title>
+    <style>
+        :root {
+            --main-color: #000000;
+            --theme-color: #000000;
+            --accent-color: #EFCE3D;
+            --footer-color: #555;
+            --footer-bg-color: #FFF7EC;
+            --grey-color: #231a17;
+            --grey-color-2: #888;
+            --light-grey-color: #f1f1f1;
+            --light-grey-color-2: #555555;
+            --light-grey-color-3: #cccccc;
+            --light-grey-color-4: #F1F2F6;
+            --light-grey-color-5: #f1f7fb;
+            --dark-grey-color: #333;
+            --white-color: #fff;
+            --black-color: #000;
+            --offer-color: #ba0000;
+            --purple-color: #c8a2c8;
+            --yellow-color: #FFFF00;
+            --bright-red: #EE4B2B;
+            --line-through-color: #8c8c9a;
+            --warning-color: #F70046;
+            --border-color: #1d1d1d1a;
+            --border-color-3: #cfcfcf;
+            --border-color-2: #9b9b9b;
+            --serif-font: 'AvenirNext LT Pro', serif;
+            --serif-font-bold: 'AvenirNext LT Pro Bold', serif;
+            --sans-serif-font: 'AvenirNext LT Pro', sans-serif;
+            --main-font: 'BonvenoCF', sans-serif;
+            --product-font: 'Josefin Sans', sans-serif;
+            --default-font: 'AvenirNext LT Pro', sans-serif;
+            --border-radius: 10px;
+            --border-radius-2: 40px;
+            --border-radius-3: 5px;
+            --border-radius-4: 50px;
+            --text-shadow: 1px 1px 2px #252525;
+            
+            /* Bootstrap variables for compatibility */
+            --bs-body-font-family: var(--main-font);
+            --bs-body-font-size: 16px;
+            --bs-body-font-weight: 400;
+            --bs-body-line-height: 1.4;
+            --bs-body-color: var(--main-color);
+            --bs-body-text-align: left;
+            --bs-body-bg: var(--white-color);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            font-family: var(--bs-body-font-family);
+            font-size: var(--bs-body-font-size);
+            font-weight: var(--bs-body-font-weight);
+            line-height: var(--bs-body-line-height);
+            color: var(--bs-body-color);
+            text-align: var(--bs-body-text-align);
+            background-color: var(--bs-body-bg);
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+            font-family: var(--main-font) !important;
+            color: var(--main-color);
+            font-weight: normal;
+            margin: 0px;
+            font-weight: 400;
+            font-size: 16px;
+            background: var(--white-color);
+            letter-spacing: 0px;
+            line-height: 1.4;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        
+        /* Rest of your existing styles remain the same */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: #fff;
+            padding: 15px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo img {
+            height: 70px;
+            width: auto;
+            transition: opacity 0.3s;
+        }
+        
+        .logo img:hover {
+            opacity: 0.8;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+            align-items: center;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: #5a3921;
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+        }
+        
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: #d4a76a;
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+        
+        .nav-links a:hover {
+            color: #d4a76a;
+        }
+        
+        .nav-links a.active {
+            color: #d4a76a;
+        }
+        
+        .nav-links a.active:after {
+            width: 100%;
+        }
+        
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .signup-btn {
+            background-color: #d4a76a;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .signup-btn:hover {
+            background-color: #c2955a;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
+                        url('https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 180px 0 100px;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .hero p {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease 0.2s;
+        }
+        
+        .hero-btn {
+            background-color: #d4a76a;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease 0.4s;
+        }
+        
+        .hero-btn:hover {
+            background-color: #c2955a;
+        }
+        
+        /* Animation Classes */
+        .fade-in {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+        
+        .slide-in-left {
+            opacity: 1 !important;
+            transform: translateX(0) !important;
+        }
+        
+        .slide-in-right {
+            opacity: 1 !important;
+            transform: translateX(0) !important;
+        }
+        
+        .scale-in {
+            opacity: 1 !important;
+            transform: scale(1) !important;
+        }
+        
+        /* Section Styles */
+        .section {
+            padding: 80px 0;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+        
+        .section.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .section-title {
+            font-size: 32px;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #5a3921;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 3px;
+            background-color: #d4a76a;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        /* Categories Section */
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .category-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+            cursor: pointer;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+        
+        .category-card:nth-child(1) { transition-delay: 0.1s; }
+        .category-card:nth-child(2) { transition-delay: 0.2s; }
+        .category-card:nth-child(3) { transition-delay: 0.3s; }
+        .category-card:nth-child(4) { transition-delay: 0.4s; }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .category-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .category-card:hover .category-image {
+            transform: scale(1.05);
+        }
+        
+        .category-name {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #5a3921;
+        }
+        
+        /* Featured Products */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+        
+        .product-card:nth-child(1) { transition-delay: 0.1s; }
+        .product-card:nth-child(2) { transition-delay: 0.2s; }
+        .product-card:nth-child(3) { transition-delay: 0.3s; }
+        .product-card:nth-child(4) { transition-delay: 0.4s; }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .product-info {
+            padding: 15px;
+        }
+        
+        .product-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .product-price {
+            color: #d4a76a;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        /* About Section */
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .about-image {
+            flex: 1;
+            border-radius: 10px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 0.8s ease;
+        }
+        
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .about-text {
+            flex: 1;
+            opacity: 0;
+            transform: translateX(50px);
+            transition: all 0.8s ease 0.2s;
+        }
+        
+        .about-text h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #5a3921;
+        }
+        
+        .about-text p {
+            margin-bottom: 15px;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            background-color: #fff7ec;
+            padding: 80px 0;
+        }
+        
+        .testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.5s ease;
+        }
+        
+        .testimonial-card:nth-child(1) { transition-delay: 0.1s; }
+        .testimonial-card:nth-child(2) { transition-delay: 0.2s; }
+        .testimonial-card:nth-child(3) { transition-delay: 0.3s; }
+        
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .testimonial-author {
+            font-weight: 600;
+            color: #5a3921;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(rgba(90, 57, 33, 0.8), rgba(90, 57, 33, 0.8)), 
+                        url('https://images.unsplash.com/photo-1555507032-6f4d1c1e1e1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 100px 0;
+        }
+        
+        .cta-content {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .cta-content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+        
+        .cta-content p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-btn {
+            background-color: #d4a76a;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .cta-btn:hover {
+            background-color: #c2955a;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #5a3921;
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .footer-logo img {
+            height: 60px;
+            width: auto;
+        }
+        
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #d4a76a;
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .about-content {
+                flex-direction: column;
+            }
+            
+            .about-image, .about-text {
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <img src="Bakery House Logo.png" alt="BakeryHouse">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#" class="active">Home</a></li>
+                    <li><a href="menu.html">Menu</a></li>
+                    <li><a href="about_us.html">About</a></li>
+                    <li><a href="contact.html">Contact</a></li>
+                    <li class="cart-icon" id="cartIcon">
+                        <span>🛒 Cart</span>
+                        <span class="cart-count">0</span>
+                    </li>
+                    <li>
+                        <a href="User_Login.php" class="signup-btn">Sign Up</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 id="heroTitle">Happiness Is a Piece of Cake</h1>
+            <p id="heroSubtitle">Our Favorite Bakery House in Town</p>
+            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.html'">Explore Our Menu</button>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="section" id="categories">
+        <div class="container">
+            <h2 class="section-title">Shop by Categories</h2>
+            <div class="categories-grid">
+                <div class="category-card" onclick="window.location.href='menu.html?category=cake'">
+                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Cakes" class="category-image">
+                    <div class="category-name">Cakes</div>
+                </div>
+                <div class="category-card" onclick="window.location.href='menu.html?category=bread'">
+                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Bread" class="category-image">
+                    <div class="category-name">Bread</div>
+                </div>
+                <div class="category-card" onclick="window.location.href='menu.html?category=pastry'">
+                    <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Pastries" class="category-image">
+                    <div class="category-name">Pastries</div>
+                </div>
+                <div class="category-card" onclick="window.location.href='menu.html?category=cookie'">
+                    <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Cookies" class="category-image">
+                    <div class="category-name">Cookies</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="section" id="featured">
+        <div class="container">
+            <h2 class="section-title">Best Selling Products</h2>
+            <div class="products-grid" id="featuredProducts">
+                <!-- Featured products will be dynamically loaded -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="About BakeryHouse">
+                </div>
+                <div class="about-text">
+                    <h3>Our Story</h3>
+                    <p>BakeryHouse was founded with a simple mission: to bring the finest artisan baked goods to our community. Our passion for baking drives us to create delicious, high-quality products using only the best ingredients.</p>
+                    <p>Every item in our bakery is crafted with care, from our signature sourdough bread to our decadent cakes and pastries. We believe that great food brings people together and creates lasting memories.</p>
+                    <p>Visit us today and taste the difference that passion and quality ingredients make!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section testimonials" id="testimonials">
+        <div class="container">
+            <h2 class="section-title">What Our Customers Say</h2>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"The best bakery in town! Their croissants are absolutely divine and taste just like the ones I had in Paris."</p>
+                    <p class="testimonial-author">- Kee Cheng Wei.</p>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"I ordered a custom birthday cake for my daughter, and it was both beautiful and delicious. Everyone raved about it!"</p>
+                    <p class="testimonial-author">- Mandy Thoo Wei Xuen.</p>
+                </div>
+                <div class="testimonial-card">
+                    <p class="testimonial-text">"Their sourdough bread is my weekly staple. Crusty on the outside, soft on the inside - perfection!"</p>
+                    <p class="testimonial-author">- Chuah Woon Long.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="section cta-section" id="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Taste the Difference?</h2>
+                <p>Order online for pickup or delivery and experience the quality of BakeryHouse for yourself.</p>
+                <button class="cta-btn" onclick="window.location.href='menu.html'">Order Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="Bakery House Logo.png" alt="BakeryHouse">
+                </div>
+                <p>Sweet & Delicious</p>
+                <div class="footer-links">
+                    <a href="#">Home</a>
+                    <a href="menu.html">Menu</a>
+                    <a href="about_us.html">About</a>
+                    <a href="contact.html">Contact</a>
+                    <a href="privacypolicy.html">Privacy Policy</a>
+                    <a href="termservice.html">Terms of Service</a>
+                </div>
+                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Featured products data
+        const featuredProducts = [
+            {
+                id: 1,
+                name: "Artisan Sourdough Bread",
+                price: 12.50,
+                image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "bread"
+            },
+            {
+                id: 2,
+                name: "New York Cheesecake",
+                price: 45.00,
+                image: "https://images.unsplash.com/photo-1524351199678-941a58a3df50?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "cake"
+            },
+            {
+                id: 3,
+                name: "Butter Croissant",
+                price: 5.50,
+                image: "https://images.unsplash.com/photo-1559620192-032c4bc4674e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "pastry"
+            },
+            {
+                id: 4,
+                name: "Chocolate Chip Cookies",
+                price: 8.00,
+                image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                category: "cookie"
+            }
+        ];
+
+        // Shopping cart
+        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+
+        // DOM elements
+        const featuredProductsContainer = document.getElementById('featuredProducts');
+        const cartIcon = document.getElementById('cartIcon');
+        const cartCount = document.querySelector('.cart-count');
+        const heroTitle = document.getElementById('heroTitle');
+        const heroSubtitle = document.getElementById('heroSubtitle');
+        const heroBtn = document.getElementById('heroBtn');
+
+        // Load featured products
+        function loadFeaturedProducts() {
+            featuredProductsContainer.innerHTML = '';
+            featuredProducts.forEach(product => {
+                const productHTML = `
+                    <div class="product-card" data-id="${product.id}">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <p class="product-price">RM ${product.price.toFixed(2)}</p>
+                        </div>
+                    </div>
+                `;
+                featuredProductsContainer.innerHTML += productHTML;
+            });
+            
+            // Add click event to product cards
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    viewProductDetails(productId);
+                });
+            });
+        }
+
+        // View product details
+        function viewProductDetails(productId) {
+            sessionStorage.setItem('currentProduct', productId);
+            window.location.href = 'product-details.html';
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        // Scroll animation function
+        function checkScroll() {
+            const sections = document.querySelectorAll('.section');
+            const windowHeight = window.innerHeight;
+            const triggerPoint = windowHeight * 0.8;
+            
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                
+                if (sectionTop < triggerPoint) {
+                    section.classList.add('active');
+                    
+                    // Animate child elements with delays
+                    const cards = section.querySelectorAll('.category-card, .product-card, .testimonial-card');
+                    cards.forEach(card => {
+                        card.classList.add('fade-in');
+                    });
+                    
+                    // Animate about section elements
+                    if (section.id === 'about') {
+                        const aboutImage = section.querySelector('.about-image');
+                        const aboutText = section.querySelector('.about-text');
+                        
+                        if (aboutImage) aboutImage.classList.add('slide-in-left');
+                        if (aboutText) aboutText.classList.add('slide-in-right');
+                    }
+                    
+                    // Animate CTA section
+                    if (section.id === 'cta') {
+                        const ctaContent = section.querySelector('.cta-content');
+                        if (ctaContent) ctaContent.classList.add('fade-in');
+                    }
+                }
+            });
+        }
+
+        // Initialize page
+        function initPage() {
+            // Trigger hero animations after a short delay
+            setTimeout(() => {
+                heroTitle.classList.add('fade-in');
+                heroSubtitle.classList.add('fade-in');
+                heroBtn.classList.add('fade-in');
+            }, 300);
+            
+            loadFeaturedProducts();
+            updateCartCount();
+            
+            // Initial check for elements in view
+            checkScroll();
+            
+            // Add scroll event listener
+            window.addEventListener('scroll', checkScroll);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Cart icon click
+            cartIcon.addEventListener('click', () => {
+                window.location.href = 'cart.html';
+            });
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initPage();
+            setupEventListeners();
+        });
+    </script>
+</body>
+</html>
