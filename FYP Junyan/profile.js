@@ -1,52 +1,26 @@
-// profile.js - Profile页面核心功能
-
-document.addEventListener('DOMContentLoaded', function() {
-    initUserMenu();
-});
-
 /**
- * 初始化用户菜单
+ * profile.js - 处理用户信息下拉菜单
  */
-function initUserMenu() {
+document.addEventListener('DOMContentLoaded', function() {
     const userIcon = document.querySelector('.user-icon');
     const dropdownMenu = document.getElementById('dropdownMenu');
     
+    // 检查页面上是否存在用户菜单（即用户是否已登录）
     if (userIcon && dropdownMenu) {
-        // 点击用户图标切换菜单
-        userIcon.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleDropdown(dropdownMenu);
-        });
         
-        // 点击页面其他地方关闭菜单
-        document.addEventListener('click', function(e) {
-            if (!userIcon.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.style.display = 'none';
-                dropdownMenu.classList.remove('active');
-            }
-        });
-        
-        // 按ESC键关闭菜单
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && dropdownMenu.style.display === 'block') {
-                dropdownMenu.style.display = 'none';
-                dropdownMenu.classList.remove('active');
-            }
-        });
-    }
-}
+        // 1. 点击图标：切换菜单显示或隐藏
+        // 这里的 toggleDropdown 函数对应 HTML 中的 onclick="toggleDropdown()"
+        window.toggleDropdown = function() {
+            dropdownMenu.classList.toggle('show');
+        };
 
-/**
- * 切换下拉菜单显示/隐藏
- */
-function toggleDropdown(dropdown) {
-    if (!dropdown) return;
-    
-    if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-        dropdown.classList.remove('active');
-    } else {
-        dropdown.style.display = 'block';
-        dropdown.classList.add('active');
+        // 2. 点击页面空白处：自动关闭菜单
+        window.addEventListener('click', function(event) {
+            // 如果点击的目标【不包含】在用户图标内，且【不包含】在菜单内
+            if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                // 移除 show 类以隐藏菜单
+                dropdownMenu.classList.remove('show');
+            }
+        });
     }
-}
+});
