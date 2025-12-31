@@ -1,17 +1,9 @@
 <?php
-// 1. 初始化 Session：必须在页面任何内容输出前调用，用于访问 $_SESSION 变量
+/**
+ * index.php - 访客首页（未登录状态）
+ * 使用 header.php 组件，并引用外部 CSS 和 JS
+ */
 session_start();
-
-// 2. 引入外部配置文件：获取数据库连接信息
-require_once 'config.php';
-
-// 3. 检查用户登录状态：
-//    isset() 检查变量是否定义
-//    $_SESSION['logged_in'] 是在登录成功页面设置的标志位
-$isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
-
-// 4. 获取用户名：如果已登录，从 Session 获取名字，否则为空字符串
-$userName = $isLoggedIn ? $_SESSION['user_name'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -39,19 +31,19 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
             <h2 class="section-title">Shop by Categories</h2>
             <div class="categories-grid">
                 <div class="category-card" onclick="window.location.href='menu.html?category=cake'">
-                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" alt="Cakes" class="category-image">
+                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Cakes" class="category-image">
                     <div class="category-name">Cakes</div>
                 </div>
                 <div class="category-card" onclick="window.location.href='menu.html?category=bread'">
-                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" alt="Bread" class="category-image">
+                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Bread" class="category-image">
                     <div class="category-name">Bread</div>
                 </div>
                 <div class="category-card" onclick="window.location.href='menu.html?category=pastry'">
-                    <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=500" alt="Pastries" class="category-image">
+                    <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Pastries" class="category-image">
                     <div class="category-name">Pastries</div>
                 </div>
                 <div class="category-card" onclick="window.location.href='menu.html?category=cookie'">
-                    <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500" alt="Cookies" class="category-image">
+                    <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Cookies" class="category-image">
                     <div class="category-name">Cookies</div>
                 </div>
             </div>
@@ -69,13 +61,12 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
         <div class="container">
             <div class="about-content">
                 <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=500" alt="About BakeryHouse">
+                    <img src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="About BakeryHouse">
                 </div>
                 <div class="about-text">
                     <h3>Our Story</h3>
                     <p>BakeryHouse was founded with a simple mission: to bring the finest artisan baked goods to our community. Our passion for baking drives us to create delicious, high-quality products using only the best ingredients.</p>
                     <p>Every item in our bakery is crafted with care. We believe that great food brings people together and creates lasting memories.</p>
-                    <p>Visit us today and taste the difference that passion and quality ingredients make!</p>
                 </div>
             </div>
         </div>

@@ -1,26 +1,24 @@
 /**
- * profile.js - 处理用户信息下拉菜单
+ * profile.js - 个人资料页交互逻辑
  */
 document.addEventListener('DOMContentLoaded', function() {
-    const userIcon = document.querySelector('.user-icon');
-    const dropdownMenu = document.getElementById('dropdownMenu');
     
-    // 检查页面上是否存在用户菜单（即用户是否已登录）
-    if (userIcon && dropdownMenu) {
-        
-        // 1. 点击图标：切换菜单显示或隐藏
-        // 这里的 toggleDropdown 函数对应 HTML 中的 onclick="toggleDropdown()"
-        window.toggleDropdown = function() {
-            dropdownMenu.classList.toggle('show');
-        };
+    // 1. 如果有特定于资料页的按钮效果可以在此添加
+    const actionButtons = document.querySelectorAll('.btn');
+    
+    actionButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            // 这里可以添加按钮触碰时的音效或额外的视觉记录
+        });
+    });
 
-        // 2. 点击页面空白处：自动关闭菜单
-        window.addEventListener('click', function(event) {
-            // 如果点击的目标【不包含】在用户图标内，且【不包含】在菜单内
-            if (!userIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                // 移除 show 类以隐藏菜单
-                dropdownMenu.classList.remove('show');
-            }
+    // 2. 购物车跳转逻辑 (如果 header.php 没有统一处理的话)
+    const cartIcon = document.getElementById('cartIcon');
+    if (cartIcon) {
+        cartIcon.addEventListener('click', function() {
+            window.location.href = 'cart.html';
         });
     }
+
+    // 3. 可以在此处添加地址文本的自动格式化或其他资料页特有逻辑
 });

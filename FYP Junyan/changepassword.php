@@ -250,11 +250,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Sweet & Delicious</p>
                 <div class="footer-links">
                     <a href="mainpage.php">Home</a>
-                    <a href="menu.html">Menu</a>
-                    <a href="about_us.html">About</a>
-                    <a href="contact.html">Contact</a>
-                    <a href="privacypolicy.html">Privacy Policy</a>
-                    <a href="termservice.html">Terms of Service</a>
+                    <a href="menu.php">Menu</a>
+                    <a href="about_us.php">About</a>
+                    <a href="contact_us.php">Contact</a>
+                    <a href="privacypolicy.php">Privacy Policy</a>
+                    <a href="termservice.php">Terms of Service</a>
                 </div>
                 <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
             </div>
