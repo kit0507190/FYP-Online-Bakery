@@ -176,6 +176,25 @@ try {
         </div>
     </footer>
 
-    <script src="profile.js"></script>
+    <script>
+    function toggleDropdown(event) {
+        // 防止点击事件向上传播到 window
+        event.stopPropagation();
+        const dropdown = document.getElementById('dropdownMenu');
+        dropdown.classList.toggle('show');
+    }
+
+    // 点击页面其他任何地方关闭菜单
+    window.onclick = function(event) {
+        const dropdown = document.getElementById('dropdownMenu');
+        const userIcon = document.querySelector('.user-icon');
+        
+        // 如果点击的不是图标也不是菜单内部，就关闭
+        if (dropdown && !userIcon.contains(event.target) && !dropdown.contains(event.target)) {
+            dropdown.classList.remove('show');
+        }
+    }
+</script>
+
 </body>
 </html>
