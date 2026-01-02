@@ -475,13 +475,26 @@ body {
 /* ============================================================
    4. FOOTER (保持原本方案)
    ============================================================ */
-footer { background: var(--main-brown); color: white; text-align: center; padding: 40px 0; }
-.footer-logo img { height: 60px; margin-bottom: 15px; }
-.footer-links a { color: white; text-decoration: none; margin: 0 10px; font-size: 14px; }
 
-/* Utils */
-.fade-in { opacity: 1 !important; transform: translateY(0) !important; }
+footer {
+    padding: 40px 0;
+    background-color: #5a3921;
+    color: white;
+    text-align: center;
+}
 
-@media (max-width: 992px) {
-    .contact-grid { grid-template-columns: 1fr; }
+.footer-logo img {
+    height: 60px;
+    margin-bottom: 15px;
+}
+
+.footer-links a {
+    margin: 0 10px;
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: #d4a76a;
 }
