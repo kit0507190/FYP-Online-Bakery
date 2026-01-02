@@ -154,74 +154,108 @@ footer {
 }
 
 /* ============================================================
-   6. TOAST NOTIFICATION (新增：成功提示弹窗)
+   6. SUCCESS MODAL (成功提示弹窗 - 居中遮罩版)
    ============================================================ */
-.toast-container {
+
+/* 1. 全屏半透明背景遮罩：负责把背景变暗，并让内容居中 */
+.toast-overlay {
     position: fixed;
-    top: 100px; /* 避开固定 header */
-    right: 30px;
-    z-index: 9999;
-}
-
-.toast {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* 黑色半透明，数值越高越暗 */
     display: flex;
+    align-items: center;    /* 垂直居中 */
+    justify-content: center; /* 水平居中 */
+    z-index: 9999;          /* 确保弹窗永远在最上面 */
+    animation: fadeIn 0.3s ease; /* 进入时的淡入效果 */
+}
+
+/* 2. 白色提示卡片：存放内容的主体 */
+.toast-card {
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 20px;    /* 圆角，看起来更亲切 */
+    text-align: center;
+    max-width: 400px;       /* 电脑端最大宽度 */
+    width: 90%;             /* 手机端自动缩小 */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); /* 底部阴影，增加立体感 */
+    /* 弹出动画：结合了缩放和平滑缓冲 */
+    animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 3. 成功图标：绿色的圆形勾选框 */
+.toast-icon {
+    width: 70px;
+    height: 70px;
+    background: #28a745;    /* 经典的成功绿色 */
+    color: white;
+    font-size: 30px;
+    border-radius: 50%;     /* 变成正圆 */
+    margin: 0 auto 20px;    /* 居中并与下方文字保持间距 */
+    display: flex;          /* 使用 Flex 确保图标死死锁在圆圈正中间 */
     align-items: center;
-    background: white;
-    padding: 18px 25px;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    border-left: 6px solid #d4a76a; /* 品牌金色 */
-    min-width: 320px;
-    animation: slideIn 0.5s ease-out forwards;
+    justify-content: center;
 }
 
-.toast.success i {
-    color: #27ae60;
+/* 4. 标题与文字样式 */
+.toast-card h3 { 
+    color: #5a3921;         /* 匹配你 Bakery House 的棕色 */
+    margin-bottom: 10px; 
     font-size: 24px;
-    margin-right: 15px;
 }
 
-.toast-content {
-    flex: 1;
+.toast-card p { 
+    color: #666;            /* 灰色文字，阅读更舒服 */
+    margin-bottom: 25px; 
+    line-height: 1.6;
 }
 
-.toast-title {
-    display: block;
-    font-weight: 700;
-    color: #5a3921;
-    font-size: 16px;
-    margin-bottom: 2px;
-}
-
-.toast-msg {
-    color: #666;
-    font-size: 14px;
-}
-
-.toast-close {
-    background: none;
+/* 5. "Done" 按钮样式 */
+.close-toast {
+    background: #d4a76a;    /* 匹配你 Bakery House 的金色 */
+    color: white;
     border: none;
-    font-size: 20px;
-    color: #ccc;
+    padding: 12px 45px;
+    border-radius: 30px;    /* 胶囊状按钮 */
+    font-weight: bold;
+    font-size: 16px;
     cursor: pointer;
-    margin-left: 15px;
-    transition: 0.3s;
+    transition: all 0.3s ease; /* 让所有变化（如颜色、位置）都有过渡 */
 }
 
-.toast-close:hover {
-    color: #e74c3c;
+/* 按钮悬停效果：变色并微微浮起 */
+.close-toast:hover {
+    background: #5a3921;    /* 悬停变成棕色 */
+    transform: translateY(-2px); /* 向上浮动 2 像素 */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-@keyframes slideIn {
-    from { transform: translateX(120%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+/* 按钮点击瞬间：按钮下沉，模拟真实按下的感觉 */
+.close-toast:active {
+    transform: translateY(0);    /* 回到原位 */
+    filter: brightness(0.9);      /* 颜色稍微变深 */
 }
 
-@keyframes fadeOut {
-    from { opacity: 1; transform: translateY(0); }
-    to { opacity: 0; transform: translateY(-20px); }
+/* ============================================================
+   7. ANIMATIONS (动画定义)
+   ============================================================ */
+
+/* 背景淡入 */
+@keyframes fadeIn { 
+    from { opacity: 0; } 
+    to { opacity: 1; } 
 }
 
-.toast.hiding {
-    animation: fadeOut 0.5s ease forwards;
+/* 内容弹出（从小到大，带一点回弹效果） */
+@keyframes popUp { 
+    from { 
+        opacity: 0; 
+        transform: scale(0.8); 
+    } 
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    } 
 }
