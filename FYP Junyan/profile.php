@@ -1,28 +1,22 @@
 <?php
 /**
  * profile.php - 用户个人资料查看页面
- * 功能：从数据库读取并展示当前登录用户的个人信息。
- * 关联：header.php (统一导航栏), config.php (数据库连接)
  */
 session_start();
 
-// 1. 安全验证：检查用户是否登录，未登录则拦截并跳转
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php"); 
     exit();
 }
 
-// 2. 引入数据库配置
 require_once 'config.php';
 
-// 检查数据库 PDO 对象是否正常
 if (!isset($pdo)) {
     die("Database connection failed.");
 }
 
 $userId = $_SESSION['user_id'];
 
-// 3. 核心逻辑：获取当前用户信息
 try {
     $query = "SELECT name, email, phone, address, created_at FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
@@ -30,13 +24,11 @@ try {
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user) {
-        // 使用 htmlspecialchars 过滤，防止 XSS 攻击
         $name = htmlspecialchars($user['name']);
         $email = htmlspecialchars($user['email']);
         $phone = htmlspecialchars($user['phone'] ?? 'Not provided');
         $memberSince = date("F j, Y", strtotime($user['created_at']));
         
-        // 地址解析逻辑：根据数据库中存储的 "|" 分隔符进行拆分展示
         $address_display = "No default address set";
         if (!empty($user['address'])) {
             if (strpos($user['address'], '|') !== false) {
@@ -47,20 +39,15 @@ try {
                     $address_line = htmlspecialchars($address_parts[2]);
                     $other_area = isset($address_parts[3]) ? htmlspecialchars($address_parts[3]) : '';
                     $display_area = ($address_area === 'other' && !empty($other_area)) ? $other_area : $address_area;
-                    
-                    // 拼接格式化后的地址字符串
                     $address_display = $address_line . "<br>" . $display_area . ", " . $address_postcode . " Melaka<br>Malaysia";
                 }
             } else {
                 $address_display = htmlspecialchars($user['address']);
             }
         }
-        
-        // 设置传给 header.php 使用的登录标志和用户名
         $isLoggedIn = true;
         $userName = $user['name'];
     } else {
-        // 若找不到用户，销毁会话并踢回登录页
         session_destroy();
         header("Location: User_Login.php");
         exit();
@@ -83,9 +70,16 @@ try {
     
     <?php include 'header.php'; ?>
 
-    <div class="message-container">
+    <div id="toast-container" class="toast-container">
         <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
-            <div class="success-message">Profile updated successfully!</div>
+            <div class="toast success">
+                <i class="fas fa-check-circle"></i>
+                <div class="toast-content">
+                    <span class="toast-title">Success</span>
+                    <span class="toast-msg">Profile updated successfully!</span>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            </div>
         <?php endif; ?>
     </div>
 
