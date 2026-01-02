@@ -154,21 +154,15 @@ body {
 
 /* Footer */
 footer {
-    background-color: var(--main-brown);
+    background-color: var(--main-color);
     color: white;
     text-align: center;
     padding: 40px 0;
 }
 
-.footer-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-
 .footer-logo img {
     height: 60px;
+    margin-bottom: 20px;
 }
 
 .footer-links {
@@ -181,12 +175,11 @@ footer {
 .footer-links a {
     color: white;
     text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s;
+    transition: 0.3s;
 }
 
 .footer-links a:hover {
-    color: var(--accent-gold);
+    color: var(--accent-color);
 }
 
 .fade-in {

@@ -130,24 +130,30 @@ body {
    5. FOOTER (页脚)
    ============================================================ */
 footer {
-    padding: 40px 0;
-    background-color: #5a3921;
+    background-color: var(--main-color);
     color: white;
     text-align: center;
+    padding: 40px 0;
 }
 
 .footer-logo img {
     height: 60px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .footer-links a {
-    margin: 0 10px;
     color: white;
     text-decoration: none;
-    transition: color 0.3s;
+    transition: 0.3s;
 }
 
 .footer-links a:hover {
-    color: #d4a76a;
+    color: var(--accent-color);
 }
