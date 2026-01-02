@@ -1,7 +1,11 @@
 /* ============================================================
-   1. GLOBAL STYLES (全局样式)
+   1. GLOBAL & CONTAINER
    ============================================================ */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
     font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -21,11 +25,10 @@ body {
     border-radius: 25px;
     box-shadow: 0 15px 45px rgba(90, 57, 33, 0.12);
     overflow: hidden;
-    min-height: 600px;
 }
 
 /* ============================================================
-   2. LEFT LOGO SECTION (左侧区域)
+   2. LOGO SECTION (LEFT)
    ============================================================ */
 .logo-section {
     flex: 1;
@@ -37,42 +40,26 @@ body {
     padding: 40px;
     color: #fff;
     text-align: center;
-    position: relative;
 }
 
-.logo-content {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-
-/* 【新增】Logo 图片超链接容器样式 */
 .logo-image-link {
     text-decoration: none;
-    display: block;
-    margin-bottom: 20px;
     transition: transform 0.3s ease;
-    cursor: pointer;
+    margin-bottom: 20px;
 }
 
-/* 鼠标移入图片微放效果 */
 .logo-image-link:hover {
     transform: scale(1.05);
 }
 
 .logo-image {
-    width: 200px;
-    height: 200px;
+    width: 180px;
+    height: 180px;
+    background: white;
     border-radius: 50%;
-    background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    overflow: hidden;
     border: 5px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -81,58 +68,159 @@ body {
     object-fit: contain;
 }
 
-.logo-text { font-size: 32px; font-weight: 800; margin-bottom: 5px; cursor: default; }
-.tagline { font-size: 18px; font-weight: 500; opacity: 0.9; cursor: default; }
+.logo-text {
+    font-size: 32px;
+    margin-bottom: 5px;
+}
+
+.tagline {
+    font-size: 16px;
+    opacity: 0.9;
+}
 
 .slogan-box {
-    margin-top: 25px;
+    margin-top: 20px;
     background: rgba(255, 255, 255, 0.15);
-    padding: 15px;
-    border-radius: 12px;
-    backdrop-filter: blur(5px);
-    cursor: default;
+    padding: 12px;
+    border-radius: 10px;
 }
 
 /* ============================================================
-   3. RIGHT FORM SECTION (右侧表单)
+   3. FORM SECTION (RIGHT)
    ============================================================ */
-.form-section { flex: 1.2; padding: 50px 60px; background-color: #ffffff; }
-
-.form-header h1 { color: #5a3921; font-size: 28px; font-weight: 700; text-align: center;}
-.form-header p { color: #8c7b6d; margin-top: 5px; text-align: center; margin-bottom: 30px;}
-
-.form-group { margin-bottom: 22px; position: relative; }
-.form-group label { display: block; margin-bottom: 8px; color: #5a3921; font-weight: 700; font-size: 14px; }
-.form-group input { 
-    width: 100%; padding: 12px 15px; border: 1.5px solid #eee; border-radius: 12px; 
-    background: #fafafa; font-size: 15px; transition: 0.3s ease; 
+.form-section {
+    flex: 1.2;
+    padding: 50px 60px;
 }
-.form-group input:focus { border-color: #d4a574; background: #fff; outline: none; }
+
+.form-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.form-header h1 {
+    color: #5a3921;
+    font-size: 28px;
+}
+
+.form-header p {
+    color: #8c7b6d;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #5a3921;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1.5px solid #eee;
+    border-radius: 10px;
+    background: #fafafa;
+    transition: 0.3s;
+}
+
+.form-group input:focus {
+    border-color: #d4a574;
+    outline: none;
+    background: #fff;
+}
 
 .password-toggle {
-    position: absolute; right: 15px; top: 38px; color: #d4a76a; 
-    font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase;
+    position: absolute;
+    right: 15px;
+    top: 38px;
+    color: #d4a76a;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+/* --- 按钮与链接美化 --- */
+.remember-forgot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    font-size: 14px;
+}
+
+.remember-me {
+    color: #8c7b6d;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* 忘记密码链接样式 */
+.forgot-password {
+    color: #d4a76a;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.forgot-password:hover {
+    color: #5a3921;
+    text-decoration: underline;
 }
 
 .btn-submit {
-    width: 100%; padding: 15px; background: #d4a574; color: #fff; border: none; 
-    border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; 
-    transition: all 0.3s ease;
+    width: 100%;
+    padding: 15px;
+    background: #d4a574;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
 }
-.btn-submit:hover { background: #b8864e; transform: translateY(-2px); }
 
-/* 响应式 */
-@media (max-width: 768px) {
-    .container { flex-direction: column; }
-    .form-section { padding: 40px 30px; }
+.btn-submit:hover {
+    background: #b8864e;
+    transform: translateY(-2px);
+}
 
-}/* ============================================================
-   4. DECORATIONS (装饰元素 - 修复为横向一排)
+/* 底部注册链接美化 */
+.login-link {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+    color: #8c7b6d;
+}
+
+.create-account-link {
+    color: #d4a76a;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 2px 8px;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+
+.create-account-link:hover {
+    background-color: rgba(212, 167, 106, 0.1); /* 浅金色背景反馈 */
+    text-decoration: underline;
+}
+
+/* ============================================================
+   4. DECORATIONS
    ============================================================ */
 .cake-decoration {
-    display: flex;            /* 关键：使用 Flex 布局 */
-    justify-content: center;   /* 居中对齐 */
-    gap: 10px;                 /* 元素之间的间距 */
+    display: flex;
+    justify-content: center;
+    gap: 10px;
     margin-top: 30px;
 }
 
@@ -143,6 +231,17 @@ body {
     border-radius: 50% 50% 0 0;
 }
 
-.cake-piece:nth-child(2) { background: #b8864e; }
-.cake-piece:nth-child(3) { background: #d4a574; }
-.cake-piece:nth-child(4) { background: #b8864e; }
+.cake-piece:nth-child(even) {
+    background: #b8864e;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .form-section {
+        padding: 30px;
+    }
+}
