@@ -72,8 +72,7 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
         <div class="logo-section">
             <div class="logo-content">
                 <div class="logo-image">    
-                    <a href="mainpage.php" class="logo-brand">
-                    <img src="Bakery House Logo.png" alt="Bakery House Logo">
+                    <a href="mainpage.php" img src="Bakery House Logo.png" alt="Bakery House Logo">
                 </div>
                 <h2 class="logo-text">Bakery House</h2>
                 <p class="tagline">Sweet & Delicious</p>
