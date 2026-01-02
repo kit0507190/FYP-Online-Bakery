@@ -125,4 +125,24 @@ body {
 @media (max-width: 768px) {
     .container { flex-direction: column; }
     .form-section { padding: 40px 30px; }
+
+}/* ============================================================
+   4. DECORATIONS (装饰元素 - 修复为横向一排)
+   ============================================================ */
+.cake-decoration {
+    display: flex;            /* 关键：使用 Flex 布局 */
+    justify-content: center;   /* 居中对齐 */
+    gap: 10px;                 /* 元素之间的间距 */
+    margin-top: 30px;
 }
+
+.cake-piece {
+    width: 20px;
+    height: 10px;
+    background: #d4a574;
+    border-radius: 50% 50% 0 0;
+}
+
+.cake-piece:nth-child(2) { background: #b8864e; }
+.cake-piece:nth-child(3) { background: #d4a574; }
+.cake-piece:nth-child(4) { background: #b8864e; }

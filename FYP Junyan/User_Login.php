@@ -126,6 +126,14 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
                 <div class="login-link">
                     Don't have an account? <a href="User_Register.php">Create Account</a>
                 </div>
+
+                <div class="cake-decoration">
+                    <div class="cake-piece"></div>
+                    <div class="cake-piece"></div>
+                    <div class="cake-piece"></div>
+                    <div class="cake-piece"></div>
+                </div>
+
             </form>
         </div>
     </div>
