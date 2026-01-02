@@ -70,6 +70,7 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
 <body>
     <div class="container">
         <div class="logo-section">
+            <a href="index.php" style="text-decoration: none; color: inherit;">
             <div class="logo-content">
                 <div class="logo-image">
                     <img src="Bakery House Logo.png" alt="Bakery House Logo">
