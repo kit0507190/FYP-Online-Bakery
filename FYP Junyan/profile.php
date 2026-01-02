@@ -110,9 +110,18 @@ try {
                 </div>
             </div>
 
-            <div class="action-buttons">
-                <a href="editprofile.php" class="btn btn-edit"><i class="fas fa-edit"></i> Edit Profile</a>
-                <a href="logout.php" class="btn btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+           <div class="action-buttons">
+                <a href="editprofile.php" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+
+                <a href="changepassword.php" class="btn btn-change-password">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+
+                <a href="logout.php" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </div>
     </main>
