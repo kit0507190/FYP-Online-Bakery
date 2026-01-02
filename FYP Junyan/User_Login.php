@@ -1,4 +1,7 @@
 <?php
+/**
+ * User_Login.php - 用户登录页面
+ */
 session_start();
 require_once 'config.php';
 
@@ -12,7 +15,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST["password"] ?? '';
     $remember = isset($_POST["rememberMe"]);
 
-    // 后端基础验证 (Server-side Validation)
+    // 后端基础验证
     if (empty($email)) {
         $errors[] = "Please enter your email address.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -37,11 +40,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['logged_in'] = true;
 
-                // 如果勾选了“记住我”，设置 Cookie (30天)
+                // 记住我功能
                 if ($remember) {
                     setcookie('user_email', $email, time() + (30 * 24 * 60 * 60), '/');
                 } else {
-                    // 如果没勾选，则清除之前的 Cookie
                     setcookie('user_email', '', time() - 3600, '/');
                 }
 
@@ -56,7 +58,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// 检查是否是从注册页面跳转过来的
 $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
 ?>
 <!DOCTYPE html>
@@ -70,11 +71,13 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
 <body>
     <div class="container">
         <div class="logo-section">
-            <a href="index.php" style="text-decoration: none; color: inherit;">
             <div class="logo-content">
-                <div class="logo-image">
-                    <img src="Bakery House Logo.png" alt="Bakery House Logo">
-                </div>
+                <a href="index.php" class="logo-image-link">
+                    <div class="logo-image">
+                        <img src="Bakery House Logo.png" alt="Bakery House Logo">
+                    </div>
+                </a>
+                
                 <h2 class="logo-text">Bakery House</h2>
                 <p class="tagline">Sweet & Delicious</p>
                 <div class="slogan-box">
@@ -123,20 +126,11 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
                 <div class="login-link">
                     Don't have an account? <a href="User_Register.php">Create Account</a>
                 </div>
-
-                <div class="cake-decoration">
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                </div>
             </form>
         </div>
     </div>
 
-    <script>
-        const isRegistered = <?= json_encode($registered) ?>;
-    </script>
+    <script>const isRegistered = <?= json_encode($registered) ?>;</script>
     <script src="User_Login.js"></script>
 </body>
 </html>
