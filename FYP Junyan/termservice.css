@@ -29,8 +29,8 @@ body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(90, 57, 33, 0.7), rgba(90, 57, 33, 0.7)), 
-                url('https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1350');
+    background: linear-gradient(rgba(90, 57, 33, 0.7), rgba(90, 57, 33, 0.7)),
+        url('https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1350');
     background-size: cover;
     background-position: center;
     color: white;
@@ -38,8 +38,21 @@ body {
     padding: 80px 0;
 }
 
-#heroTitle { font-size: 42px; margin-bottom: 10px; opacity: 0; transform: translateY(20px); transition: 0.8s; }
-#heroSubtitle { font-size: 20px; font-weight: 300; opacity: 0; transform: translateY(20px); transition: 0.8s 0.2s; }
+#heroTitle {
+    font-size: 42px;
+    margin-bottom: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 0.8s;
+}
+
+#heroSubtitle {
+    font-size: 20px;
+    font-weight: 300;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: 0.8s 0.2s;
+}
 
 /* Terms Card Design */
 .terms-container {
@@ -51,7 +64,7 @@ body {
     background: var(--white);
     padding: 60px;
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .terms-header {
@@ -59,8 +72,17 @@ body {
     margin-bottom: 50px;
 }
 
-.terms-header i { font-size: 50px; color: var(--accent-gold); margin-bottom: 20px; }
-.terms-header h2 { font-size: 32px; color: var(--main-brown); margin-bottom: 15px; }
+.terms-header i {
+    font-size: 50px;
+    color: var(--accent-gold);
+    margin-bottom: 20px;
+}
+
+.terms-header h2 {
+    font-size: 32px;
+    color: var(--main-brown);
+    margin-bottom: 15px;
+}
 
 .terms-section {
     margin-bottom: 45px;
@@ -69,7 +91,10 @@ body {
     transition: all 0.8s ease;
 }
 
-.terms-section.active { opacity: 1; transform: translateY(0); }
+.terms-section.active {
+    opacity: 1;
+    transform: translateY(0);
+}
 
 .terms-section h3 {
     font-size: 22px;
@@ -80,11 +105,29 @@ body {
     gap: 12px;
 }
 
-.terms-section h3 i { color: var(--accent-gold); font-size: 18px; }
+.terms-section h3 i {
+    color: var(--accent-gold);
+    font-size: 18px;
+}
 
-.styled-list { list-style: none; padding-left: 10px; margin-top: 15px; }
-.styled-list li { position: relative; padding-left: 25px; margin-bottom: 12px; }
-.styled-list li::before { content: '✦'; position: absolute; left: 0; color: var(--accent-gold); }
+.styled-list {
+    list-style: none;
+    padding-left: 10px;
+    margin-top: 15px;
+}
+
+.styled-list li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+}
+
+.styled-list li::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    color: var(--accent-gold);
+}
 
 .highlight-box {
     background-color: var(--bg-cream);
@@ -103,19 +146,60 @@ body {
     font-size: 14px;
 }
 
-.terms-footer a { color: var(--accent-gold); text-decoration: none; font-weight: bold; }
+.terms-footer a {
+    color: var(--accent-gold);
+    text-decoration: none;
+    font-weight: bold;
+}
 
 /* Footer */
-footer { background-color: var(--main-brown); color: white; text-align: center; padding: 40px 0; }
-.footer-content { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-.footer-logo img { height: 60px; }
-.footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-.footer-links a { color: white; text-decoration: none; font-size: 14px; transition: color 0.3s; }
-.footer-links a:hover { color: var(--accent-gold); }
+footer {
+    background-color: var(--main-brown);
+    color: white;
+    text-align: center;
+    padding: 40px 0;
+}
 
-.fade-in { opacity: 1 !important; transform: translateY(0) !important; }
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.footer-logo img {
+    height: 60px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--accent-gold);
+}
+
+.fade-in {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
 
 @media (max-width: 768px) {
-    .terms-card { padding: 30px; }
-    .hero h1 { font-size: 32px; }
+    .terms-card {
+        padding: 30px;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+    }
 }
