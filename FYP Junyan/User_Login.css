@@ -1,11 +1,7 @@
 /* ============================================================
    1. GLOBAL STYLES (全局样式)
    ============================================================ */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     font-family: 'Segoe UI', Tahoma, sans-serif;
@@ -85,19 +81,8 @@ body {
     object-fit: contain;
 }
 
-.logo-text {
-    font-size: 32px;
-    font-weight: 800;
-    margin-bottom: 5px;
-    cursor: default;
-}
-
-.tagline {
-    font-size: 18px;
-    font-weight: 500;
-    opacity: 0.9;
-    cursor: default;
-}
+.logo-text { font-size: 32px; font-weight: 800; margin-bottom: 5px; cursor: default; }
+.tagline { font-size: 18px; font-weight: 500; opacity: 0.9; cursor: default; }
 
 .slogan-box {
     margin-top: 25px;
@@ -111,91 +96,43 @@ body {
 /* ============================================================
    3. RIGHT FORM SECTION (右侧表单)
    ============================================================ */
-.form-section {
-    flex: 1.2;
-    padding: 50px 60px;
-    background-color: #ffffff;
-}
+.form-section { flex: 1.2; padding: 50px 60px; background-color: #ffffff; }
 
-.form-header h1 {
-    color: #5a3921;
-    font-size: 28px;
-    font-weight: 700;
-    text-align: center;
-}
+.form-header h1 { color: #5a3921; font-size: 28px; font-weight: 700; text-align: center;}
+.form-header p { color: #8c7b6d; margin-top: 5px; text-align: center; margin-bottom: 30px;}
 
-.form-header p {
-    color: #8c7b6d;
-    margin-top: 5px;
-    text-align: center;
-    margin-bottom: 30px;
+.form-group { margin-bottom: 22px; position: relative; }
+.form-group label { display: block; margin-bottom: 8px; color: #5a3921; font-weight: 700; font-size: 14px; }
+.form-group input { 
+    width: 100%; padding: 12px 15px; border: 1.5px solid #eee; border-radius: 12px; 
+    background: #fafafa; font-size: 15px; transition: 0.3s ease; 
 }
-
-.form-group {
-    margin-bottom: 22px;
-    position: relative;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #5a3921;
-    font-weight: 700;
-    font-size: 14px;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1.5px solid #eee;
-    border-radius: 12px;
-    background: #fafafa;
-    font-size: 15px;
-    transition: 0.3s ease;
-}
-
-.form-group input:focus {
-    border-color: #d4a574;
-    background: #fff;
-    outline: none;
-}
+.form-group input:focus { border-color: #d4a574; background: #fff; outline: none; }
 
 .password-toggle {
-    position: absolute;
-    right: 15px;
-    top: 38px;
-    color: #d4a76a;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    text-transform: uppercase;
+    position: absolute; right: 15px; top: 38px; color: #d4a76a; 
+    font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase;
 }
 
 .btn-submit {
-    width: 100%;
-    padding: 15px;
-    background: #d4a574;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
+    width: 100%; padding: 15px; background: #d4a574; color: #fff; border: none; 
+    border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; 
     transition: all 0.3s ease;
 }
+.btn-submit:hover { background: #b8864e; transform: translateY(-2px); }
 
-.btn-submit:hover {
-    background: #b8864e;
-    transform: translateY(-2px);
-}
+/* 响应式 */
+@media (max-width: 768px) {
+    .container { flex-direction: column; }
+    .form-section { padding: 40px 30px; }
 
-/* ============================================================
+}/* ============================================================
    4. DECORATIONS (装饰元素 - 修复为横向一排)
    ============================================================ */
 .cake-decoration {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
+    display: flex;            /* 关键：使用 Flex 布局 */
+    justify-content: center;   /* 居中对齐 */
+    gap: 10px;                 /* 元素之间的间距 */
     margin-top: 30px;
 }
 
@@ -206,25 +143,6 @@ body {
     border-radius: 50% 50% 0 0;
 }
 
-.cake-piece:nth-child(2) {
-    background: #b8864e;
-}
-
-.cake-piece:nth-child(3) {
-    background: #d4a574;
-}
-
-.cake-piece:nth-child(4) {
-    background: #b8864e;
-}
-
-/* 响应式 */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-
-    .form-section {
-        padding: 40px 30px;
-    }
-}
+.cake-piece:nth-child(2) { background: #b8864e; }
+.cake-piece:nth-child(3) { background: #d4a574; }
+.cake-piece:nth-child(4) { background: #b8864e; }
