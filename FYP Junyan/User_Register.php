@@ -1,66 +1,57 @@
 <?php
+/**
+ * User_Register.php - 用户注册页面
+ */
 require_once 'config.php';
 
-// 初始化变量，防止页面第一次加载时出现警告，并用于保留用户输入
 $errors = [];
 $name = ""; 
 $email = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 获取表单数据并过滤多余空格
     $name     = trim($_POST["name"] ?? '');
     $email    = trim($_POST["email"] ?? '');
     $password = $_POST["password"] ?? '';
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
 
-    // ====== 服务器端验证逻辑 ======
-
-    // 1. 验证姓名
+    // --- 后端验证逻辑 ---
     if (empty($name) || strlen($name) < 2) {
         $errors[] = "Name must be at least 2 characters.";
     }
 
-    // 2. 验证 Email 格式及 Gmail 后缀白名单
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
-        // 提取域名并转换为小写进行比对
         $domain = strtolower(substr(strrchr($email, "@"), 1));
         if ($domain !== 'gmail.com') {
-            $errors[] = "Registration is only allowed with a @gmail.com account.";
+            $errors[] = "Only @gmail.com accounts are allowed.";
         }
     }
 
-    // 3. 验证密码强度
     if (strlen($password) < 8 || !preg_match("/[A-Za-z]/", $password) || !preg_match("/[0-9]/", $password)) {
         $errors[] = "Password must be 8+ chars with letters & numbers.";
     }
 
-    // 4. 验证两次密码一致
     if ($password !== $confirm) {
         $errors[] = "Passwords do not match.";
     }
 
-    // 5. 验证是否勾选条款
     if (!$agree) {
-        $errors[] = "You must agree to the terms and privacy policy.";
+        $errors[] = "You must agree to the terms.";
     }
 
-    // 6. 数据库操作
+    // --- 数据库逻辑 ---
     if (empty($errors)) {
         try {
             $check = $pdo->prepare("SELECT id FROM user_db WHERE email = ?");
             $check->execute([$email]);
-            
             if ($check->rowCount() > 0) {
                 $errors[] = "This email is already registered.";
             } else {
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("INSERT INTO user_db (name, email, password) VALUES (?, ?, ?)");
                 $stmt->execute([$name, $email, $hashed]);
-
-                // 注册成功跳转
                 header("Location: User_Login.php?registered=1");
                 exit();
             }
@@ -96,7 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="form-section">
             <div class="form-header">
                 <h1>Create An Account</h1>
-                <p>Join our Bakery House community!</p>
+                <p>Join our community!</p>
             </div>
 
             <?php if (!empty($errors)): ?>
@@ -112,36 +103,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form action="" method="POST" id="registerForm">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter your full name">
+                    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter name">
                 </div>
 
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" name="email" id="emailInput" value="<?= htmlspecialchars($email) ?>" required placeholder="Must be @gmail.com">
+                    <input type="email" name="email" id="emailInput" value="<?= htmlspecialchars($email) ?>" required placeholder="user@gmail.com">
+                    <span class="error-msg" id="emailError"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" id="password" required placeholder="8+ chars (letters & numbers)">
+                    <input type="password" name="password" id="password" required placeholder="8+ characters">
                     <span class="password-toggle" id="togglePassword">Show</span>
                 </div>
 
                 <div class="form-group">
                     <label>Confirm Password</label>
-                    <input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm your password">
+                    <input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm password">
                     <span class="password-toggle" id="toggleConfirmPassword">Show</span>
                 </div>
 
                 <div class="terms-group">
-                    <input type="checkbox" id="agreeTerms" name="agreeTerms" <?= isset($_POST['agreeTerms']) ? 'checked' : '' ?> required>
-                    <label for="agreeTerms">I agree to the <a href="#" id="termsLink">Terms of Service</a> and <a href="#" id="privacyLink">Privacy Policy</a></label>
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                    <label for="agreeTerms">I agree to the <a href="#">Terms</a> & <a href="#">Privacy</a></label>
                 </div>
 
                 <button type="submit" class="btn-submit">Create Account</button>
-
-                <div class="login-link">
-                    Already have an account? <a href="User_Login.php">Sign In</a>
-                </div>
+                <div class="login-link">Already have an account? <a href="User_Login.php">Sign In</a></div>
 
                 <div class="cake-decoration">
                     <div class="cake-piece"></div>
@@ -152,20 +141,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
         </div>
     </div>
-
-    <div id="policyModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="policyTitle">Terms of Service</h2>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body" id="policyBody"></div>
-            <div class="modal-footer">
-                <button class="btn-close-modal" id="modalCloseBtn">Understood</button>
-            </div>
-        </div>
-    </div>
-
     <script src="User_Register.js"></script>
 </body>
 </html>
