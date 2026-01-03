@@ -1,5 +1,4 @@
 <?php
-// stock_management.php - NO OUTPUT BEFORE THIS LINE!
 
 require_once 'admin_auth.php';  // Secure login + loads $current_admin
 require_once 'config.php';  // Main DB connection

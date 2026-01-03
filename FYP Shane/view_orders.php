@@ -54,9 +54,6 @@ require_once 'config.php';  // Main database connection for orders/products
 </nav>
 
 <main class="main">
-    <div class="welcome-msg">
-        Monitor and manage customer orders. Update status to keep customers informed.
-    </div>
 
     <?php if (isset($_GET['status_updated'])): ?>
         <div class="alert success" style="padding: 1rem; background: #d4edda; color: #155724; border-radius: 8px; margin-bottom: 2rem;">
