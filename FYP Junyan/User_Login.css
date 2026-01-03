@@ -58,14 +58,14 @@ body {
 .logo-image {
     width: 200px;
     height: 200px;
+    border-radius: 50%;
+    background-color: white;
+    margin: 0 auto 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: white;
-    border: 5px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     overflow: hidden;
+    border: 5px solid rgba(255, 255, 255, 0.3);
 }
 
 .logo-image img {
