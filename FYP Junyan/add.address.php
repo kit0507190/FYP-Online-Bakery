@@ -1,36 +1,38 @@
 <?php
 /**
- * add_address.php - 添加新地址页面
+ * add_address.php - 添加新地址页面 (增加退回功能)
  */
 session_start();
 require_once 'config.php';
 
-// 1. 登录检查
+// 1. 验证登录
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
 }
 
-// 2. 处理表单提交逻辑
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $userId = $_SESSION['user_id'];
-    $addressText = trim($_POST['address_text']);
+$userId = $_SESSION['user_id'];
+$errors = [];
 
-    if (!empty($addressText)) {
+// 2. 处理表单提交
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $address_text = trim($_POST['address_text'] ?? '');
+
+    if (empty($address_text)) {
+        $errors[] = "Please enter your full address.";
+    }
+
+    if (empty($errors)) {
         try {
-            // 插入新地址，is_default 默认为 0
             $sql = "INSERT INTO user_addresses (user_id, address_text, is_default) VALUES (?, ?, 0)";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$userId, $addressText]);
+            $stmt->execute([$userId, $address_text]);
 
-            // 成功后跳回管理页面 (请确认你的文件名是 manageaddress.php)
             header("Location: manageaddress.php");
             exit();
         } catch (PDOException $e) {
-            $error = "Database Error: " . $e->getMessage();
+            $errors[] = "Database error: " . $e->getMessage();
         }
-    } else {
-        $error = "Please enter a valid address.";
     }
 }
 ?>
@@ -39,47 +41,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Address - Bakery House</title>
-    <link rel="stylesheet" href="manage_addresses.css">
-    <link rel="stylesheet" href="add.address.css">
+    <link rel="stylesheet" href="add_address.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
+    
     <?php include 'header.php'; ?>
 
-    <main class="add-address-page">
-        <div class="container">
-            <div class="page-header">
+    <div class="message-container">
+        <?php if (!empty($errors)): ?>
+            <div class="error-message">
+                <ul style="margin: 0; padding-left: 20px;">
+                    <?php foreach ($errors as $error): ?>
+                        <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <main class="profile-page">
+        <div class="profile-container">
+            
+            <div class="back-navigation">
                 <a href="manageaddress.php" class="back-link">
-                    <i class="fas fa-arrow-left"></i> Back to Addresses
+                    <i class="fas fa-chevron-left"></i> Back to Manage Addresses
                 </a>
+            </div>
+
+            <div class="profile-header">
                 <h1>Add New Address</h1>
+                <p>Provide your delivery details below</p>
             </div>
 
-            <div class="form-card">
-                <?php if (isset($error)): ?>
-                    <div class="error-box"><?php echo $error; ?></div>
-                <?php endif; ?>
-
-                <form action="add_address.php" method="POST">
-                    <div class="form-group">
-                        <label for="address_text">Full Address Details</label>
-                        <textarea 
-                            name="address_text" 
-                            id="address_text" 
-                            placeholder="e.g. 17, Taman Bunga 4/12, Ayer Keroh, 75100 Melaka" 
-                            required
-                        ></textarea>
-                    </div>
+            <form action="add_address.php" method="POST" class="edit-form">
+                <div class="info-card">
+                    <h2><i class="fas fa-map-marked-alt"></i> Address Details</h2>
                     
-                    <div class="form-actions">
-                        <button type="submit" class="btn-save">
-                            <i class="fas fa-save"></i> Save Address
-                        </button>
+                    <div class="form-group required-field">
+                        <label class="form-label">Full Address</label>
+                        <textarea name="address_text" class="form-textarea" required rows="4" placeholder="e.g., 17, Taman Bunga 4/12, Ayer Keroh, 75100 Melaka"></textarea>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Address
+                    </button>
+                    <a href="manageaddress.php" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </main>
 

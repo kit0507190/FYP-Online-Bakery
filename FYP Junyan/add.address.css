@@ -1,113 +1,151 @@
 /* ============================================================
-   1. PAGE LAYOUT (页面布局)
+   1. GLOBAL & LAYOUT
    ============================================================ */
-.add-address-page {
-    padding-top: 40px;
-    padding-bottom: 60px;
+:root {
+    --bakery-brown: #5a3921;
+    --bakery-gold: #d4a76a;
+    --bakery-bg: #fff7ec;
+    --white: #ffffff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: var(--bakery-bg);
+    color: #333;
+    padding-top: 85px; 
+}
+
+.profile-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
 }
 
 /* ============================================================
-   2. FORM CARD (表单卡片样式)
+   2. NAVIGATION (退回按钮样式)
    ============================================================ */
-.form-card {
-    background: #ffffff;
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+.back-navigation {
+    margin-bottom: 20px;
 }
 
-.form-group {
+.back-link {
+    text-decoration: none;
+    color: var(--bakery-brown);
+    font-weight: 600;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.back-link:hover {
+    color: var(--bakery-gold);
+    transform: translateX(-5px); /* 悬停时向左微动，暗示退回 */
+}
+
+/* ============================================================
+   3. HEADER & CARDS
+   ============================================================ */
+.profile-header {
+    background: linear-gradient(135deg, var(--bakery-brown) 0%, #7a5537 100%);
+    padding: 30px;
+    border-radius: 15px;
+    color: white;
+    text-align: center;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.info-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
     margin-bottom: 25px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 12px;
-    color: #5a3921;
-    font-weight: 700;
-    font-size: 15px;
-}
-
-.form-group textarea {
-    width: 100%;
-    min-height: 120px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.5;
-    resize: vertical;
-    transition: border-color 0.3s ease;
-}
-
-.form-group textarea:focus {
-    outline: none;
-    border-color: #d4a76a;
-    box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.1);
+.info-card h2 {
+    color: var(--bakery-brown);
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--bakery-gold);
+    padding-bottom: 10px;
 }
 
 /* ============================================================
-   3. BUTTONS & ALERTS (按钮与提示)
+   4. FORM ELEMENTS
    ============================================================ */
-.form-actions {
-    text-align: left;
+.form-group { margin-bottom: 20px; }
+
+.form-label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--bakery-brown); }
+.required-field .form-label::after { content: " *"; color: #e74c3c; }
+
+.form-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: 0.3s;
+    resize: vertical;
 }
 
-.btn-save {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+.form-textarea:focus {
+    border-color: var(--bakery-gold);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.15);
+}
+
+/* ============================================================
+   5. ACTIONS & MESSAGES
+   ============================================================ */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.btn {
     padding: 12px 35px;
-    background: #d4a76a;
-    color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
+    font-weight: bold;
     cursor: pointer;
-    transition: all 0.3s ease;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.btn-save:hover {
-    background: #5a3921;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
+.btn-primary { background: var(--bakery-gold); color: white; }
+.btn-primary:hover { background: #c2955a; transform: translateY(-2px); }
 
-.error-box {
+.btn-secondary { background: #6c757d; color: white; }
+.btn-secondary:hover { background: #5a6268; }
+
+.message-container { max-width: 800px; margin: 20px auto 0; padding: 0 20px; }
+.error-message {
     background: #f8d7da;
     color: #721c24;
     padding: 15px;
     border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
     border-left: 5px solid #dc3545;
 }
 
-
-/* ============================================================
-   4. FOOTER (页脚)
-   ============================================================ */
+/* Footer 相关样式建议放在公用 CSS 或保留此处 */
 footer {
     padding: 40px 0;
-    background-color: #5a3921;
+    background-color: var(--bakery-brown);
     color: white;
     text-align: center;
 }
 
-.footer-logo img {
-    height: 60px;
-    margin-bottom: 15px;
-}
-
-.footer-links a {
-    margin: 0 10px;
-    color: white;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.footer-links a:hover {
-    color: #d4a76a;
-}
+.footer-logo img { height: 60px; margin-bottom: 15px; }
+.footer-links a { margin: 0 10px; color: white; text-decoration: none; }
