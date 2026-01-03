@@ -94,10 +94,15 @@ function formatAddress($raw) {
                                     <?php else: ?>
                                         <div class="action-group">
                                             <a href="manageaddress.php?set_default=<?php echo $addr['id']; ?>" class="btn-action btn-set">Set as Default</a>
+    
+                                            <a href="edit.address.php?id=<?php echo $addr['id']; ?>" class="btn-edit-icon">
+                                              <i class="fas fa-edit"></i>
+                                             </a>
+
                                             <a href="manageaddress.php?delete_id=<?php echo $addr['id']; ?>" class="btn-delete" onclick="return confirm('Delete this address?')">
-                                                <i class="fas fa-trash-alt"></i>
+                                              <i class="fas fa-trash-alt"></i>
                                             </a>
-                                        </div>
+                                </div>
                                     <?php endif; ?>
                                 </div>
                             </div>

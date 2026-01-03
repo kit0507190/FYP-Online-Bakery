@@ -117,7 +117,7 @@ body {
 .action-group {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 15px; /* 保持图标之间的间距 */
 }
 
 .badge-default {
@@ -137,6 +137,17 @@ body {
     font-weight: 600;
     text-decoration: none;
     transition: 0.3s;
+}
+
+.btn-edit-icon {
+    color: #bbbbbb;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.btn-edit-icon:hover {
+    color: var(--bakery-gold); /* 悬停时变成品牌金 */
 }
 
 .btn-set {
