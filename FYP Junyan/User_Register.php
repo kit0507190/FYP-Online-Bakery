@@ -143,6 +143,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </form>
         </div>
     </div>
+
+    <div id="policyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="policyTitle">Terms of Service</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="policyBody"></div>
+            <div class="modal-footer">
+                <button class="btn-close-modal" id="modalCloseBtn">Understood</button>
+            </div>
+        </div>
+    </div>
+
     <script src="User_Register.js"></script>
 </body>
 </html>

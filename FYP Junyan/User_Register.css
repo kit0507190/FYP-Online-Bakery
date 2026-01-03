@@ -154,7 +154,6 @@ body {
     box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
 }
 
-/* 补全的实时报错样式 */
 .error-msg {
     display: block;
     color: #f56565;
@@ -244,3 +243,68 @@ body {
 .cake-piece:nth-child(2) { background: #b8864e; }
 .cake-piece:nth-child(3) { background: #d4a574; }
 .cake-piece:nth-child(4) { background: #b8864e; }
+
+/* 重新添加 Modal 样式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 550px;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header {
+    background: #d4a574;
+    color: #fff;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-modal {
+    cursor: pointer;
+    font-size: 30px;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 30px;
+    max-height: 400px;
+    overflow-y: auto;
+    color: #5a3921;
+    line-height: 1.8;
+}
+
+.modal-footer {
+    padding: 20px;
+    text-align: right;
+    background: #fdf6f0;
+}
+
+.btn-close-modal {
+    background: #d4a574;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
