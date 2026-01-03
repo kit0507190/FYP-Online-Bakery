@@ -156,7 +156,7 @@ if (isset($_GET['delete'])) {
         <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
             (<span class="role-highlight"><?= ucfirst(str_replace('_', ' ', $current_admin['role'])) ?></span>)
         </span>
-        <a href="logout.php" class="logout">Logout</a>
+        <a href="admin_logout.php" class="logout">Logout</a>
     </div>
 </header>
 
