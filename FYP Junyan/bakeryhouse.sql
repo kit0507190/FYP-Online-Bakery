@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2025-12-31 15:16:29
+-- 生成日期： 2026-01-03 15:38:33
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -90,7 +90,11 @@ CREATE TABLE `contact_messages` (
 INSERT INTO `contact_messages` (`id`, `user_id`, `name`, `email`, `message`, `status`, `created_at`) VALUES
 (1, 18, 'test', 'iplaygame317@gmail.com', 'good food', 'unread', '2025-12-31 12:37:39'),
 (2, 18, 'test', 'iplaygame317@gmail.com', 'nicee service', 'unread', '2025-12-31 12:38:03'),
-(3, 18, 'test', 'iplaygame317@gmail.com', 'ggood food', 'unread', '2025-12-31 14:15:49');
+(3, 18, 'test', 'iplaygame317@gmail.com', 'ggood food', 'unread', '2025-12-31 14:15:49'),
+(4, 18, 'test', 'iplaygame317@gmail.com', 'goood', 'unread', '2026-01-02 10:50:41'),
+(5, 18, 'test', 'iplaygame317@gmail.com', 'goood', 'unread', '2026-01-02 10:56:44'),
+(6, 18, 'test', 'iplaygame317@gmail.com', 'goood', 'unread', '2026-01-02 10:56:49'),
+(7, NULL, 'test', 'test@gmail.com', 'good food', 'unread', '2026-01-02 11:07:05');
 
 -- --------------------------------------------------------
 
@@ -160,6 +164,33 @@ INSERT INTO `products` (`id`, `name`, `price`, `category`, `stock`, `description
 -- --------------------------------------------------------
 
 --
+-- 表的结构 `user_addresses`
+--
+
+CREATE TABLE `user_addresses` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `address_text` text NOT NULL,
+  `is_default` tinyint(1) DEFAULT 0,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- 转存表中的数据 `user_addresses`
+--
+
+INSERT INTO `user_addresses` (`id`, `user_id`, `address_text`, `is_default`, `updated_at`) VALUES
+(1, 9, '18,jalan bunga,taman bunga,melaka,74535', 1, '2026-01-03 13:58:26'),
+(2, 11, '7,taman oren,oren tambah susu,melaka,75453', 1, '2026-01-03 13:58:26'),
+(3, 12, '18,taman bunga,melaka,76542', 1, '2026-01-03 13:58:26'),
+(4, 15, 'Ayer Keroh|75000|123,jalan merdeka', 1, '2026-01-03 13:58:26'),
+(5, 18, 'Ayer Keroh|75100|17,taman bunga 4/12', 0, '2026-01-03 14:33:26'),
+(9, 18, 'Ayer Keroh|75310|8,taman oren,5/23', 0, '2026-01-03 14:32:32'),
+(11, 18, 'Bandar Melaka|75230|99,taman nine 9/9', 1, '2026-01-03 14:33:26');
+
+-- --------------------------------------------------------
+
+--
 -- 表的结构 `user_db`
 --
 
@@ -188,7 +219,8 @@ INSERT INTO `user_db` (`id`, `name`, `email`, `password`, `phone`, `address`, `c
 (13, 'shane', 'shane@gmail.com', '$2y$10$kbYtPYQxJsHuzzcNzpvCmuIy/Qtfg83RfYCOgQGfARKsuDNkZZ7v6', NULL, NULL, '2025-12-03 16:57:58', '2025-12-03 16:57:58'),
 (14, 'jackson', 'jackson16@gmail.com', '$2y$10$O/BR780RknNnUtBxAZvMbuijC/wAjWpvmRuHjHXCyiTzosLnfiSdy', '', '', '2025-12-08 08:53:28', '2025-12-08 09:04:49'),
 (15, 'test', 'test@gmail.com', '$2y$10$Ztpnyf7PmViK7ew/Ju2Lt.kg6bKB31BslzLjglUJ.KO0K4M0ostA6', '01234567', 'Ayer Keroh|75000|123,jalan merdeka', '2025-12-13 10:22:04', '2025-12-16 07:11:55'),
-(18, 'test', 'iplaygame317@gmail.com', '$2y$10$5pvdZ8nB9N.gv8cAp6Lu5ejFazDH/66CJyvhsyd0m.RHJbq/A2OTC', NULL, NULL, '2025-12-25 09:57:43', '2025-12-31 07:08:31');
+(18, 'test', 'iplaygame317@gmail.com', '$2y$10$2qxwckkyKPDonD4rqis/MODgh1os.yHjG6NV7lKJsIEk0BULgbZby', '01298765453', 'Bandar Melaka|75100|17,taman bunga 4/12', '2025-12-25 09:57:43', '2026-01-03 13:35:18'),
+(19, 'test', 'iplaygame317@example.com', '$2y$10$/OvGfpUHQpI1496rWysBY.o/NOE6Smb9/pqUD3Y/NMmI.QHCdfR0G', NULL, NULL, '2026-01-03 08:41:41', '2026-01-03 08:41:41');
 
 --
 -- 转储表的索引
@@ -233,6 +265,12 @@ ALTER TABLE `password_resets`
   ADD KEY `idx_email` (`email`);
 
 --
+-- 表的索引 `user_addresses`
+--
+ALTER TABLE `user_addresses`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- 表的索引 `user_db`
 --
 ALTER TABLE `user_db`
@@ -259,7 +297,7 @@ ALTER TABLE `categories`
 -- 使用表AUTO_INCREMENT `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Unique message ID', AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Unique message ID', AUTO_INCREMENT=8;
 
 --
 -- 使用表AUTO_INCREMENT `orders`
@@ -271,13 +309,19 @@ ALTER TABLE `orders`
 -- 使用表AUTO_INCREMENT `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
+-- 使用表AUTO_INCREMENT `user_addresses`
+--
+ALTER TABLE `user_addresses`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- 使用表AUTO_INCREMENT `user_db`
 --
 ALTER TABLE `user_db`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- 限制导出的表

@@ -6,7 +6,6 @@
     --bakery-gold: #d4a76a;
     --bakery-bg: #fff7ec;
     --white: #ffffff;
-    --error-red: #dc3545;
 }
 
 * {
@@ -18,7 +17,7 @@
 body {
     background-color: var(--bakery-bg);
     color: #333333;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     padding-top: 85px;
 }
 
@@ -43,7 +42,7 @@ body {
     font-weight: 600;
     font-size: 14px;
     text-decoration: none;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
 .back-link:hover {
@@ -67,7 +66,7 @@ body {
 .info-card {
     background: var(--white);
     border-radius: 15px;
-    padding: 35px;
+    padding: 30px;
     margin-bottom: 25px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
 }
@@ -75,11 +74,11 @@ body {
 .info-card h2 {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     color: var(--bakery-brown);
     font-size: 1.3rem;
     padding-bottom: 10px;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     border-bottom: 2px solid var(--bakery-gold);
 }
 
@@ -103,13 +102,13 @@ body {
 .form-label {
     display: block;
     margin-bottom: 8px;
-    font-weight: 600;
     color: var(--bakery-brown);
+    font-weight: 600;
 }
 
 .required-field .form-label::after {
     content: " *";
-    color: var(--error-red);
+    color: #e74c3c;
 }
 
 .form-input, 
@@ -120,7 +119,7 @@ body {
     border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
 .form-input:focus, 
@@ -132,11 +131,10 @@ body {
 
 .form-textarea {
     resize: vertical;
-    min-height: 100px;
 }
 
 /* ============================================================
-   5. BUTTONS & ACTIONS
+   5. BUTTONS & MESSAGES
    ============================================================ */
 .action-buttons {
     display: flex;
@@ -156,7 +154,7 @@ body {
     font-weight: bold;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: 0.3s;
 }
 
 .btn-primary {
@@ -178,25 +176,17 @@ body {
     background: #5a6268;
 }
 
-/* ============================================================
-   6. ERROR MESSAGES
-   ============================================================ */
-.message-container {
-    max-width: 800px;
-    margin: 20px auto 0;
-    padding: 0 20px;
-}
-
 .error-message {
     background: #f8d7da;
     color: #721c24;
     padding: 15px;
     border-radius: 8px;
-    border-left: 5px solid var(--error-red);
+    border-left: 5px solid #dc3545;
+    margin-bottom: 20px;
 }
 
 /* ============================================================
-   7. FOOTER (页脚)
+   6. FOOTER (页脚)
    ============================================================ */
 footer {
     padding: 40px 0;
@@ -221,19 +211,10 @@ footer {
     color: #d4a76a;
 }
 
-/* ============================================================
-   8. RESPONSIVE
-   ============================================================ */
+
+/* 响应式调整 */
 @media (max-width: 600px) {
-    .form-row {
-        flex-direction: column;
-        gap: 0;
-    }
-    .action-buttons {
-        flex-direction: column;
-    }
-    .btn {
-        width: 100%;
-        justify-content: center;
-    }
+    .form-row { flex-direction: column; gap: 0; }
+    .action-buttons { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
 }

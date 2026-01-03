@@ -1,4 +1,7 @@
 <?php
+/**
+ * manageaddress.php - 地址管理列表页
+ */
 session_start();
 require_once 'config.php';
 
@@ -9,33 +12,55 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-// --- 逻辑：处理设置为默认地址的请求 ---
-if (isset($_GET['set_default'])) {
-    $addressId = $_GET['set_default'];
-    
-    // 1. 先把该用户所有地址设为非默认 (0)
-    $resetQuery = "UPDATE user_addresses SET is_default = 0 WHERE user_id = ?";
-    $pdo->prepare($resetQuery)->execute([$userId]);
-    
-    // 2. 把选中的地址设为默认 (1)
-    $setQuery = "UPDATE user_addresses SET is_default = 1 WHERE id = ? AND user_id = ?";
-    $pdo->prepare($setQuery)->execute([$addressId, $userId]);
-    
-    header("Location: manageaddress.php"); // 刷新页面
+// --- 逻辑：处理删除地址 ---
+if (isset($_GET['delete_id'])) {
+    $deleteId = $_GET['delete_id'];
+    $deleteQuery = "DELETE FROM user_addresses WHERE id = ? AND user_id = ? AND is_default = 0";
+    $pdo->prepare($deleteQuery)->execute([$deleteId, $userId]);
+    header("Location: manageaddress.php");
     exit();
 }
 
-// --- 读取该用户的所有地址 ---
-$query = "SELECT * FROM user_addresses WHERE user_id = ?";
-$stmt = $pdo->prepare($query);
+// --- 逻辑：处理设置为默认地址 ---
+if (isset($_GET['set_default'])) {
+    $addressId = $_GET['set_default'];
+    $pdo->prepare("UPDATE user_addresses SET is_default = 0 WHERE user_id = ?")->execute([$userId]);
+    $pdo->prepare("UPDATE user_addresses SET is_default = 1 WHERE id = ? AND user_id = ?")->execute([$addressId, $userId]);
+    header("Location: manageaddress.php");
+    exit();
+}
+
+$stmt = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC");
 $stmt->execute([$userId]);
 $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+/**
+ * 核心修正：地址解析函数
+ */
+function formatAddress($raw) {
+    if (strpos($raw, '|') !== false) {
+        $parts = explode('|', $raw);
+        // $parts[0] = Area, $parts[1] = Postcode, $parts[2] = Street
+        if (count($parts) >= 3) {
+            $area = ($parts[0] === 'other' && isset($parts[3])) ? $parts[3] : $parts[0];
+            $postcode = $parts[1];
+            $street = $parts[2];
+            
+            // 按照你要求的格式重新组合
+            return htmlspecialchars($street) . ", " . htmlspecialchars($area) . ", Melaka, " . htmlspecialchars($postcode);
+        }
+    }
+    return htmlspecialchars($raw);
+}
+
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Addresses - Bakery House</title>
     <link rel="stylesheet" href="manageaddress.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -44,35 +69,54 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <?php include 'header.php'; ?>
 
-    <main class="manage-address-page">
-        <div class="container">
-            <div class="page-header">
-                <a href="profile.php" class="back-link"><i class="fas fa-arrow-left"></i> Back to Profile</a>
-                <h1>My Addresses</h1>
+    <main class="profile-page">
+        <div class="profile-container">
+            <div class="back-navigation">
+                <a href="profile.php" class="back-link"><i class="fas fa-chevron-left"></i> Back to Profile</a>
             </div>
 
-            <div class="address-grid">
+            <div class="profile-header">
+                <h1>My Addresses</h1>
+                <p>Manage your saved delivery locations</p>
+            </div>
+
+            <div class="address-list">
                 <?php if (empty($addresses)): ?>
-                    <p>No addresses found. Please add one!</p>
+                    <div class="info-card empty-state"><p>No addresses found.</p></div>
                 <?php else: ?>
                     <?php foreach ($addresses as $addr): ?>
-                        <div class="address-card <?php echo $addr['is_default'] ? 'default-border' : ''; ?>">
-                            <div class="card-content">
-                                <p><?php echo htmlspecialchars($addr['address_text']); ?></p>
+                        <div class="info-card address-card <?php echo $addr['is_default'] ? 'is-default' : ''; ?>">
+                            <div class="address-body">
+                                <div class="address-info">
+                                    <div class="address-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                    <div class="address-text"><?php echo formatAddress($addr['address_text']); ?></div>
+                                </div>
                                 
-                                <?php if ($addr['is_default']): ?>
-                                    <span class="badge-default">Current Default</span>
-                                <?php else: ?>
-                                    <a href="manageaddresses.php?set_default=<?php echo $addr['id']; ?>" class="btn-set-default">Set as Default</a>
-                                <?php endif; ?>
+                                <div class="address-actions">
+                                    <?php if ($addr['is_default']): ?>
+                                        <span class="badge-default">Default Address</span>
+                                    <?php else: ?>
+                                        <div class="action-group">
+                                            <a href="manageaddress.php?set_default=<?php echo $addr['id']; ?>" class="btn-action btn-set">Set as Default</a>
+    
+                                            <a href="edit.address.php?id=<?php echo $addr['id']; ?>" class="btn-edit-icon">
+                                              <i class="fas fa-edit"></i>
+                                             </a>
+
+                                            <a href="manageaddress.php?delete_id=<?php echo $addr['id']; ?>" class="btn-delete" onclick="return confirm('Delete this address?')">
+                                              <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-            
-            <div class="add-new-container">
-                <a href="add.address.php" class="btn-add-new"><i class="fas fa-plus"></i> Add New Address</a>
+
+            <div class="add-action">
+                <a href="add.address.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Address</a>
             </div>
         </div>
     </main>
@@ -96,6 +140,7 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </footer>
-    
+
+
 </body>
 </html>
