@@ -1,11 +1,10 @@
 <?php
 /**
- * add_address.php - 添加新地址页面 (增加退回功能)
+ * add_address.php - 添加新地址页面
  */
 session_start();
 require_once 'config.php';
 
-// 1. 验证登录
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
@@ -14,19 +13,27 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 $errors = [];
 
-// 2. 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $address_text = trim($_POST['address_text'] ?? '');
+    $address_area = trim($_POST['address_area'] ?? '');
+    $address_postcode = trim($_POST['address_postcode'] ?? '');
+    $address_line = trim($_POST['address_line'] ?? '');
+    $other_area = trim($_POST['other_area'] ?? '');
 
-    if (empty($address_text)) {
-        $errors[] = "Please enter your full address.";
-    }
+    if (empty($address_area)) { $errors[] = "Please select an area."; }
+    if (empty($address_postcode)) { $errors[] = "Postcode is required."; }
+    if (empty($address_line)) { $errors[] = "Street address is required."; }
 
     if (empty($errors)) {
         try {
+            // 拼接格式：area|postcode|line[|other_area]
+            $fullAddress = $address_area . '|' . $address_postcode . '|' . $address_line;
+            if ($address_area === 'other' && !empty($other_area)) {
+                $fullAddress .= '|' . $other_area;
+            }
+
             $sql = "INSERT INTO user_addresses (user_id, address_text, is_default) VALUES (?, ?, 0)";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$userId, $address_text]);
+            $stmt->execute([$userId, $fullAddress]);
 
             header("Location: manageaddress.php");
             exit();
@@ -43,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Address - Bakery House</title>
-    <link rel="stylesheet" href="add.address.css">
+    <link rel="stylesheet" href="add_address.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -76,13 +83,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Provide your delivery details below</p>
             </div>
 
-            <form action="add_address.php" method="POST" class="edit-form">
+            <form action="add_address.php" method="POST" class="edit-form" id="addressForm">
                 <div class="info-card">
-                    <h2><i class="fas fa-map-marked-alt"></i> Address Details</h2>
+                    <h2><i class="fas fa-map-marker-alt"></i> Delivery Address</h2>
+                    
+                    <div class="form-row">
+                        <div class="form-group-half required-field">
+                            <label class="form-label">Area</label>
+                            <select id="address_area" name="address_area" class="form-input" required onchange="toggleOtherArea()">
+                                <option value="">-- Select Area --</option>
+                                <option value="Bandar Melaka">Bandar Melaka</option>
+                                <option value="Ayer Keroh">Ayer Keroh</option>
+                                <option value="Bukit Beruang">Bukit Beruang</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group-half required-field">
+                            <label class="form-label">Postcode</label>
+                            <input type="text" name="address_postcode" class="form-input" required placeholder="e.g., 75000">
+                        </div>
+                    </div>
                     
                     <div class="form-group required-field">
-                        <label class="form-label">Full Address</label>
-                        <textarea name="address_text" class="form-textarea" required rows="4" placeholder="e.g., 17, Taman Bunga 4/12, Ayer Keroh, 75100 Melaka"></textarea>
+                        <label class="form-label">Street Address</label>
+                        <textarea name="address_line" class="form-textarea" required rows="3" placeholder="House No, Street Name, etc."></textarea>
+                    </div>
+
+                    <div class="form-group" id="other_area_group" style="display: none;">
+                        <label class="form-label">Please Specify Area</label>
+                        <input type="text" name="other_area" class="form-input" placeholder="Enter your specific area">
                     </div>
                 </div>
 
@@ -98,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
-    <footer>
+     <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
@@ -118,5 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </footer>
 
+    <script>
+    function toggleOtherArea() {
+        const areaSelect = document.getElementById('address_area');
+        const otherGroup = document.getElementById('other_area_group');
+        otherGroup.style.display = (areaSelect.value === 'other') ? 'block' : 'none';
+    }
+    </script>
 </body>
 </html>
