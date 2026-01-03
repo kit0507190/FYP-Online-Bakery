@@ -1,8 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const emailInput = document.getElementById('emailInput');
-    const emailError = document.getElementById('emailError');
-
-    // 1. 密码切换显示逻辑
+    // 1. 密码显示切换
     const setupToggle = (btnId, inputId) => {
         const btn = document.getElementById(btnId);
         const input = document.getElementById(inputId);
@@ -17,25 +14,26 @@ document.addEventListener('DOMContentLoaded', function () {
     setupToggle('togglePassword', 'password');
     setupToggle('toggleConfirmPassword', 'confirmPassword');
 
-    // 2. Email 实时验证逻辑 (离开焦点时触发)
+    // 2. Email 实时检查逻辑 (非 alert)
+    const emailInput = document.getElementById('emailInput');
+    const emailError = document.getElementById('emailError');
+
     emailInput.addEventListener('blur', function() {
-        const value = this.value.trim().toLowerCase();
+        const val = this.value.trim().toLowerCase();
         
-        if (value === "") {
-            clearEmailError();
-        } else if (!value.endsWith('@gmail.com')) {
-            // 使用红字提示代替 alert
+        if (val === "") {
+            clearError();
+        } else if (!val.endsWith('@gmail.com')) {
             emailError.textContent = "* Please use a valid @gmail.com address.";
             this.classList.add('input-error');
         } else {
-            clearEmailError();
+            clearError();
         }
     });
 
-    // 3. 用户重新输入时，自动移除红色警告
-    emailInput.addEventListener('input', clearEmailError);
+    emailInput.addEventListener('input', clearError);
 
-    function clearEmailError() {
+    function clearError() {
         emailError.textContent = "";
         emailInput.classList.remove('input-error');
     }

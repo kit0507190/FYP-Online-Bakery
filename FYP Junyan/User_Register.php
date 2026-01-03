@@ -1,9 +1,7 @@
 <?php
-/**
- * User_Register.php - 用户注册页面
- */
 require_once 'config.php';
 
+// 初始化变量
 $errors = [];
 $name = ""; 
 $email = "";
@@ -15,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
 
-    // --- 后端验证逻辑 ---
+    // 服务器端验证逻辑
     if (empty($name) || strlen($name) < 2) {
         $errors[] = "Name must be at least 2 characters.";
     }
@@ -38,20 +36,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (!$agree) {
-        $errors[] = "You must agree to the terms.";
+        $errors[] = "You must agree to the terms and privacy policy.";
     }
 
-    // --- 数据库逻辑 ---
     if (empty($errors)) {
         try {
             $check = $pdo->prepare("SELECT id FROM user_db WHERE email = ?");
             $check->execute([$email]);
+            
             if ($check->rowCount() > 0) {
                 $errors[] = "This email is already registered.";
             } else {
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("INSERT INTO user_db (name, email, password) VALUES (?, ?, ?)");
                 $stmt->execute([$name, $email, $hashed]);
+
                 header("Location: User_Login.php?registered=1");
                 exit();
             }
@@ -87,7 +86,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="form-section">
             <div class="form-header">
                 <h1>Create An Account</h1>
-                <p>Join our community!</p>
+                <p>Join our Bakery House community!</p>
             </div>
 
             <?php if (!empty($errors)): ?>
@@ -103,34 +102,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form action="" method="POST" id="registerForm">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter name">
+                    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter your full name">
                 </div>
 
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" name="email" id="emailInput" value="<?= htmlspecialchars($email) ?>" required placeholder="user@gmail.com">
+                    <input type="email" name="email" id="emailInput" value="<?= htmlspecialchars($email) ?>" required placeholder="Enter your email">
                     <span class="error-msg" id="emailError"></span>
                 </div>
 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" name="password" id="password" required placeholder="8+ characters">
+                    <input type="password" name="password" id="password" required placeholder="8+ chars (letters & numbers)">
                     <span class="password-toggle" id="togglePassword">Show</span>
                 </div>
 
                 <div class="form-group">
                     <label>Confirm Password</label>
-                    <input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm password">
+                    <input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm your password">
                     <span class="password-toggle" id="toggleConfirmPassword">Show</span>
                 </div>
 
                 <div class="terms-group">
-                    <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                    <label for="agreeTerms">I agree to the <a href="#">Terms</a> & <a href="#">Privacy</a></label>
+                    <input type="checkbox" id="agreeTerms" name="agreeTerms" <?= isset($_POST['agreeTerms']) ? 'checked' : '' ?> required>
+                    <label for="agreeTerms">I agree to the <a href="#" id="termsLink">Terms of Service</a> and <a href="#" id="privacyLink">Privacy Policy</a></label>
                 </div>
 
                 <button type="submit" class="btn-submit">Create Account</button>
-                <div class="login-link">Already have an account? <a href="User_Login.php">Sign In</a></div>
+
+                <div class="login-link">
+                    Already have an account? <a href="User_Login.php">Sign In</a>
+                </div>
 
                 <div class="cake-decoration">
                     <div class="cake-piece"></div>
