@@ -40,16 +40,20 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 function formatAddress($raw) {
     if (strpos($raw, '|') !== false) {
         $parts = explode('|', $raw);
-        // 期望格式: Area|Postcode|Street|[Other]
+        // $parts[0] = Area, $parts[1] = Postcode, $parts[2] = Street
         if (count($parts) >= 3) {
             $area = ($parts[0] === 'other' && isset($parts[3])) ? $parts[3] : $parts[0];
             $postcode = $parts[1];
             $street = $parts[2];
-            return htmlspecialchars($street) . "<br>" . htmlspecialchars($area) . ", " . htmlspecialchars($postcode) . " Melaka";
+            
+            // 按照你要求的格式重新组合
+            return htmlspecialchars($street) . ", " . htmlspecialchars($area) . ", Melaka, " . htmlspecialchars($postcode);
         }
     }
     return htmlspecialchars($raw);
 }
+
+
 ?>
 
 <!DOCTYPE html>
