@@ -185,6 +185,33 @@ body {
     margin-bottom: 20px;
 }
 
+/* ============================================================
+   6. FOOTER (页脚)
+   ============================================================ */
+footer {
+    padding: 40px 0;
+    background-color: #5a3921;
+    color: white;
+    text-align: center;
+}
+
+.footer-logo img {
+    height: 60px;
+    margin-bottom: 15px;
+}
+
+.footer-links a {
+    margin: 0 10px;
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: #d4a76a;
+}
+
+
 /* 响应式调整 */
 @media (max-width: 600px) {
     .form-row { flex-direction: column; gap: 0; }
