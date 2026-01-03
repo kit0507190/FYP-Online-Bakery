@@ -17,23 +17,37 @@ $userId = $_SESSION['user_id'];
 
 // --- 3. 从数据库读取最新资料 ---
 try {
+    // 首先读取基础用户信息
     $query = "SELECT name, email, phone, address, created_at FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user) {
-        // 将数据库信息存入变量，并转义防止安全问题
         $name = htmlspecialchars($user['name']);
         $email = htmlspecialchars($user['email']);
         $phone = htmlspecialchars($user['phone'] ?? 'Not provided');
         $memberSince = date("F j, Y", strtotime($user['created_at']));
         
-        // 解析地址 (处理 | 分隔符)
+        // --- 核心修复：读取 user_addresses 表里的默认地址 ---
+        $addrQuery = "SELECT address_text FROM user_addresses WHERE user_id = ? AND is_default = 1 LIMIT 1";
+        $addrStmt = $pdo->prepare($addrQuery);
+        $addrStmt->execute([$userId]);
+        $defaultAddr = $addrStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($defaultAddr) {
+            // 如果在 user_addresses 找到了默认地址，使用它
+            $raw_address = $defaultAddr['address_text'];
+        } else {
+            // 如果没找到，则回退使用 user_db 里的旧地址（兼容性考虑）
+            $raw_address = $user['address'];
+        }
+
+        // --- 解析地址显示逻辑 (保持你原有的逻辑不变) ---
         $address_display = "No default address set";
-        if (!empty($user['address'])) {
-            if (strpos($user['address'], '|') !== false) {
-                $parts = explode('|', $user['address']);
+        if (!empty($raw_address)) {
+            if (strpos($raw_address, '|') !== false) {
+                $parts = explode('|', $raw_address);
                 if (count($parts) >= 3) {
                     $addrLine = htmlspecialchars($parts[2]);
                     $addrArea = ($parts[0] === 'other' && isset($parts[3])) ? htmlspecialchars($parts[3]) : htmlspecialchars($parts[0]);
@@ -41,7 +55,7 @@ try {
                     $address_display = "$addrLine<br>$addrArea, $addrPost Melaka<br>Malaysia";
                 }
             } else {
-                $address_display = htmlspecialchars($user['address']);
+                $address_display = htmlspecialchars($raw_address);
             }
         }
         $isLoggedIn = true;
