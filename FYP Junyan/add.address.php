@@ -1,6 +1,6 @@
 <?php
 /**
- * add_address.php - 添加新地址页面
+ * add.address.php - 添加新地址页面
  */
 session_start();
 require_once 'config.php';
@@ -35,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$userId, $fullAddress]);
 
+            // --- 关键修正：跳转回 manageaddress.php ---
             header("Location: manageaddress.php");
             exit();
         } catch (PDOException $e) {
@@ -50,8 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Address - Bakery House</title>
-    <link rel="stylesheet" href="add.address.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="add_address.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     
@@ -71,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <main class="profile-page">
         <div class="profile-container">
-            
             <div class="back-navigation">
                 <a href="manageaddress.php" class="back-link">
                     <i class="fas fa-chevron-left"></i> Back to Manage Addresses
@@ -83,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Provide your delivery details below</p>
             </div>
 
-            <form action="add_address.php" method="POST" class="edit-form" id="addressForm">
+            <form action="add.address.php" method="POST" class="edit-form" id="addressForm">
                 <div class="info-card">
                     <h2><i class="fas fa-map-marker-alt"></i> Delivery Address</h2>
                     
@@ -127,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
-     <footer>
+    <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
@@ -146,6 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </footer>
+
 
     <script>
     function toggleOtherArea() {

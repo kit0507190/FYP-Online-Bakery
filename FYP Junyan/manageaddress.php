@@ -1,6 +1,6 @@
 <?php
 /**
- * manageaddress.php - 地址管理列表页 (已添加删除功能)
+ * manageaddress.php - 地址管理列表页
  */
 session_start();
 require_once 'config.php';
@@ -15,11 +15,8 @@ $userId = $_SESSION['user_id'];
 // --- 逻辑：处理删除地址 ---
 if (isset($_GET['delete_id'])) {
     $deleteId = $_GET['delete_id'];
-    
-    // 安全检查：只有该用户的非默认地址可以被删除
     $deleteQuery = "DELETE FROM user_addresses WHERE id = ? AND user_id = ? AND is_default = 0";
     $pdo->prepare($deleteQuery)->execute([$deleteId, $userId]);
-    
     header("Location: manageaddress.php");
     exit();
 }
@@ -27,31 +24,28 @@ if (isset($_GET['delete_id'])) {
 // --- 逻辑：处理设置为默认地址 ---
 if (isset($_GET['set_default'])) {
     $addressId = $_GET['set_default'];
-    
-    // 1. 先重置所有地址为非默认
     $pdo->prepare("UPDATE user_addresses SET is_default = 0 WHERE user_id = ?")->execute([$userId]);
-    
-    // 2. 设置选中的地址为默认
     $pdo->prepare("UPDATE user_addresses SET is_default = 1 WHERE id = ? AND user_id = ?")->execute([$addressId, $userId]);
-    
     header("Location: manageaddress.php");
     exit();
 }
 
-// --- 获取所有地址 ---
 $stmt = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC");
 $stmt->execute([$userId]);
 $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /**
- * 格式化地址显示 (兼容 area|postcode|line 格式)
+ * 核心修正：地址解析函数
  */
 function formatAddress($raw) {
     if (strpos($raw, '|') !== false) {
         $parts = explode('|', $raw);
+        // 期望格式: Area|Postcode|Street|[Other]
         if (count($parts) >= 3) {
             $area = ($parts[0] === 'other' && isset($parts[3])) ? $parts[3] : $parts[0];
-            return htmlspecialchars($parts[2]) . "<br>" . htmlspecialchars($area) . ", " . htmlspecialchars($parts[1]) . " Melaka";
+            $postcode = $parts[1];
+            $street = $parts[2];
+            return htmlspecialchars($street) . "<br>" . htmlspecialchars($area) . ", " . htmlspecialchars($postcode) . " Melaka";
         }
     }
     return htmlspecialchars($raw);
@@ -73,11 +67,8 @@ function formatAddress($raw) {
 
     <main class="profile-page">
         <div class="profile-container">
-            
             <div class="back-navigation">
-                <a href="profile.php" class="back-link">
-                    <i class="fas fa-chevron-left"></i> Back to Profile
-                </a>
+                <a href="profile.php" class="back-link"><i class="fas fa-chevron-left"></i> Back to Profile</a>
             </div>
 
             <div class="profile-header">
@@ -87,20 +78,14 @@ function formatAddress($raw) {
 
             <div class="address-list">
                 <?php if (empty($addresses)): ?>
-                    <div class="info-card empty-state">
-                        <p>No addresses found. Start by adding a new one!</p>
-                    </div>
+                    <div class="info-card empty-state"><p>No addresses found.</p></div>
                 <?php else: ?>
                     <?php foreach ($addresses as $addr): ?>
                         <div class="info-card address-card <?php echo $addr['is_default'] ? 'is-default' : ''; ?>">
                             <div class="address-body">
                                 <div class="address-info">
-                                    <div class="address-icon">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                    </div>
-                                    <div class="address-text">
-                                        <?php echo formatAddress($addr['address_text']); ?>
-                                    </div>
+                                    <div class="address-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                    <div class="address-text"><?php echo formatAddress($addr['address_text']); ?></div>
                                 </div>
                                 
                                 <div class="address-actions">
@@ -108,12 +93,8 @@ function formatAddress($raw) {
                                         <span class="badge-default">Default Address</span>
                                     <?php else: ?>
                                         <div class="action-group">
-                                            <a href="manageaddress.php?set_default=<?php echo $addr['id']; ?>" class="btn-action btn-set">
-                                                Set as Default
-                                            </a>
-                                            <a href="manageaddress.php?delete_id=<?php echo $addr['id']; ?>" 
-                                               class="btn-delete" 
-                                               onclick="return confirm('Are you sure you want to delete this address?')">
+                                            <a href="manageaddress.php?set_default=<?php echo $addr['id']; ?>" class="btn-action btn-set">Set as Default</a>
+                                            <a href="manageaddress.php?delete_id=<?php echo $addr['id']; ?>" class="btn-delete" onclick="return confirm('Delete this address?')">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
                                         </div>
@@ -126,9 +107,7 @@ function formatAddress($raw) {
             </div>
 
             <div class="add-action">
-                <a href="add.address.php" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Add New Address
-                </a>
+                <a href="add.address.php" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Address</a>
             </div>
         </div>
     </main>
@@ -152,6 +131,7 @@ function formatAddress($raw) {
             </div>
         </div>
     </footer>
+
 
 </body>
 </html>
