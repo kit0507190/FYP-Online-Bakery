@@ -1,6 +1,80 @@
-admin_auth<?php
+<?php
+// manage_products.php
+
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
 require_once 'config.php';  // Main DB connection
+
+// Handle Add Product and Delete at the top - before any output
+$error_message = '';  // To store errors
+$success = false;  // To track success
+
+// Handle Add Product
+if (isset($_POST['add_product'])) {
+    $name = trim($_POST['name']);
+    $price = (float)$_POST['price'];
+    $category_id = (int)$_POST['category_id'];
+    $stock = (int)$_POST['stock'];
+    $desc = trim($_POST['description']);
+
+    $image = '';
+    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
+        $allowed = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif'];
+        $filename = $_FILES['image']['name'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+
+        if (!array_key_exists($ext, $allowed)) {
+            $error_message = 'Error: Only JPG, JPEG, PNG, GIF allowed';
+        } elseif ($_FILES['image']['size'] > 3 * 1024 * 1024) { // 3MB max
+            $error_message = 'Error: File too large (max 3MB)';
+        } else {
+            // Ensure 'uploads' folder exists and is writable
+            if (!is_dir('uploads')) {
+                mkdir('uploads', 0755, true);  // Create folder if not exists
+            }
+
+            $newname = uniqid('prod_') . '.' . $ext;
+            $target = 'uploads/' . $newname;
+
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $target)) {
+                $image = $newname;
+            } else {
+                $error_message = 'Error uploading image. Check folder permissions.';
+            }
+        }
+    }
+
+    if (empty($error_message)) {
+        try {
+            $stmt = $pdo->prepare("INSERT INTO products (name, price, category_id, stock, description, image) 
+                                   VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$name, $price, $category_id, $stock, $desc, $image]);
+            header("Location: manage_products.php?success=add");
+            exit();
+        } catch (PDOException $e) {
+            $error_message = 'Database error adding product: ' . $e->getMessage();
+        }
+    }
+}
+
+// Handle Delete
+if (isset($_GET['delete'])) {
+    $id = (int)$_GET['delete'];
+    try {
+        $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
+        $stmt->execute([$id]);
+        $image = $stmt->fetchColumn();
+
+        if ($image && file_exists('uploads/' . $image)) {
+            unlink('uploads/' . $image);
+        }
+
+        $pdo->prepare("DELETE FROM products WHERE id = ?")->execute([$id]);
+        header("Location: manage_products.php?success=delete");
+        exit();
+    } catch (PDOException $e) {
+        $error_message = 'Database error deleting product: ' . $e->getMessage();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -20,7 +94,7 @@ require_once 'config.php';  // Main DB connection
         <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
             (<span class="role-highlight"><?= ucfirst(str_replace('_', ' ', $current_admin['role'])) ?></span>)
         </span>
-        <a href="admin_logout.php" class="logout">Logout</a>
+        <a href="logout.php" class="logout">Logout</a>
     </div>
 </header>
 
@@ -36,14 +110,15 @@ require_once 'config.php';  // Main DB connection
             <li><a href="manage_admins.php">Manage Admins</a></li>
             <li><a href="reports.php">Reports</a></li>
         <?php endif; ?>
-
     </ul>
 </nav>
 
 <main class="main">
-    <div class="welcome-msg">
-        Manage your bakery products — add new items, update details, or remove discontinued ones.
-    </div>
+    <?php if (!empty($error_message)): ?>
+        <div class="alert error" style="margin-bottom: 2rem; padding: 1rem; background: #ffebee; color: #c62828; border-radius: 8px;">
+            <?= htmlspecialchars($error_message) ?>
+        </div>
+    <?php endif; ?>
 
     <?php if (isset($_GET['success'])): ?>
         <div class="alert success" style="margin-bottom: 2rem; padding: 1rem; background: #d4edda; color: #155724; border-radius: 8px;">
@@ -149,66 +224,6 @@ require_once 'config.php';  // Main DB connection
         </table>
     </div>
 </main>
-
-<?php
-// Handle Add Product
-if (isset($_POST['add_product'])) {
-    $name = trim($_POST['name']);
-    $price = $_POST['price'];
-    $category_id = $_POST['category_id'];
-    $stock = $_POST['stock'];
-    $desc = trim($_POST['description']);
-
-    $image = '';
-    if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-        $allowed = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif'];
-        $filename = $_FILES['image']['name'];
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-
-        if (!array_key_exists($ext, $allowed)) {
-            echo "<script>alert('Error: Only JPG, JPEG, PNG, GIF allowed');</script>";
-        } elseif ($_FILES['image']['size'] > 3 * 1024 * 1024) { // 3MB max
-            echo "<script>alert('Error: File too large (max 3MB)');</script>";
-        } else {
-            $newname = uniqid('prod_') . '.' . $ext;
-            if (move_uploaded_file($_FILES['image']['tmp_name'], 'uploads/' . $newname)) {
-                $image = $newname;
-            } else {
-                echo "<script>alert('Error uploading image');</script>";
-            }
-        }
-    }
-
-    try {
-        $stmt = $pdo->prepare("INSERT INTO products (name, price, category_id, stock, description, image) 
-                               VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$name, $price, $category_id, $stock, $desc, $image]);
-        header("Location: manage_products.php?success=add");
-        exit();
-    } catch (Exception $e) {
-        echo "<script>alert('Error adding product');</script>";
-    }
-}
-
-// Handle Delete
-if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
-    try {
-        // Get image to delete file
-        $image = $pdo->prepare("SELECT image FROM products WHERE id = ?")->execute([$id]);
-        $image = $pdo->query("SELECT image FROM products WHERE id = $id")->fetchColumn();
-        if ($image && file_exists('uploads/' . $image)) {
-            unlink('uploads/' . $image);
-        }
-
-        $pdo->prepare("DELETE FROM products WHERE id = ?")->execute([$id]);
-        header("Location: manage_products.php?success=delete");
-        exit();
-    } catch (Exception $e) {
-        echo "<script>alert('Error deleting product');</script>";
-    }
-}
-?>
 
 <script>
 function blockNegative(input) {
