@@ -1,11 +1,12 @@
 /* ============================================================
-   1. VARIABLES & RESET
+   1. VARIABLES & RESET (定义变量与基础重置)
    ============================================================ */
 :root {
     --bakery-brown: #5a3921;
     --bakery-gold: #d4a76a;
     --bakery-bg: #fff7ec;
     --white: #ffffff;
+    --danger-red: #e74c3c; /* 新增删除颜色 */
 }
 
 * {
@@ -22,7 +23,7 @@ body {
 }
 
 /* ============================================================
-   2. LAYOUT CONTAINERS
+   2. LAYOUT CONTAINERS (布局容器)
    ============================================================ */
 .profile-container {
     max-width: 800px;
@@ -69,7 +70,6 @@ body {
     padding: 25px;
     margin-bottom: 20px;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease;
 }
 
 .empty-state {
@@ -79,7 +79,7 @@ body {
 }
 
 /* ============================================================
-   4. ADDRESS CARD SPECIFICS
+   4. ADDRESS CARD SPECIFICS (地址卡片细节)
    ============================================================ */
 .address-card.is-default {
     border: 2px solid var(--bakery-gold);
@@ -112,8 +112,14 @@ body {
 }
 
 /* ============================================================
-   5. BUTTONS & BADGES
+   5. BUTTONS, BADGES & ACTIONS (按钮与标签控制)
    ============================================================ */
+.action-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .badge-default {
     background-color: var(--bakery-gold);
     color: var(--white);
@@ -141,6 +147,17 @@ body {
 .btn-set:hover {
     background-color: var(--bakery-brown);
     color: var(--white);
+}
+
+.btn-delete {
+    color: #bbbbbb;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+    text-decoration: none;
+}
+
+.btn-delete:hover {
+    color: var(--danger-red);
 }
 
 .add-action {
@@ -193,7 +210,7 @@ footer {
 }
 
 /* ============================================================
-   7. RESPONSIVE
+   7. RESPONSIVE (响应式)
    ============================================================ */
 @media (max-width: 600px) {
     .address-body {
@@ -201,8 +218,9 @@ footer {
         align-items: flex-start;
     }
     
-    .address-actions {
+    .action-group {
         width: 100%;
-        text-align: right;
+        justify-content: flex-end;
+        margin-top: 10px;
     }
 }

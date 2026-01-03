@@ -1,6 +1,6 @@
 <?php
 /**
- * manageaddress.php - 地址管理列表页
+ * manageaddress.php - 地址管理列表页 (已添加删除功能)
  */
 session_start();
 require_once 'config.php';
@@ -11,6 +11,18 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $userId = $_SESSION['user_id'];
+
+// --- 逻辑：处理删除地址 ---
+if (isset($_GET['delete_id'])) {
+    $deleteId = $_GET['delete_id'];
+    
+    // 安全检查：只有该用户的非默认地址可以被删除
+    $deleteQuery = "DELETE FROM user_addresses WHERE id = ? AND user_id = ? AND is_default = 0";
+    $pdo->prepare($deleteQuery)->execute([$deleteId, $userId]);
+    
+    header("Location: manageaddress.php");
+    exit();
+}
 
 // --- 逻辑：处理设置为默认地址 ---
 if (isset($_GET['set_default'])) {
@@ -95,9 +107,16 @@ function formatAddress($raw) {
                                     <?php if ($addr['is_default']): ?>
                                         <span class="badge-default">Default Address</span>
                                     <?php else: ?>
-                                        <a href="manageaddress.php?set_default=<?php echo $addr['id']; ?>" class="btn-action btn-set">
-                                            Set as Default
-                                        </a>
+                                        <div class="action-group">
+                                            <a href="manageaddress.php?set_default=<?php echo $addr['id']; ?>" class="btn-action btn-set">
+                                                Set as Default
+                                            </a>
+                                            <a href="manageaddress.php?delete_id=<?php echo $addr['id']; ?>" 
+                                               class="btn-delete" 
+                                               onclick="return confirm('Are you sure you want to delete this address?')">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </a>
+                                        </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
@@ -114,7 +133,7 @@ function formatAddress($raw) {
         </div>
     </main>
 
-     <footer>
+    <footer>
         <div class="container">
             <div class="footer-content">
                 <div class="footer-logo">
