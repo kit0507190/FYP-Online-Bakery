@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-// 初始化变量，防止页面第一次加载时出现 "Undefined variable" 警告，并用于保留用户输入
+// 初始化变量，防止页面第一次加载时出现警告，并用于保留用户输入
 $errors = [];
 $name = ""; 
 $email = "";
@@ -14,30 +14,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
 
-    // ====== 服务器端验证逻辑 (Server-side Validation) ======
+    // ====== 服务器端验证逻辑 ======
 
-    // 1. 验证姓名长度
+    // 1. 验证姓名
     if (empty($name) || strlen($name) < 2) {
         $errors[] = "Name must be at least 2 characters.";
     }
 
-    // 2. 验证 Email 格式及真实性
+    // 2. 验证 Email 格式及 Gmail 后缀白名单
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
-        // 提取域名并检查该域名的 MX 记录（邮件交换记录），确保域名真实存在
-        $domain = substr(strrchr($email, "@"), 1);
-        if (!checkdnsrr($domain, "MX")) {
-            $errors[] = "The email domain '@$domain' does not exist. Please use a real email.";
+        // 提取域名并转换为小写进行比对
+        $domain = strtolower(substr(strrchr($email, "@"), 1));
+        if ($domain !== 'gmail.com') {
+            $errors[] = "Registration is only allowed with a @gmail.com account.";
         }
     }
 
-    // 3. 验证密码强度 (至少8位且包含字母和数字)
+    // 3. 验证密码强度
     if (strlen($password) < 8 || !preg_match("/[A-Za-z]/", $password) || !preg_match("/[0-9]/", $password)) {
         $errors[] = "Password must be 8+ chars with letters & numbers.";
     }
 
-    // 4. 验证两次密码是否一致
+    // 4. 验证两次密码一致
     if ($password !== $confirm) {
         $errors[] = "Passwords do not match.";
     }
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "You must agree to the terms and privacy policy.";
     }
 
-    // 6. 检查数据库中 Email 是否已重复
+    // 6. 数据库操作
     if (empty($errors)) {
         try {
             $check = $pdo->prepare("SELECT id FROM user_db WHERE email = ?");
@@ -56,12 +56,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($check->rowCount() > 0) {
                 $errors[] = "This email is already registered.";
             } else {
-                // 验证全部通过，对密码进行加密并存入数据库
                 $hashed = password_hash($password, PASSWORD_DEFAULT);
                 $stmt = $pdo->prepare("INSERT INTO user_db (name, email, password) VALUES (?, ?, ?)");
                 $stmt->execute([$name, $email, $hashed]);
 
-                // 注册成功，跳转到登录页
+                // 注册成功跳转
                 header("Location: User_Login.php?registered=1");
                 exit();
             }
@@ -118,7 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="form-group">
                     <label>Email Address</label>
-                    <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" required placeholder="Enter your email">
+                    <input type="email" name="email" id="emailInput" value="<?= htmlspecialchars($email) ?>" required placeholder="Must be @gmail.com">
                 </div>
 
                 <div class="form-group">

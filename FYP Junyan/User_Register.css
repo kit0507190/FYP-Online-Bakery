@@ -1,6 +1,3 @@
-/* ============================================================
-   1. GLOBAL STYLES (全局样式)
-   ============================================================ */
 * {
     margin: 0;
     padding: 0;
@@ -17,9 +14,6 @@ body {
     padding: 20px;
 }
 
-/* ============================================================
-   2. MAIN CONTAINER (主容器)
-   ============================================================ */
 .container {
     display: flex;
     width: 100%;
@@ -28,12 +22,8 @@ body {
     border-radius: 25px;
     box-shadow: 0 15px 45px rgba(90, 57, 33, 0.12);
     overflow: hidden;
-    min-height: 650px;
 }
 
-/* ============================================================
-   3. LEFT LOGO SECTION (左侧 Logo 区域)
-   ============================================================ */
 .logo-section {
     flex: 1;
     background: linear-gradient(145deg, #d4a574, #b8864e);
@@ -55,118 +45,56 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     border: 5px solid rgba(255, 255, 255, 0.3);
 }
 
 .logo-image img {
     width: 100%;
-     height: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
-.logo-text {
-    font-size: 34px;
-    font-weight: 800;
-    margin-bottom: 5px;
-    letter-spacing: 1px;
-}
-
-.tagline {
-    font-size: 18px;
-    font-weight: 500;
-    opacity: 0.9;
-}
+.logo-text { font-size: 34px; font-weight: 800; }
+.tagline { font-size: 18px; opacity: 0.9; }
 
 .slogan-box {
     margin-top: 35px;
     background: rgba(255, 255, 255, 0.12);
     padding: 20px;
     border-radius: 15px;
-    backdrop-filter: blur(5px);
 }
 
-/* ============================================================
-   4. RIGHT FORM SECTION (右侧表单区域)
-   ============================================================ */
 .form-section {
     flex: 1.2;
     padding: 55px 65px;
     background-color: #ffffff;
 }
 
-.form-header {
-    text-align: center;
-    margin-bottom: 35px;
-}
+.form-header { text-align: center; margin-bottom: 35px; }
+.form-header h1 { color: #5a3921; font-size: 30px; }
 
-.form-header h1 {
-    color: #5a3921;
-    font-size: 30px;
-    font-weight: 700;
-}
-
-.form-header p {
-    color: #8c7b6d;
-    margin-top: 5px;
-}
-
-/* --- Error Messages (错误提示) --- */
 .error-container {
     background: #fff5f5;
-    border: 1px solid #feb2b2;
     border-left: 5px solid #f56565;
     padding: 15px;
     margin-bottom: 25px;
     border-radius: 12px;
 }
 
-.error-list {
-    list-style: none;
-}
+.error-list { list-style: none; color: #c53030; font-size: 14px; font-weight: 600; }
 
-.error-list li {
-    color: #c53030;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 5px;
-}
-
-.error-icon {
-    margin-right: 5px;
-}
-
-/* --- Form Elements (表单元素) --- */
-.form-group {
-    margin-bottom: 22px;
-    position: relative;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #5a3921;
-    font-weight: 700;
-    font-size: 14px;
-}
-
+.form-group { margin-bottom: 22px; position: relative; }
+.form-group label { display: block; margin-bottom: 8px; color: #5a3921; font-weight: 700; }
 .form-group input {
     width: 100%;
     padding: 13px 18px;
     border: 2px solid #f0efed;
     border-radius: 14px;
     background: #fafafa;
-    font-size: 15px;
-    transition: all 0.3s ease;
 }
 
-.form-group input:focus {
-    border-color: #d4a574;
-    background: #fff;
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(212, 165, 116, 0.1);
-}
+.form-group input:focus { border-color: #d4a574; outline: none; }
 
 .password-toggle {
     position: absolute;
@@ -176,25 +104,8 @@ body {
     font-size: 12px;
     font-weight: 800;
     cursor: pointer;
-    text-transform: uppercase;
 }
 
-.terms-group {
-    margin: 25px 0;
-    font-size: 13.5px;
-    color: #6d5a4a;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.terms-group a {
-    color: #d4a574;
-    font-weight: 800;
-    text-decoration: none;
-}
-
-/* --- Buttons (按钮) --- */
 .btn-submit {
     width: 100%;
     padding: 16px;
@@ -203,114 +114,13 @@ body {
     border: none;
     border-radius: 14px;
     font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(212, 165, 116, 0.25);
-    transition: transform 0.2s;
-}
-
-.btn-submit:hover {
-    transform: translateY(-2px);
-    background: #b8864e;
-}
-
-.login-link {
-    text-align: center;
-    margin-top: 25px;
-    font-size: 14px;
-    color: #8c7b6d;
-}
-
-.login-link a {
-    color: #d4a574;
-    font-weight: 800;
-    text-decoration: none;
-}
-
-/* ============================================================
-   5. DECORATIONS (装饰元素 - 修复为横向一排)
-   ============================================================ */
-.cake-decoration {
-    display: flex;            /* 关键：使用 Flex 布局 */
-    justify-content: center;   /* 居中对齐 */
-    gap: 10px;                 /* 元素之间的间距 */
-    margin-top: 30px;
-}
-
-.cake-piece {
-    width: 20px;
-    height: 10px;
-    background: #d4a574;
-    border-radius: 50% 50% 0 0;
-}
-
-.cake-piece:nth-child(2) { background: #b8864e; }
-.cake-piece:nth-child(3) { background: #d4a574; }
-.cake-piece:nth-child(4) { background: #b8864e; }
-
-/* ============================================================
-   6. MODAL STYLES (弹窗样式)
-   ============================================================ */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-}
-
-.modal-content {
-    background: #fff;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 550px;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
-}
-
-.modal-header {
-    background: #d4a574;
-    color: #fff;
-    padding: 20px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.close-modal {
-    cursor: pointer;
-    font-size: 30px;
-    line-height: 1;
-}
-
-.modal-body {
-    padding: 30px;
-    max-height: 400px;
-    overflow-y: auto;
-    color: #5a3921;
-    line-height: 1.8;
-}
-
-.modal-footer {
-    padding: 20px;
-    text-align: right;
-    background: #fdf6f0;
-}
-
-.btn-close-modal {
-    background: #d4a574;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: bold;
     cursor: pointer;
 }
+
+.cake-decoration { display: flex; justify-content: center; gap: 10px; margin-top: 30px; }
+.cake-piece { width: 20px; height: 10px; background: #d4a574; border-radius: 50% 50% 0 0; }
+
+.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); }
+.modal-content { background: #fff; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 550px; border-radius: 24px; overflow: hidden; }
+.modal-header { background: #d4a574; color: #fff; padding: 20px; display: flex; justify-content: space-between; }
+.modal-body { padding: 30px; max-height: 400px; overflow-y: auto; }

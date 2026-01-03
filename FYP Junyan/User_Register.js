@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // --- 1. 密码显示/隐藏切换逻辑 ---
+    // --- 1. 密码切换逻辑 ---
     const setupToggle = (btnId, inputId) => {
         const btn = document.getElementById(btnId);
         const input = document.getElementById(inputId);
@@ -14,26 +14,28 @@ document.addEventListener('DOMContentLoaded', function () {
     setupToggle('togglePassword', 'password');
     setupToggle('toggleConfirmPassword', 'confirmPassword');
 
-    // --- 2. 弹窗动态内容逻辑 ---
+    // --- 2. 邮箱后缀实时检查 ---
+    const emailInput = document.getElementById('emailInput');
+    if (emailInput) {
+        emailInput.addEventListener('blur', function() {
+            const emailValue = this.value.trim().toLowerCase();
+            if (emailValue !== "" && !emailValue.endsWith('@gmail.com')) {
+                alert("Please use a valid @gmail.com address.");
+                this.style.borderColor = "#f56565";
+            } else {
+                this.style.borderColor = "#f0efed";
+            }
+        });
+    }
+
+    // --- 3. 弹窗逻辑 ---
     const modal = document.getElementById('policyModal');
     const title = document.getElementById('policyTitle');
     const body = document.getElementById('policyBody');
 
     const contents = {
-        terms: `
-            <h4>1. Acceptance</h4>
-            <p>By creating an account at Bakery House, you agree to comply with our community standards and respect our staff.</p>
-            <h4>2. Account</h4>
-            <p>You are responsible for maintaining the confidentiality of your account password.</p>
-            <h4>3. Orders</h4>
-            <p>Orders made through this platform are subject to product availability.</p>
-        `,
-        privacy: `
-            <h4>1. Data Collection</h4>
-            <p>We only collect your name and email to manage your account and process your orders.</p>
-            <h4>2. Security</h4>
-            <p>We implement security measures to protect your personal data from unauthorized access.</p>
-        `
+        terms: `<h4>1. Acceptance</h4><p>By creating an account, you agree to our community standards.</p>`,
+        privacy: `<h4>1. Data Collection</h4><p>We only collect your email to manage your account.</p>`
     };
 
     document.getElementById('termsLink').onclick = (e) => {
@@ -50,11 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.style.display = 'block';
     };
 
-    // 关闭弹窗
     const close = () => modal.style.display = 'none';
     document.querySelector('.close-modal').onclick = close;
     document.getElementById('modalCloseBtn').onclick = close;
-    
-    // 点击遮罩层关闭
     window.onclick = (e) => { if (e.target === modal) close(); };
 });
