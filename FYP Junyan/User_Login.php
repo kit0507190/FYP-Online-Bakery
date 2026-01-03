@@ -77,7 +77,6 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
                         <img src="Bakery House Logo.png" alt="Bakery House Logo">
                     </div>
                 </a>
-                
                 <h2 class="logo-text">Bakery House</h2>
                 <p class="tagline">Sweet & Delicious</p>
                 <div class="slogan-box">
@@ -124,7 +123,7 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
                 <button type="submit" class="btn-submit">Sign In</button>
 
                 <div class="login-link">
-                    Don't have an account? <a href="User_Register.php">Create Account</a>
+                    Don't have an account? <a href="User_Register.php" class="create-account-link">Create Account</a>
                 </div>
 
                 <div class="cake-decoration">
@@ -133,7 +132,6 @@ $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
                     <div class="cake-piece"></div>
                     <div class="cake-piece"></div>
                 </div>
-
             </form>
         </div>
     </div>

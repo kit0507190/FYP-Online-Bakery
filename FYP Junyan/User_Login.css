@@ -1,5 +1,5 @@
 /* ============================================================
-   1. GLOBAL & CONTAINER
+   1. GLOBAL RESET (全局重置)
    ============================================================ */
 * {
     margin: 0;
@@ -8,7 +8,7 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #fdf6f0;
     min-height: 100vh;
     display: flex;
@@ -17,6 +17,9 @@ body {
     padding: 20px;
 }
 
+/* ============================================================
+   2. MAIN LAYOUT (主容器布局)
+   ============================================================ */
 .container {
     display: flex;
     width: 100%;
@@ -28,24 +31,24 @@ body {
 }
 
 /* ============================================================
-   2. LOGO SECTION (LEFT)
+   3. LOGO SECTION (左侧展示区)
    ============================================================ */
 .logo-section {
     flex: 1;
-    background: linear-gradient(145deg, #d4a574, #b8864e);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 40px;
+    background: linear-gradient(145deg, #d4a574, #b8864e);
     color: #fff;
     text-align: center;
 }
 
 .logo-image-link {
+    margin-bottom: 20px;
     text-decoration: none;
     transition: transform 0.3s ease;
-    margin-bottom: 20px;
 }
 
 .logo-image-link:hover {
@@ -55,29 +58,27 @@ body {
 .logo-image {
     width: 200px;
     height: 200px;
-    border-radius: 50%;
-    background-color: white;
-    margin: 0 auto 20px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background-color: white;
+    border: 5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
     overflow: hidden;
-    border: 5px solid rgba(255, 255, 255, 0.3);
 }
-
 
 .logo-image img {
     width: 100%;
-     height: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
 .logo-text {
     font-size: 34px;
     font-weight: 800;
-    margin-bottom: 5px;
     letter-spacing: 1px;
+    margin-bottom: 5px;
 }
 
 .tagline {
@@ -87,13 +88,13 @@ body {
 
 .slogan-box {
     margin-top: 20px;
-    background: rgba(255, 255, 255, 0.15);
     padding: 12px;
+    background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
 }
 
 /* ============================================================
-   3. FORM SECTION (RIGHT)
+   4. FORM SECTION (右侧表单区)
    ============================================================ */
 .form-section {
     flex: 1.2;
@@ -114,32 +115,58 @@ body {
     color: #8c7b6d;
 }
 
+/* --- Error Message Box (红色警告框) --- */
+.error-container {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-left: 5px solid #f56565;
+    border-radius: 12px;
+}
+
+.error-list {
+    list-style: none;
+}
+
+.error-list li {
+    color: #c53030;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.error-icon {
+    margin-right: 8px;
+}
+
+/* --- Form Controls (输入框相关) --- */
 .form-group {
-    margin-bottom: 20px;
     position: relative;
+    margin-bottom: 20px;
 }
 
 .form-group label {
     display: block;
     margin-bottom: 8px;
     color: #5a3921;
-    font-weight: 700;
     font-size: 14px;
+    font-weight: 700;
 }
 
 .form-group input {
     width: 100%;
     padding: 12px;
+    background: #fafafa;
     border: 1.5px solid #eee;
     border-radius: 10px;
-    background: #fafafa;
     transition: 0.3s;
 }
 
 .form-group input:focus {
+    background: #fff;
     border-color: #d4a574;
     outline: none;
-    background: #fff;
 }
 
 .password-toggle {
@@ -152,7 +179,7 @@ body {
     cursor: pointer;
 }
 
-/* --- 按钮与链接美化 --- */
+/* --- Options (记住我 & 忘记密码) --- */
 .remember-forgot {
     display: flex;
     justify-content: space-between;
@@ -162,26 +189,24 @@ body {
 }
 
 .remember-me {
-    color: #8c7b6d;
-    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 5px;
+    color: #8c7b6d;
+    cursor: pointer;
 }
 
-/* 忘记密码链接样式 */
 .forgot-password {
     color: #d4a76a;
     font-weight: 600;
     text-decoration: none;
-    transition: 0.3s;
 }
 
 .forgot-password:hover {
-    color: #5a3921;
     text-decoration: underline;
 }
 
+/* --- Buttons & Links (按钮与跳转) --- */
 .btn-submit {
     width: 100%;
     padding: 15px;
@@ -199,30 +224,21 @@ body {
     transform: translateY(-2px);
 }
 
-/* 底部注册链接美化 */
 .login-link {
-    text-align: center;
     margin-top: 25px;
-    font-size: 14px;
     color: #8c7b6d;
+    font-size: 14px;
+    text-align: center;
 }
 
 .create-account-link {
     color: #d4a76a;
     font-weight: 700;
     text-decoration: none;
-    padding: 2px 8px;
-    border-radius: 5px;
-    transition: 0.3s;
-}
-
-.create-account-link:hover {
-    background-color: rgba(212, 167, 106, 0.1); /* 浅金色背景反馈 */
-    text-decoration: underline;
 }
 
 /* ============================================================
-   4. DECORATIONS
+   5. DECORATIONS (底部装饰)
    ============================================================ */
 .cake-decoration {
     display: flex;
@@ -242,7 +258,9 @@ body {
     background: #b8864e;
 }
 
-/* 响应式 */
+/* ============================================================
+   6. RESPONSIVE (响应式设计)
+   ============================================================ */
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
