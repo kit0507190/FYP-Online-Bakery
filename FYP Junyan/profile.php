@@ -103,7 +103,12 @@ try {
             </div>
 
             <div class="info-card">
-                <h2><i class="fas fa-map-marker-alt"></i> Default Address</h2>
+                <div class="address-header">
+                    <h2><i class="fas fa-map-marker-alt"></i> Default Address</h2>
+                    <a href="manageaddress.php" class="btn-manage-address">
+                        <i class="fas fa-cog"></i> Manage
+                    </a>
+                </div>
                 <div class="info-row">
                     <div class="info-label">ADDRESS:</div>
                     <div class="info-value"><?php echo $address_display; ?></div>

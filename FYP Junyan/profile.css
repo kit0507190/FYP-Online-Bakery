@@ -11,10 +11,9 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    background-color: #fff7ec; /* 品牌浅黄背景色 */
+    background-color: #fff7ec;
     font-family: 'Segoe UI', Tahoma, sans-serif;
     color: #000000;
-    /* 核心修复：避开 header.php 固定在顶部的 85px 高度 */
     padding-top: 85px; 
 }
 
@@ -28,7 +27,7 @@ body {
    2. MAIN PROFILE CONTENT (资料页排版)
    ============================================================ */
 main.profile-page {
-    flex: 1; /* 确保内容不足时 Footer 仍能固定在底部 */
+    flex: 1;
     padding-bottom: 40px;
     padding-top: 40px;
 }
@@ -38,7 +37,6 @@ main.profile-page {
     margin: 0 auto;
 }
 
-/* 渐变装饰性的页眉横幅 */
 .profile-header {
     padding: 30px;
     background: linear-gradient(135deg, #5a3921 0%, #7a5537 100%);
@@ -65,9 +63,26 @@ main.profile-page {
     align-items: center;
     gap: 12px;
     padding-bottom: 15px;
-    border-bottom: 3px solid #d4a76a; /* 品牌金色装饰线 */
+    border-bottom: 3px solid #d4a76a;
     color: #5a3921;
     margin-bottom: 25px;
+}
+
+/* 新增：地址栏头部容器，用于排列标题和按钮 */
+.address-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #d4a76a;
+}
+
+/* 移除地址栏标题原有的边框，由父容器统一控制 */
+.address-header h2 {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
 }
 
 .info-row {
@@ -118,7 +133,7 @@ main.profile-page {
 }
 
 .btn:hover {
-    transform: translateY(-3px); /* 悬停浮动动画 */
+    transform: translateY(-3px);
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
@@ -126,6 +141,29 @@ main.profile-page {
 .btn-change-password { background: #2c3e50; }
 .btn-history { background: #5a3921; }
 .btn-logout { background: #e74c3c; }
+
+/* 新增：管理地址小按钮样式 */
+.btn-manage-address {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background-color: #fdf2e2;
+    border: 1px solid #d4a76a;
+    border-radius: 6px;
+    color: #5a3921;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-manage-address:hover {
+    background-color: #d4a76a;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(212, 167, 106, 0.3);
+    transform: translateY(-1px);
+}
 
 /* ============================================================
    5. FOOTER (页脚)
@@ -154,101 +192,84 @@ footer {
 }
 
 /* ============================================================
-   6. SUCCESS MODAL (成功提示弹窗 - 居中遮罩版)
+   6. SUCCESS MODAL (成功提示弹窗)
    ============================================================ */
-
-/* 1. 全屏半透明背景遮罩：负责把背景变暗，并让内容居中 */
 .toast-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* 黑色半透明，数值越高越暗 */
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
-    align-items: center;    /* 垂直居中 */
-    justify-content: center; /* 水平居中 */
-    z-index: 9999;          /* 确保弹窗永远在最上面 */
-    animation: fadeIn 0.3s ease; /* 进入时的淡入效果 */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
 }
 
-/* 2. 白色提示卡片：存放内容的主体 */
 .toast-card {
     background: #ffffff;
     padding: 40px;
-    border-radius: 20px;    /* 圆角，看起来更亲切 */
+    border-radius: 20px;
     text-align: center;
-    max-width: 400px;       /* 电脑端最大宽度 */
-    width: 90%;             /* 手机端自动缩小 */
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); /* 底部阴影，增加立体感 */
-    /* 弹出动画：结合了缩放和平滑缓冲 */
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
     animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-/* 3. 成功图标：绿色的圆形勾选框 */
 .toast-icon {
     width: 70px;
     height: 70px;
-    background: #28a745;    /* 经典的成功绿色 */
+    background: #28a745;
     color: white;
     font-size: 30px;
-    border-radius: 50%;     /* 变成正圆 */
-    margin: 0 auto 20px;    /* 居中并与下方文字保持间距 */
-    display: flex;          /* 使用 Flex 确保图标死死锁在圆圈正中间 */
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* 4. 标题与文字样式 */
 .toast-card h3 { 
-    color: #5a3921;         /* 匹配你 Bakery House 的棕色 */
+    color: #5a3921;
     margin-bottom: 10px; 
     font-size: 24px;
 }
 
 .toast-card p { 
-    color: #666;            /* 灰色文字，阅读更舒服 */
+    color: #666;
     margin-bottom: 25px; 
     line-height: 1.6;
 }
 
-/* 5. "Done" 按钮样式 */
 .close-toast {
-    background: #d4a76a;    /* 匹配你 Bakery House 的金色 */
+    background: #d4a76a;
     color: white;
     border: none;
     padding: 12px 45px;
-    border-radius: 30px;    /* 胶囊状按钮 */
+    border-radius: 30px;
     font-weight: bold;
     font-size: 16px;
     cursor: pointer;
-    transition: all 0.3s ease; /* 让所有变化（如颜色、位置）都有过渡 */
+    transition: all 0.3s ease;
 }
 
-/* 按钮悬停效果：变色并微微浮起 */
 .close-toast:hover {
-    background: #5a3921;    /* 悬停变成棕色 */
-    transform: translateY(-2px); /* 向上浮动 2 像素 */
+    background: #5a3921;
+    transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* 按钮点击瞬间：按钮下沉，模拟真实按下的感觉 */
-.close-toast:active {
-    transform: translateY(0);    /* 回到原位 */
-    filter: brightness(0.9);      /* 颜色稍微变深 */
 }
 
 /* ============================================================
    7. ANIMATIONS (动画定义)
    ============================================================ */
-
-/* 背景淡入 */
 @keyframes fadeIn { 
     from { opacity: 0; } 
     to { opacity: 1; } 
 }
 
-/* 内容弹出（从小到大，带一点回弹效果） */
 @keyframes popUp { 
     from { 
         opacity: 0; 
