@@ -21,7 +21,7 @@ if (isset($_GET['set_default'])) {
     $setQuery = "UPDATE user_addresses SET is_default = 1 WHERE id = ? AND user_id = ?";
     $pdo->prepare($setQuery)->execute([$addressId, $userId]);
     
-    header("Location: manage_addresses.php"); // 刷新页面
+    header("Location: manageaddress.php"); // 刷新页面
     exit();
 }
 
@@ -63,7 +63,7 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <?php if ($addr['is_default']): ?>
                                     <span class="badge-default">Current Default</span>
                                 <?php else: ?>
-                                    <a href="manage_addresses.php?set_default=<?php echo $addr['id']; ?>" class="btn-set-default">Set as Default</a>
+                                    <a href="manageaddresses.php?set_default=<?php echo $addr['id']; ?>" class="btn-set-default">Set as Default</a>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -72,7 +72,7 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             
             <div class="add-new-container">
-                <a href="add_address.php" class="btn-add-new"><i class="fas fa-plus"></i> Add New Address</a>
+                <a href="add.address.php" class="btn-add-new"><i class="fas fa-plus"></i> Add New Address</a>
             </div>
         </div>
     </main>
