@@ -37,7 +37,7 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <title>Manage Addresses - Bakery House</title>
-    <link rel="stylesheet" href="manage_addresses.css">
+    <link rel="stylesheet" href="manageaddress.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
