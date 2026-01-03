@@ -1,14 +1,11 @@
 <?php
-// manage_products.php
 
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
 require_once 'config.php';  // Main DB connection
 
 // Handle Add Product and Delete at the top - before any output
-$error_message = '';  // To store errors
-$success = false;  // To track success
+$error_message = '';
 
-// Handle Add Product
 if (isset($_POST['add_product'])) {
     $name = trim($_POST['name']);
     $price = (float)$_POST['price'];
@@ -24,12 +21,11 @@ if (isset($_POST['add_product'])) {
 
         if (!array_key_exists($ext, $allowed)) {
             $error_message = 'Error: Only JPG, JPEG, PNG, GIF allowed';
-        } elseif ($_FILES['image']['size'] > 3 * 1024 * 1024) { // 3MB max
+        } elseif ($_FILES['image']['size'] > 3 * 1024 * 1024) {
             $error_message = 'Error: File too large (max 3MB)';
         } else {
-            // Ensure 'uploads' folder exists and is writable
             if (!is_dir('uploads')) {
-                mkdir('uploads', 0755, true);  // Create folder if not exists
+                mkdir('uploads', 0755, true);
             }
 
             $newname = uniqid('prod_') . '.' . $ext;
@@ -51,12 +47,11 @@ if (isset($_POST['add_product'])) {
             header("Location: manage_products.php?success=add");
             exit();
         } catch (PDOException $e) {
-            $error_message = 'Database error adding product: ' . $e->getMessage();
+            $error_message = 'Database error: ' . $e->getMessage();
         }
     }
 }
 
-// Handle Delete
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     try {
@@ -72,7 +67,7 @@ if (isset($_GET['delete'])) {
         header("Location: manage_products.php?success=delete");
         exit();
     } catch (PDOException $e) {
-        $error_message = 'Database error deleting product: ' . $e->getMessage();
+        $error_message = 'Error deleting product: ' . $e->getMessage();
     }
 }
 ?>
@@ -85,6 +80,73 @@ if (isset($_GET['delete'])) {
     <title>BakeryHouse | Manage Products</title>
     <link rel="stylesheet" href="css/admin_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Image Zoom Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            text-align: center;
+        }
+
+        #modalImage {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        #modalCaption {
+            color: #fff;
+            font-size: 1.4rem;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .close:hover {
+            color: #ff4444;
+        }
+
+        .product-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .product-thumb:hover {
+            transform: scale(1.15);
+            border-color: #8B4513;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+    </style>
 </head>
 <body>
 
@@ -206,26 +268,45 @@ if (isset($_GET['delete'])) {
                 } else {
                     while ($row = $stmt->fetch()) {
                         $imagePath = $row['image'] ? 'uploads/' . htmlspecialchars($row['image']) : 'images/placeholder.jpg';
-                        echo "<tr>
-                            <td>{$row['id']}</td>
-                            <td><img src='$imagePath' alt='Product' style='width:60px; height:60px; object-fit:cover; border-radius:8px;'></td>
-                            <td>" . htmlspecialchars($row['name']) . "</td>
-                            <td>RM " . number_format($row['price'], 2) . "</td>
-                            <td>" . htmlspecialchars($row['cat_name'] ?? 'Uncategorized') . "</td>
-                            <td>{$row['stock']}</td>
+                        ?>
+                        <tr>
+                            <td><?= $row['id'] ?></td>
                             <td>
-                                <a href='?delete={$row['id']}' onclick=\"return confirm('Are you sure you want to delete this product?')\" class='action-btn delete-btn'>Delete</a>
+                                <img src="<?= $imagePath ?>" 
+                                     alt="<?= htmlspecialchars($row['name']) ?>" 
+                                     class="product-thumb"
+                                     onclick="openModal('<?= $imagePath ?>', '<?= htmlspecialchars($row['name']) ?>')">
                             </td>
-                        </tr>";
+                            <td><?= htmlspecialchars($row['name']) ?></td>
+                            <td>RM <?= number_format($row['price'], 2) ?></td>
+                            <td><?= htmlspecialchars($row['cat_name'] ?? 'Uncategorized') ?></td>
+                            <td><?= $row['stock'] ?></td>
+                            <td>
+                                <a href="?delete=<?= $row['id'] ?>" 
+                                   onclick="return confirm('Are you sure you want to delete this product?')" 
+                                   class="action-btn delete-btn">Delete</a>
+                            </td>
+                        </tr>
+                        <?php
                     }
                 }
                 ?>
             </tbody>
         </table>
     </div>
+
+    <!-- Image Zoom Modal -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img id="modalImage" src="" alt="Product Image">
+            <div id="modalCaption"></div>
+        </div>
+    </div>
 </main>
 
 <script>
+// Helper functions for price/stock buttons
 function blockNegative(input) {
     if (input.value < 0) input.value = 0;
 }
@@ -240,6 +321,31 @@ function subtractCents() {
 }
 function addStock() { let i = document.querySelector('input[name="stock"]'); i.value = parseInt(i.value || 0) + 1; }
 function subtractStock() { let i = document.querySelector('input[name="stock"]'); let v = parseInt(i.value || 0); if (v > 0) i.value = v - 1; }
+
+// Modal functions
+function openModal(src, caption) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const captionText = document.getElementById('modalCaption');
+
+    modal.style.display = 'flex';
+    modalImg.src = src;
+    captionText.innerHTML = caption;
+
+    // Close when clicking outside image
+    modal.onclick = function(e) {
+        if (e.target === modal) closeModal();
+    }
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+// Close with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
 </script>
 
 </body>
