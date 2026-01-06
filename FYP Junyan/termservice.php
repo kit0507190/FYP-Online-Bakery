@@ -79,7 +79,7 @@ session_start();
 
                     <div class="terms-footer">
                         <p><strong>Last Updated:</strong> January 1, 2024</p>
-                        <p>Need clarification? <a href="contact.html">Contact our team</a>.</p>
+                        <p>Need clarification? <a href="contact_us.php">Contact our team</a>.</p>
                     </div>
                 </div>
             </div>

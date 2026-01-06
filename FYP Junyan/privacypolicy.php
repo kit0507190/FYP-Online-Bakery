@@ -86,7 +86,7 @@ session_start();
 
                     <div class="privacy-footer">
                         <p><strong>Effective Date:</strong> January 1, 2024</p>
-                        <p>If you have any questions, feel free to <a href="contact.html">Contact Us</a>.</p>
+                        <p>If you have any questions, feel free to <a href="contact_us.php">Contact Us</a>.</p>
                     </div>
                 </div>
             </div>

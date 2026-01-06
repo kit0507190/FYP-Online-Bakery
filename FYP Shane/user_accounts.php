@@ -43,8 +43,13 @@ if (isset($_GET['delete'])) {
 </head>
 <body>
     <header class="header">
-        <h1>BakeryHouse Admin</h1>
-        <a href="admin_logout.php" class="logout">Logout</a> <!-- Update to your actual logout file -->
+    <h1>BakeryHouse Admin</h1>
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
+            (<span class="role-highlight"><?= ucfirst(str_replace('_', ' ', $current_admin['role'])) ?></span>)
+        </span>
+        <a href="admin_logout.php" class="logout">Logout</a>
+    </div>
     </header>
 
     <nav class="sidebar">
@@ -56,6 +61,7 @@ if (isset($_GET['delete'])) {
             
             <?php if ($current_admin['role'] === 'super_admin'): ?>
                 <li><a href="user_accounts.php" class="active">User Accounts</a></li>
+                <li><a href="manage_admins.php">Manage Admins</a></li>
             <?php endif; ?>
             
             <li><a href="reports.php">Reports</a></li>

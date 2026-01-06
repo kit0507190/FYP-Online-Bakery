@@ -1,5 +1,4 @@
 <?php
-// stock_management.php - NO OUTPUT BEFORE THIS LINE!
 
 require_once 'admin_auth.php';  // Secure login + loads $current_admin
 require_once 'config.php';  // Main DB connection
@@ -66,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
         <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
             (<span class="role-highlight"><?= ucfirst(str_replace('_', ' ', $current_admin['role'])) ?></span>)
         </span>
-        <a href="logout.php" class="logout">Logout</a>
+        <a href="admin_logout.php" class="logout">Logout</a>
     </div>
 </header>
 

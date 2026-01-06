@@ -1,72 +1,68 @@
 <?php
 /**
- * profile.php - 用户个人资料查看页面
- * 功能：从数据库读取并展示当前登录用户的个人信息。
- * 关联：header.php (统一导航栏), config.php (数据库连接)
+ * profile.php - 用户资料展示页
  */
 session_start();
 
-// 1. 安全验证：检查用户是否登录，未登录则拦截并跳转
+// --- 1. 登录检查 ---
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php"); 
     exit();
 }
 
-// 2. 引入数据库配置
+// --- 2. 引入数据库连接 ---
 require_once 'config.php';
-
-// 检查数据库 PDO 对象是否正常
-if (!isset($pdo)) {
-    die("Database connection failed.");
-}
 
 $userId = $_SESSION['user_id'];
 
-// 3. 核心逻辑：获取当前用户信息
+// --- 3. 从数据库读取最新资料 ---
 try {
+    // 首先读取基础用户信息
     $query = "SELECT name, email, phone, address, created_at FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if ($user) {
-        // 使用 htmlspecialchars 过滤，防止 XSS 攻击
         $name = htmlspecialchars($user['name']);
         $email = htmlspecialchars($user['email']);
         $phone = htmlspecialchars($user['phone'] ?? 'Not provided');
         $memberSince = date("F j, Y", strtotime($user['created_at']));
         
-        // 地址解析逻辑：根据数据库中存储的 "|" 分隔符进行拆分展示
+        // --- 核心修复：读取 user_addresses 表里的默认地址 ---
+        $addrQuery = "SELECT address_text FROM user_addresses WHERE user_id = ? AND is_default = 1 LIMIT 1";
+        $addrStmt = $pdo->prepare($addrQuery);
+        $addrStmt->execute([$userId]);
+        $defaultAddr = $addrStmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($defaultAddr) {
+            // 如果在 user_addresses 找到了默认地址，使用它
+            $raw_address = $defaultAddr['address_text'];
+        } else {
+            // 如果没找到，则回退使用 user_db 里的旧地址（兼容性考虑）
+            $raw_address = $user['address'];
+        }
+
+        // --- 解析地址显示逻辑 (保持你原有的逻辑不变) ---
         $address_display = "No default address set";
-        if (!empty($user['address'])) {
-            if (strpos($user['address'], '|') !== false) {
-                $address_parts = explode('|', $user['address']);
-                if (count($address_parts) >= 3) {
-                    $address_area = htmlspecialchars($address_parts[0]);
-                    $address_postcode = htmlspecialchars($address_parts[1]);
-                    $address_line = htmlspecialchars($address_parts[2]);
-                    $other_area = isset($address_parts[3]) ? htmlspecialchars($address_parts[3]) : '';
-                    $display_area = ($address_area === 'other' && !empty($other_area)) ? $other_area : $address_area;
-                    
-                    // 拼接格式化后的地址字符串
-                    $address_display = $address_line . "<br>" . $display_area . ", " . $address_postcode . " Melaka<br>Malaysia";
+        if (!empty($raw_address)) {
+            if (strpos($raw_address, '|') !== false) {
+                $parts = explode('|', $raw_address);
+                if (count($parts) >= 3) {
+                    $addrLine = htmlspecialchars($parts[2]);
+                    $addrArea = ($parts[0] === 'other' && isset($parts[3])) ? htmlspecialchars($parts[3]) : htmlspecialchars($parts[0]);
+                    $addrPost = htmlspecialchars($parts[1]);
+                    $address_display = "$addrLine<br>$addrArea, $addrPost Melaka<br>Malaysia";
                 }
             } else {
-                $address_display = htmlspecialchars($user['address']);
+                $address_display = htmlspecialchars($raw_address);
             }
         }
-        
-        // 设置传给 header.php 使用的登录标志和用户名
         $isLoggedIn = true;
         $userName = $user['name'];
-    } else {
-        // 若找不到用户，销毁会话并踢回登录页
-        session_destroy();
-        header("Location: User_Login.php");
-        exit();
     }
 } catch (PDOException $e) {
-    die("Error fetching user data: " . $e->getMessage());
+    die("Error: " . $e->getMessage());
 }
 ?>
 
@@ -74,7 +70,6 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - Bakery House</title>
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -83,11 +78,16 @@ try {
     
     <?php include 'header.php'; ?>
 
-    <div class="message-container">
-        <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
-            <div class="success-message">Profile updated successfully!</div>
-        <?php endif; ?>
+    <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
+    <div class="toast-overlay" id="toastOverlay">
+        <div class="toast-card">
+            <div class="toast-icon"><i class="fas fa-check"></i></div>
+            <h3>Profile Updated!</h3>
+            <p>Your account information has been baked to perfection. Everything is up to date!</p>
+            <button class="close-toast" onclick="closeToast()">Done</button>
+        </div>
     </div>
+    <?php endif; ?>
 
     <main class="profile-page">
         <div class="profile-container">
@@ -117,18 +117,30 @@ try {
             </div>
 
             <div class="info-card">
-                <h2><i class="fas fa-map-marker-alt"></i> Default Address</h2>
+                <div class="address-header">
+                    <h2><i class="fas fa-map-marker-alt"></i> Default Address</h2>
+                    <a href="manageaddress.php" class="btn-manage-address">
+                        <i class="fas fa-cog"></i> Manage
+                    </a>
+                </div>
                 <div class="info-row">
                     <div class="info-label">ADDRESS:</div>
-                    <div class="info-value formatted-address"><?php echo $address_display; ?></div>
+                    <div class="info-value"><?php echo $address_display; ?></div>
                 </div>
             </div>
 
-            <div class="action-buttons">
-                <a href="editprofile.php" class="btn btn-edit"><i class="fas fa-edit"></i> Edit Profile</a>
-                <a href="changepassword.php" class="btn btn-change-password"><i class="fas fa-key"></i> Change Password</a>
-                <a href="order_history.php" class="btn btn-history"><i class="fas fa-history"></i> Order History</a>
-                <a href="logout.php" class="btn btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+           <div class="action-buttons">
+                <a href="editprofile.php" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </a>
+
+                <a href="changepassword.php" class="btn btn-change-password">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+
+                <a href="logout.php" class="btn btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
             </div>
         </div>
     </main>
@@ -136,13 +148,17 @@ try {
     <footer>
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo"><img src="Bakery House Logo.png" alt="BakeryHouse"></div>
+                <div class="footer-logo">
+                    <img src="Bakery House Logo.png" alt="BakeryHouse">
+                </div>
                 <p>Sweet & Delicious</p>
                 <div class="footer-links">
                     <a href="mainpage.php">Home</a>
                     <a href="menu.php">Menu</a>
                     <a href="about_us.php">About</a>
                     <a href="contact_us.php">Contact</a>
+                    <a href="privacypolicy.php">Privacy Policy</a>
+                    <a href="termservice.php">Terms of Service</a>
                 </div>
                 <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
             </div>
