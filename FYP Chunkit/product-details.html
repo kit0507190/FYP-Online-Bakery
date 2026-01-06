@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - BakeryHouse</title>
+    <link rel="stylesheet" href="product-details.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">
+                    <img src="Bakery House Logo.png" alt="BakeryHouse">
+                </a>
+                <ul class="nav-links">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="menu.html">Menu</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li class="cart-icon" id="cartIcon">
+                        <span>🛒 Cart</span>
+                        <span class="cart-count">0</span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Product Details -->
+    <div class="container">
+        <div class="product-details" id="productDetails">
+            <!-- Product details will be dynamically loaded -->
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div class="notification" id="notification">
+        Product added to cart successfully!
+    </div>
+
+    <script>
+        // Product data (same as in menu page)
+        const products = [
+            {
+                id: 1,
+                name: "Artisan Sourdough Bread",
+                price: 12.50,
+                category: "bread",
+                image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
+                description: "Traditional sourdough with crispy crust",
+                fullDescription: "Our signature artisan sourdough bread is made using traditional methods with a 48-hour fermentation process. It features a crisp, golden crust and a soft, airy interior with the perfect tangy flavor. Perfect for sandwiches, toast, or simply enjoyed with butter.",
+                ingredients: "Organic flour, water, sea salt, sourdough starter",
+                weight: "500g",
+                allergens: "Contains gluten"
+            },
+            // ... other products (same as in menu page)
+        ];
+
+        // Shopping cart
+        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+
+        // DOM elements
+        const productDetails = document.getElementById('productDetails');
+        const cartIcon = document.getElementById('cartIcon');
+        const cartCount = document.querySelector('.cart-count');
+        const notification = document.getElementById('notification');
+
+        // Load product details
+        function loadProductDetails() {
+            const productId = parseInt(sessionStorage.getItem('currentProduct'));
+            const product = products.find(p => p.id === productId);
+            
+            if (!product) {
+                productDetails.innerHTML = '<p>Product not found. <a href="menu.html">Return to menu</a></p>';
+                return;
+            }
+            
+            productDetails.innerHTML = `
+                <div class="product-image">
+                    <img src="${product.image}" alt="${product.name}">
+                </div>
+                <div class="product-info">
+                    <h1 class="product-title">${product.name}</h1>
+                    <p class="product-price">RM ${product.price.toFixed(2)}</p>
+                    <p class="product-description">${product.fullDescription}</p>
+                    
+                    <div class="product-specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Ingredients:</span>
+                            <span class="spec-value">${product.ingredients}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Weight:</span>
+                            <span class="spec-value">${product.weight}</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Allergens:</span>
+                            <span class="spec-value">${product.allergens}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="quantity-selector">
+                        <span class="quantity-label">Quantity:</span>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn minus">-</button>
+                            <input type="number" class="quantity-input" value="1" min="1">
+                            <button class="quantity-btn plus">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
+                        <button class="buy-now-btn" data-id="${product.id}">Buy Now</button>
+                    </div>
+                    
+                    <div class="back-link">
+                        <a href="menu.html">← Back to Menu</a>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners
+            setupEventListeners(product);
+        }
+
+        // Setup event listeners
+        function setupEventListeners(product) {
+            // Quantity controls
+            const minusBtn = document.querySelector('.quantity-btn.minus');
+            const plusBtn = document.querySelector('.quantity-btn.plus');
+            const quantityInput = document.querySelector('.quantity-input');
+            
+            minusBtn.addEventListener('click', () => {
+                const currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                }
+            });
+            
+            plusBtn.addEventListener('click', () => {
+                const currentValue = parseInt(quantityInput.value);
+                quantityInput.value = currentValue + 1;
+            });
+            
+            // Add to cart button
+            const addToCartBtn = document.querySelector('.add-to-cart-btn');
+            addToCartBtn.addEventListener('click', () => {
+                const quantity = parseInt(quantityInput.value);
+                addToCart(product.id, quantity);
+            });
+            
+            // Buy now button
+            const buyNowBtn = document.querySelector('.buy-now-btn');
+            buyNowBtn.addEventListener('click', () => {
+                const quantity = parseInt(quantityInput.value);
+                addToCart(product.id, quantity);
+                window.location.href = 'cart.html';
+            });
+            
+            // Cart icon
+            cartIcon.addEventListener('click', () => {
+                window.location.href = 'cart.html';
+            });
+        }
+
+        // Add to cart function
+        function addToCart(productId, quantity) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += quantity;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: quantity
+                });
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('bakeryCart', JSON.stringify(cart));
+            
+            // Update cart count
+            updateCartCount();
+            
+            // Show notification
+            showNotification(`${product.name} added to cart!`);
+        }
+
+        // Update cart count
+        function updateCartCount() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = totalItems;
+        }
+
+        // Show notification
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductDetails();
+            updateCartCount();
+        });
+    </script>
+</body>
+</html>
