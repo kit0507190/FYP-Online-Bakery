@@ -1,32 +1,38 @@
 <?php
+// reports.php
 
-require_once 'admin_auth.php';  // Secure login + loads $current_admin with role
+require_once 'admin_auth.php';  // Secure login + loads $current_admin
 
-// Restrict access to Super Admin only
+// Restrict to Super Admin only
 if ($current_admin['role'] !== 'super_admin') {
     $_SESSION['error_message'] = "Access denied. Reports are restricted to Super Admins only.";
     header("Location: admin_dashboard.php");
     exit();
 }
 
-require_once 'config.php';  // Main DB connection
+require_once 'config.php';
 
-// Handle CSV Export
-if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endDate'])) {
-    $start = $_GET['startDate'];
-    $end = $_GET['endDate'];
+// Set default date range: last 30 days to today
+$start = $_GET['startDate'] ?? date('Y-m-d', strtotime('-30 days'));
+$end = $_GET['endDate'] ?? date('Y-m-d');
+
+// Handle CSV Export FIRST (before any output)
+if (isset($_GET['export_csv'])) {
+    // Use the same dates (from GET or defaults)
+    $export_start = $_GET['startDate'] ?? date('Y-m-d', strtotime('-30 days'));
+    $export_end = $_GET['endDate'] ?? date('Y-m-d');
 
     header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename="bakery_report_' . $start . '_to_' . $end . '.csv"');
+    header('Content-Disposition: attachment; filename="bakery_report_' . $export_start . '_to_' . $export_end . '.csv"');
 
     $output = fopen('php://output', 'w');
     fputcsv($output, ['Rank', 'Product', 'Category', 'Units Sold', 'Revenue', 'Profit (60%)']);
 
     $stmt = $pdo->prepare("SELECT items FROM orders WHERE status = 'delivered' AND DATE(created_at) BETWEEN ? AND ?");
-    $stmt->execute([$start, $end]);
+    $stmt->execute([$export_start, $export_end]);
 
     $sales = [];
-    while ($row = $stmt->fetch()) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $items = json_decode($row['items'], true) ?: [];
         foreach ($items as $item) {
             $id = $item['id'] ?? 0;
@@ -36,27 +42,76 @@ if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endD
             }
         }
     }
-    arsort($sales);
 
-    $rank = 1;
-    foreach (array_slice($sales, 0, 50, true) as $id => $units) {
-        $prod = $pdo->query("SELECT name, price, category_id FROM products WHERE id = $id")->fetch();
-        if (!$prod) continue;
-        $cat = $pdo->query("SELECT name FROM categories WHERE id = {$prod['category_id']}")->fetchColumn() ?: 'Uncategorized';
-        $rev = $prod['price'] * $units;
-        $profit = $rev * 0.6;
+    if (!empty($sales)) {
+        arsort($sales);
+        $rank = 1;
+        foreach (array_slice($sales, 0, 50, true) as $id => $units) {
+            $prod = $pdo->query("SELECT name, price, category_id FROM products WHERE id = " . (int)$id)->fetch();
+            if (!$prod) continue;
 
-        fputcsv($output, [
-            $rank++,
-            $prod['name'],
-            $cat,
-            $units,
-            number_format($rev, 2),
-            number_format($profit, 2)
-        ]);
+            $cat_stmt = $pdo->prepare("SELECT name FROM categories WHERE id = ?");
+            $cat_stmt->execute([$prod['category_id']]);
+            $cat = $cat_stmt->fetchColumn() ?: 'Uncategorized';
+
+            $rev = $prod['price'] * $units;
+            $profit = $rev * 0.6;
+
+            fputcsv($output, [
+                $rank++,
+                $prod['name'],
+                $cat,
+                $units,
+                number_format($rev, 2),
+                number_format($profit, 2)
+            ]);
+        }
+    } else {
+        // If no data, still export headers + empty row
+        fputcsv($output, ['No delivered orders in this date range', '', '', '', '', '']);
     }
+
     fclose($output);
     exit();
+}
+
+// Now generate report data for display (using same dates)
+$stmt = $pdo->prepare("SELECT items, total FROM orders WHERE status = 'delivered' AND DATE(created_at) BETWEEN ? AND ?");
+$stmt->execute([$start, $end]);
+
+$topSales = [];
+$totalRevenue = 0;
+
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $totalRevenue += $row['total'];
+    $items = json_decode($row['items'], true) ?: [];
+    foreach ($items as $item) {
+        $id = $item['id'] ?? 0;
+        $qty = $item['quantity'] ?? $item['qty'] ?? 1;
+        if ($id > 0) {
+            $topSales[$id] = ($topSales[$id] ?? 0) + $qty;
+        }
+    }
+}
+arsort($topSales);
+
+$lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10")->fetchColumn();
+
+$topId = key($topSales) ?? 0;
+$topUnits = $topSales[$topId] ?? 0;
+$topName = $topId ? $pdo->query("SELECT name FROM products WHERE id = " . (int)$topId)->fetchColumn() : 'None';
+
+// Chart data
+$chartDates = [];
+$chartSales = [];
+$current = new DateTime($start);
+$endDate = new DateTime($end);
+while ($current <= $endDate) {
+    $dateStr = $current->format('Y-m-d');
+    $chartDates[] = $current->format('d M');
+    $daily = $pdo->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE status='delivered' AND DATE(created_at)='$dateStr'")->fetchColumn();
+    $chartSales[] = (float)$daily;
+    $current->modify('+1 day');
 }
 ?>
 
@@ -84,7 +139,7 @@ if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endD
 
 <nav class="sidebar">
     <ul>
-        <li><a href="admin_dashboard.php" class="active">Dashboard</a></li>
+        <li><a href="admin_dashboard.php">Dashboard</a></li>
         <li><a href="manage_products.php">Manage Products</a></li>
         <li><a href="view_orders.php">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
@@ -92,7 +147,7 @@ if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endD
         <?php if ($current_admin['role'] === 'super_admin'): ?>
             <li><a href="user_accounts.php">User Accounts</a></li>
             <li><a href="manage_admins.php">Manage Admins</a></li>
-            <li><a href="reports.php">Reports</a></li>
+            <li><a href="reports.php" class="active">Reports</a></li>
         <?php endif; ?>
     </ul>
 </nav>
@@ -100,68 +155,22 @@ if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endD
 <main class="main">
     <h1 class="page-title">Business Reports & Analytics</h1>
 
-    <!-- Date Filter Form -->
     <form method="GET" class="controls" style="margin-bottom: 2.5rem; justify-content: space-between; align-items: center;">
         <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <input type="date" name="startDate" class="filter-select" value="<?= htmlspecialchars($_GET['startDate'] ?? '2025-12-01') ?>">
-            <input type="date" name="endDate" class="filter-select" value="<?= htmlspecialchars($_GET['endDate'] ?? date('Y-m-d')) ?>">
+            <input type="date" name="startDate" class="filter-select" value="<?= htmlspecialchars($start) ?>">
+            <input type="date" name="endDate" class="filter-select" value="<?= htmlspecialchars($end) ?>">
             <button type="submit" class="add-btn" style="padding: 0.8rem 1.5rem;">Filter</button>
         </div>
-        <?php if (isset($_GET['startDate']) && isset($_GET['endDate'])): ?>
-            <a href="?export_csv=1&startDate=<?= urlencode($_GET['startDate']) ?>&endDate=<?= urlencode($_GET['endDate']) ?>" 
-               class="add-btn" style="padding: 0.8rem 1.5rem; background: #28a745; text-decoration:none;">
-                <i class="fas fa-download"></i> Export CSV
-            </a>
-        <?php endif; ?>
+        <a href="?export_csv=1&startDate=<?= urlencode($start) ?>&endDate=<?= urlencode($end) ?>" 
+           class="add-btn" style="padding: 0.8rem 1.5rem; background: #28a745; text-decoration:none;">
+            <i class="fas fa-download"></i> Export CSV
+        </a>
     </form>
-
-    <?php
-    $start = $_GET['startDate'] ?? '2025-12-01';
-    $end = $_GET['endDate'] ?? date('Y-m-d');
-
-    $revenue = $pdo->query("SELECT COALESCE(SUM(total), 0) FROM orders WHERE status = 'delivered' AND DATE(created_at) BETWEEN '$start' AND '$end'")->fetchColumn();
-
-    $lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10")->fetchColumn();
-
-    // Top sales
-    $stmt = $pdo->prepare("SELECT items FROM orders WHERE status = 'delivered' AND DATE(created_at) BETWEEN ? AND ?");
-    $stmt->execute([$start, $end]);
-
-    $topSales = [];
-    while ($row = $stmt->fetch()) {
-        $items = json_decode($row['items'], true) ?: [];
-        foreach ($items as $item) {
-            $id = $item['id'] ?? 0;
-            $qty = $item['quantity'] ?? $item['qty'] ?? 1;
-            if ($id > 0) {
-                $topSales[$id] = ($topSales[$id] ?? 0) + $qty;
-            }
-        }
-    }
-    arsort($topSales);
-
-    $topId = key($topSales) ?? 0;
-    $topUnits = $topSales[$topId] ?? 0;
-    $topName = $topId ? $pdo->query("SELECT name FROM products WHERE id = $topId")->fetchColumn() : 'None';
-
-    // Chart data
-    $chartDates = [];
-    $chartSales = [];
-    $current = new DateTime($start);
-    $endDate = new DateTime($end);
-    while ($current <= $endDate) {
-        $date = $current->format('Y-m-d');
-        $chartDates[] = $current->format('d M');
-        $sales = $pdo->query("SELECT COALESCE(SUM(total),0) FROM orders WHERE status='delivered' AND DATE(created_at)='$date'")->fetchColumn();
-        $chartSales[] = $sales;
-        $current->modify('+1 day');
-    }
-    ?>
 
     <div class="stats-grid" style="gap: 2.5rem; margin-bottom: 3rem;">
         <div class="stat-card">
             <div class="stat-icon"><i class="fas fa-sack-dollar"></i></div>
-            <h3>RM <?= number_format($revenue, 2) ?></h3>
+            <h3>RM <?= number_format($totalRevenue, 2) ?></h3>
             <p>Sales in Range</p>
         </div>
         <div class="stat-card">
@@ -172,7 +181,7 @@ if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endD
         </div>
         <div class="stat-card">
             <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-            <h3>RM <?= number_format($revenue, 2) ?></h3>
+            <h3>RM <?= number_format($totalRevenue, 2) ?></h3>
             <p>Total Revenue</p>
         </div>
         <div class="stat-card" style="<?= $lowStock > 0 ? 'border-left: 6px solid #D97706;' : '' ?>">
@@ -204,7 +213,7 @@ if (isset($_GET['export_csv']) && isset($_GET['startDate']) && isset($_GET['endD
                 <?php else:
                     $rank = 1;
                     foreach (array_slice($topSales, 0, 10, true) as $id => $units):
-                        $p = $pdo->query("SELECT name, price FROM products WHERE id = $id")->fetch();
+                        $p = $pdo->query("SELECT name, price FROM products WHERE id = " . (int)$id)->fetch();
                         if (!$p) continue;
                         $rev = $p['price'] * $units;
                 ?>
