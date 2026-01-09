@@ -1,40 +1,26 @@
 <?php
 // changepassword.php - 修改密码页面
 session_start();
-
-// 1. 检查用户是否登录
-if (!isset($_SESSION['user_id'])) {
-    header("Location: User_Login.php");
-    exit();
-}
-
+if (!isset($_SESSION['user_id'])) { header("Location: User_Login.php"); exit(); }
 require_once 'config.php';
 
 $userId = $_SESSION['user_id'];
 $errors = [];
-$userName = '';
-$userEmail = '';
+$userName = ''; $userEmail = '';
 
-// 2. 获取用户信息
 try {
     $query = "SELECT name, email FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
     if ($user) {
         $userName = htmlspecialchars($user['name']);
         $userEmail = htmlspecialchars($user['email']);
     } else {
-        session_destroy();
-        header("Location: User_Login.php");
-        exit();
+        session_destroy(); header("Location: User_Login.php"); exit();
     }
-} catch (PDOException $e) {
-    die("Error fetching user data: " . $e->getMessage());
-}
+} catch (PDOException $e) { die("Error: " . $e->getMessage()); }
 
-// 3. 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current_password = $_POST['current_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
@@ -56,22 +42,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = "New password must be different from current password.";
                 } else {
                     $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
-                    // 符合 SCRUD 手写要求 
                     $updateQuery = "UPDATE user_db SET password = ?, updated_at = NOW() WHERE id = ?";
                     $updateStmt = $pdo->prepare($updateQuery);
-                    
                     if ($updateStmt->execute([$hashedPassword, $userId])) {
-                        // 成功后重定向到自己以触发弹窗
                         header("Location: changepassword.php?success=1");
                         exit();
                     }
                 }
-            } else {
-                $errors[] = "Current password is incorrect.";
-            }
-        } catch (PDOException $e) {
-            $errors[] = "Error updating password: " . $e->getMessage();
-        }
+            } else { $errors[] = "Current password is incorrect."; }
+        } catch (PDOException $e) { $errors[] = "Update failed: " . $e->getMessage(); }
     }
 }
 ?>
@@ -84,39 +63,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Change Password - Bakery House</title>
     <link rel="stylesheet" href="editprofile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 强制覆盖和修复样式 */
+        .password-wrapper {
+            position: relative !important;
+            display: block !important; /* 确保占满宽度 */
+        }
+        .password-wrapper .form-input {
+            padding-right: 45px !important;
+            width: 100%;
+        }
+        .toggle-password {
+            position: absolute !important;
+            right: 15px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            background: none !important;
+            border: none !important;
+            color: #999 !important;
+            cursor: pointer !important;
+            z-index: 10 !important;
+        }
+        .toast-overlay {
+            position: fixed !important;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7) !important;
+            display: flex !important;
+            align-items: center; justify-content: center;
+            z-index: 9999 !important;
+        }
+        .toast-card {
+            background: white !important;
+            padding: 40px !important;
+            border-radius: 15px !important;
+            text-align: center !important;
+            max-width: 400px !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        }
+        .toast-icon {
+            background: #d4a76a; color: white;
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px; font-size: 30px;
+        }
+    </style>
 </head>
 <body>
-    
     <?php include 'header.php'; ?>
 
-    <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
-    <div class="toast-overlay" id="toastOverlay">
+    <?php if (isset($_GET['success'])): ?>
+    <div class="toast-overlay">
         <div class="toast-card">
             <div class="toast-icon"><i class="fas fa-check"></i></div>
-            <h3 style="color: var(--bakery-brown); margin-bottom: 10px;">Password Changed!</h3>
-            <p style="color: #666; margin-bottom: 25px;">Your account is now more secure. Please use your new password next time you log in.</p>
+            <h3 style="color: #5a3921;">Password Changed!</h3>
+            <p style="color: #666; margin: 15px 0 25px;">Your security has been updated successfully.</p>
             <button class="btn btn-primary" onclick="window.location.href='profile.php'" style="width: 100%;">Done</button>
         </div>
     </div>
     <?php endif; ?>
 
-    <div class="message-container">
-        <?php if (!empty($errors)): ?>
-            <div class="error-message">
-                <ul style="margin: 0; padding-left: 20px;">
-                    <?php foreach ($errors as $error): ?>
-                        <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-    </div>
-
     <main class="profile-page">
         <div class="profile-container">
             <div class="profile-header">
                 <h1>Change Password</h1>
-                <p>Ensure your account stays protected</p>
+                <p>Keep your Bakery House account secure</p>
             </div>
 
             <form action="changepassword.php" method="POST" class="edit-form" id="passwordForm">
@@ -132,7 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group required-field">
                         <label class="form-label">New Password</label>
                         <div class="password-wrapper">
@@ -142,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="form-group required-field">
                         <label class="form-label">Confirm New Password</label>
                         <div class="password-wrapper">
@@ -155,9 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
                 <div class="action-buttons">
-                    <button type="submit" class="btn btn-primary" id="saveButton">
-                        <i class="fas fa-lock"></i> Update Password
-                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveButton">Update Password</button>
                     <a href="profile.php" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
@@ -165,8 +173,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <script>
-        function togglePassword(inputId) {
-            const input = document.getElementById(inputId);
+        function togglePassword(id) {
+            const input = document.getElementById(id);
             const icon = input.nextElementSibling.querySelector('i');
             if (input.type === 'password') {
                 input.type = 'text';
@@ -176,12 +184,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 icon.className = 'fas fa-eye';
             }
         }
-
-        document.getElementById('passwordForm').addEventListener('submit', function() {
-            const btn = document.getElementById('saveButton');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Securing...';
-            btn.disabled = true;
-        });
     </script>
 </body>
 </html>
