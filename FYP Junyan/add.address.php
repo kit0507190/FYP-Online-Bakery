@@ -1,6 +1,6 @@
 <?php
 /**
- * add.address.php - 添加新地址并自动同步默认地址逻辑
+ * add.address.php - 自动化同步逻辑版本 (已移除勾选框)
  */
 session_start();
 require_once 'config.php';
@@ -20,53 +20,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address_postcode = trim($_POST['address_postcode'] ?? '');
     $address_line = trim($_POST['address_line'] ?? '');
     $other_area = trim($_POST['other_area'] ?? '');
-    $is_default_input = isset($_POST['is_default']) ? 1 : 0; // 获取是否勾选设为默认
 
-    // 基础验证
+    // 后端基础验证
     if (empty($address_area)) { $errors[] = "Please select an area."; }
     if (empty($address_postcode)) { $errors[] = "Postcode is required."; }
     if (empty($address_line)) { $errors[] = "Street address is required."; }
 
     if (empty($errors)) {
         try {
-            // 拼接格式：area|postcode|line[|other_area]
+            // 拼接地址字符串
             $fullAddress = $address_area . '|' . $address_postcode . '|' . $address_line;
             if ($address_area === 'other' && !empty($other_area)) {
                 $fullAddress .= '|' . $other_area;
             }
 
-            // --- 方案一核心逻辑开始 ---
-
-            // A. 检查用户当前已有的地址数量
+            // --- 自动化逻辑：判断是否为首个地址 ---
+            
+            // A. 检查该用户目前已有的地址数量 
             $countQuery = "SELECT COUNT(*) FROM user_addresses WHERE user_id = ?";
             $countStmt = $pdo->prepare($countQuery);
             $countStmt->execute([$userId]);
             $addressCount = $countStmt->fetchColumn();
 
-            // B. 如果是第一个地址，强制设为默认
-            $final_is_default = ($addressCount == 0) ? 1 : $is_default_input;
+            // B. 逻辑判定：如果是第1个地址，is_default 设为 1，否则设为 0 
+            $final_is_default = ($addressCount == 0) ? 1 : 0;
 
-            // C. 如果新地址要设为默认，先把该用户旧的默认地址取消
-            if ($final_is_default == 1) {
-                $pdo->prepare("UPDATE user_addresses SET is_default = 0 WHERE user_id = ?")
-                    ->execute([$userId]);
-            }
-
-            // D. 插入新地址记录 (符合手写 SCRUD 需求 )
+            // C. 插入新地址记录 (手写 SQL 符合 FYP 规范) [cite: 2, 28]
             $sql = "INSERT INTO user_addresses (user_id, address_text, is_default, updated_at) VALUES (?, ?, ?, NOW())";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$userId, $fullAddress, $final_is_default]);
 
-            // E. 同步到 user_db (解决你提到的第一个地址存不进去的问题)
+            // D. 如果是第一个地址，立即同步更新 user_db 表 
             if ($final_is_default == 1) {
                 $updateUserSql = "UPDATE user_db SET address = ? WHERE id = ?";
                 $updateUserStmt = $pdo->prepare($updateUserSql);
                 $updateUserStmt->execute([$fullAddress, $userId]);
             }
 
-            // --- 核心逻辑结束 ---
-
-            header("Location: manageaddress.php?success=1");
+            // 成功后跳转 
+            header("Location: manageaddress.php");
             exit();
         } catch (PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
@@ -87,6 +79,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <?php include 'header.php'; ?>
 
+    <div class="message-container">
+        <?php if (!empty($errors)): ?>
+            <div class="error-message">
+                <ul style="margin: 0; padding-left: 20px;">
+                    <?php foreach ($errors as $error): ?>
+                        <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    </div>
+
     <main class="profile-page">
         <div class="profile-container">
             <div class="back-navigation">
@@ -102,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <form action="add.address.php" method="POST" class="edit-form" id="addressForm">
                 <div class="info-card">
-                    <h2><i class="fas fa-map-marker-alt"></i> Delivery Address</h2>
+                    <h2><i class="fas fa-map-marker-alt"></i> Address Details</h2>
                     
                     <div class="form-row">
                         <div class="form-group-half required-field">
@@ -123,19 +127,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group required-field">
                         <label class="form-label">Street Address</label>
-                        <textarea name="address_line" class="form-textarea" required rows="3" placeholder="House No, Street Name, etc."></textarea>
+                        <textarea name="address_line" class="form-textarea" required rows="3" placeholder="Unit no, Building, Street Name..."></textarea>
                     </div>
 
                     <div class="form-group" id="other_area_group" style="display: none;">
                         <label class="form-label">Please Specify Area</label>
                         <input type="text" name="other_area" class="form-input" placeholder="Enter your specific area">
-                    </div>
-
-                    <div class="form-group" style="margin-top: 15px;">
-                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--bakery-brown); font-weight: 600;">
-                            <input type="checkbox" name="is_default" value="1" style="width: 18px; height: 18px;"> 
-                            Set as default delivery address
-                        </label>
                     </div>
                 </div>
 
@@ -149,6 +146,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
+    <?php include 'footer.php'; ?>
+
     <script>
     function toggleOtherArea() {
         const areaSelect = document.getElementById('address_area');
@@ -156,7 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         otherGroup.style.display = (areaSelect.value === 'other') ? 'block' : 'none';
     }
 
-    // 提交状态控制
     document.getElementById('addressForm').addEventListener('submit', function() {
         const btn = document.getElementById('saveButton');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
