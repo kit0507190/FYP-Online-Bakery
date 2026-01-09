@@ -2,25 +2,20 @@
 // changepassword.php - 修改密码页面
 session_start();
 
-// 检查用户是否登录
+// 1. 检查用户是否登录
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
 }
 
-// 数据库连接
 require_once 'config.php';
-
-// 检查数据库连接
-if (!isset($pdo)) {
-    die("Database connection failed.");
-}
 
 $userId = $_SESSION['user_id'];
 $errors = [];
-$current_password = $new_password = $confirm_password = '';
+$userName = '';
+$userEmail = '';
 
-// 从数据库获取用户基本信息用于显示
+// 2. 获取用户信息
 try {
     $query = "SELECT name, email FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
@@ -39,28 +34,16 @@ try {
     die("Error fetching user data: " . $e->getMessage());
 }
 
-// 处理表单提交
+// 3. 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $current_password = $_POST['current_password'] ?? '';
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     
-    // 验证必填字段
     if (empty($current_password)) { $errors[] = "Current password is required."; }
-    if (empty($new_password)) { $errors[] = "New password is required."; }
-    if (empty($confirm_password)) { $errors[] = "Please confirm your new password."; }
+    if (strlen($new_password) < 6) { $errors[] = "New password must be at least 6 characters long."; }
+    if ($new_password !== $confirm_password) { $errors[] = "New passwords do not match."; }
     
-    // 验证密码长度
-    if (strlen($new_password) < 6) {
-        $errors[] = "New password must be at least 6 characters long.";
-    }
-    
-    // 验证密码是否匹配
-    if ($new_password !== $confirm_password) {
-        $errors[] = "New passwords do not match.";
-    }
-    
-    // 验证当前密码是否正确
     if (empty($errors)) {
         try {
             $passwordQuery = "SELECT password FROM user_db WHERE id = ?";
@@ -69,18 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userData = $passwordStmt->fetch(PDO::FETCH_ASSOC);
             
             if ($userData && password_verify($current_password, $userData['password'])) {
-                // 验证新密码不能与旧密码相同
                 if (password_verify($new_password, $userData['password'])) {
                     $errors[] = "New password must be different from current password.";
                 } else {
-                    // 更新密码
                     $hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
+                    // 符合 SCRUD 手写要求 
                     $updateQuery = "UPDATE user_db SET password = ?, updated_at = NOW() WHERE id = ?";
                     $updateStmt = $pdo->prepare($updateQuery);
                     
                     if ($updateStmt->execute([$hashedPassword, $userId])) {
-                        // 【核心改动】成功后直接重定向回 profile.php，并带上 success 参数
-                        header("Location: profile.php?success=1");
+                        // 成功后重定向到自己以触发弹窗
+                        header("Location: changepassword.php?success=1");
                         exit();
                     }
                 }
@@ -93,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,12 +89,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <?php include 'header.php'; ?>
 
+    <?php if (isset($_GET['success']) && $_GET['success'] == '1'): ?>
+    <div class="toast-overlay" id="toastOverlay">
+        <div class="toast-card">
+            <div class="toast-icon"><i class="fas fa-check"></i></div>
+            <h3 style="color: var(--bakery-brown); margin-bottom: 10px;">Password Changed!</h3>
+            <p style="color: #666; margin-bottom: 25px;">Your account is now more secure. Please use your new password next time you log in.</p>
+            <button class="btn btn-primary" onclick="window.location.href='profile.php'" style="width: 100%;">Done</button>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <div class="message-container">
         <?php if (!empty($errors)): ?>
             <div class="error-message">
                 <ul style="margin: 0; padding-left: 20px;">
                     <?php foreach ($errors as $error): ?>
-                        <li><?php echo htmlspecialchars($error); ?></li>
+                        <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
                     <?php endforeach; ?>
                 </ul>
             </div>
@@ -122,26 +116,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="profile-container">
             <div class="profile-header">
                 <h1>Change Password</h1>
-                <p>Update your account password securely</p>
+                <p>Ensure your account stays protected</p>
             </div>
 
             <form action="changepassword.php" method="POST" class="edit-form" id="passwordForm">
                 <div class="info-card">
-                    <h2><i class="fas fa-user-circle"></i> Account Information</h2>
-                    <div style="margin-bottom: 20px; line-height: 1.8;">
-                        <p><strong>Name:</strong> <?php echo $userName; ?></p>
-                        <p><strong>Email:</strong> <?php echo $userEmail; ?></p>
-                    </div>
-                </div>
-
-                <div class="info-card">
-                    <h2><i class="fas fa-key"></i> Change Password</h2>
+                    <h2><i class="fas fa-key"></i> Security Settings</h2>
                     
                     <div class="form-group required-field">
-                        <label for="current_password" class="form-label">Current Password</label>
+                        <label class="form-label">Current Password</label>
                         <div class="password-wrapper">
-                            <input type="password" id="current_password" name="current_password" 
-                                   class="form-input" required placeholder="Enter your current password">
+                            <input type="password" id="current_password" name="current_password" class="form-input" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('current_password')">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -149,10 +134,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     
                     <div class="form-group required-field">
-                        <label for="new_password" class="form-label">New Password</label>
+                        <label class="form-label">New Password</label>
                         <div class="password-wrapper">
-                            <input type="password" id="new_password" name="new_password" 
-                                   class="form-input" required placeholder="Min 6 characters">
+                            <input type="password" id="new_password" name="new_password" class="form-input" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('new_password')">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -160,53 +144,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     
                     <div class="form-group required-field">
-                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                        <label class="form-label">Confirm New Password</label>
                         <div class="password-wrapper">
-                            <input type="password" id="confirm_password" name="confirm_password" 
-                                   class="form-input" required placeholder="Re-enter new password">
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-input" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('confirm_password')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
                     </div>
-                    
-                    <div id="passwordStrength" class="password-strength"></div>
                 </div>
 
                 <div class="action-buttons">
                     <button type="submit" class="btn btn-primary" id="saveButton">
-                        <i class="fas fa-save"></i> Save New Password
+                        <i class="fas fa-lock"></i> Update Password
                     </button>
-                    <a href="profile.php" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancel
-                    </a>
+                    <a href="profile.php" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>
     </main>
 
-     <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="Bakery House Logo.png" alt="BakeryHouse">
-                </div>
-                <p>Sweet & Delicious</p>
-                <div class="footer-links">
-                    <a href="mainpage.php">Home</a>
-                    <a href="menu.php">Menu</a>
-                    <a href="about_us.php">About</a>
-                    <a href="contact_us.php">Contact</a>
-                    <a href="privacypolicy.php">Privacy Policy</a>
-                    <a href="termservice.php">Terms of Service</a>
-                </div>
-                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
-    
     <script>
-        // 切换密码显示/隐藏
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const icon = input.nextElementSibling.querySelector('i');
@@ -219,16 +177,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('passwordForm');
-            const saveButton = document.getElementById('saveButton');
-            
-            if (form && saveButton) {
-                form.addEventListener('submit', function() {
-                    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                    saveButton.disabled = true;
-                });
-            }
+        document.getElementById('passwordForm').addEventListener('submit', function() {
+            const btn = document.getElementById('saveButton');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Securing...';
+            btn.disabled = true;
         });
     </script>
 </body>
