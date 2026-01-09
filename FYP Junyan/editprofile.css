@@ -109,12 +109,12 @@ body {
 }
 
 /* ============================================================
-   4. PASSWORD & TOGGLE (密码显示/隐藏专用)
+   4. PASSWORD & TOGGLE (密码显示/隐藏专用 - 强制修正版)
    ============================================================ */
 .password-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
 /* 预留右侧眼睛图标空间 */
@@ -123,24 +123,24 @@ body {
 }
 
 .toggle-password {
-    position: absolute;
-    right: 12px;
-    background: none;
-    border: none;
-    color: #999999;
-    cursor: pointer;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px;
-    transition: all 0.3s ease;
-    z-index: 5;
+    position: absolute !important;
+    right: 12px !important;
+    background: none !important;
+    border: none !important;
+    color: #999999 !important;
+    cursor: pointer !important;
+    font-size: 1.1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 5px !important;
+    transition: all 0.3s ease !important;
+    z-index: 5 !important;
 }
 
 .toggle-password:hover {
-    color: var(--bakery-gold);
-    transform: scale(1.1);
+    color: var(--bakery-gold) !important;
+    transform: scale(1.1) !important;
 }
 
 /* ============================================================
@@ -194,31 +194,38 @@ body {
     border: 1.5px solid #dddddd;
     padding: 10px 20px;
     font-size: 0.9rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-manage-redirect:hover {
+    background-color: #eee;
 }
 
 /* ============================================================
-   6. TOAST MODAL (成功弹窗)
+   6. TOAST MODAL (成功弹窗 - 强制修正版)
    ============================================================ */
 .toast-overlay {
-    position: fixed;
+    position: fixed !important;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 9999;
-    display: none; /* 由PHP逻辑控制显示 */
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.7) !important;
+    z-index: 9999 !important;
+    display: flex !important; /* 配合 PHP 条件显示 */
+    align-items: center !important;
+    justify-content: center !important;
+    backdrop-filter: blur(3px) !important;
 }
 
 .toast-card {
-    background: var(--white);
-    padding: 40px;
-    border-radius: 15px;
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    animation: slideUpFade 0.4s ease-out;
+    background: var(--white) !important;
+    padding: 40px !important;
+    border-radius: 15px !important;
+    text-align: center !important;
+    max-width: 400px !important;
+    width: 90% !important;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3) !important;
+    animation: slideUpFade 0.4s ease-out !important;
 }
 
 @keyframes slideUpFade {
@@ -264,6 +271,24 @@ footer {
 .footer-logo img { height: 60px; margin-bottom: 15px; }
 .footer-links a { margin: 0 10px; color: white; text-decoration: none; transition: 0.3s; }
 .footer-links a:hover { color: var(--bakery-gold); }
+
+/* ============================================================
+   9. BACK NAVIGATION (返回按钮)
+   ============================================================ */
+.back-navigation {
+    margin-bottom: 20px;
+}
+.back-link {
+    color: var(--bakery-brown);
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.back-link:hover {
+    color: var(--bakery-gold);
+}
 
 /* 响应式调整 */
 @media (max-width: 600px) {

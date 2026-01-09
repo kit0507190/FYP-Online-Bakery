@@ -63,50 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Change Password - Bakery House</title>
     <link rel="stylesheet" href="editprofile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* 强制覆盖和修复样式 */
-        .password-wrapper {
-            position: relative !important;
-            display: block !important; /* 确保占满宽度 */
-        }
-        .password-wrapper .form-input {
-            padding-right: 45px !important;
-            width: 100%;
-        }
-        .toggle-password {
-            position: absolute !important;
-            right: 15px !important;
-            top: 50% !important;
-            transform: translateY(-50%) !important;
-            background: none !important;
-            border: none !important;
-            color: #999 !important;
-            cursor: pointer !important;
-            z-index: 10 !important;
-        }
-        .toast-overlay {
-            position: fixed !important;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7) !important;
-            display: flex !important;
-            align-items: center; justify-content: center;
-            z-index: 9999 !important;
-        }
-        .toast-card {
-            background: white !important;
-            padding: 40px !important;
-            border-radius: 15px !important;
-            text-align: center !important;
-            max-width: 400px !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-        }
-        .toast-icon {
-            background: #d4a76a; color: white;
-            width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 20px; font-size: 30px;
-        }
-    </style>
+
 </head>
 <body>
     <?php include 'header.php'; ?>
