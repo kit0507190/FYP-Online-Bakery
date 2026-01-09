@@ -1,5 +1,5 @@
 <?php
-require_once 'admin_auth.php';  // Handles session check and loads $current_admin with role
+require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
 
 // Restrict this page to Super Admin only
 if ($current_admin['role'] !== 'super_admin') {
@@ -20,7 +20,7 @@ try {
 
 // Handle delete request
 if (isset($_GET['delete'])) {
-    $id = $_GET['delete'];
+    $id = (int)$_GET['delete'];
     try {
         $stmt = $pdo->prepare("DELETE FROM user_db WHERE id = ?");
         $stmt->execute([$id]);
@@ -42,7 +42,8 @@ if (isset($_GET['delete'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-    <header class="header">
+
+<header class="header">
     <h1>BakeryHouse Admin</h1>
     <div style="display: flex; align-items: center; gap: 20px;">
         <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
@@ -50,74 +51,78 @@ if (isset($_GET['delete'])) {
         </span>
         <a href="admin_logout.php" class="logout">Logout</a>
     </div>
-    </header>
+</header>
 
-    <nav class="sidebar">
-        <ul>
-            <li><a href="admin_dashboard.php">Dashboard</a></li>
-            <li><a href="manage_products.php">Manage Products</a></li>
-            <li><a href="view_orders.php">View Orders</a></li>
-            <li><a href="stock_management.php">Stock Management</a></li>
-            
-            <?php if ($current_admin['role'] === 'super_admin'): ?>
-                <li><a href="user_accounts.php" class="active">User Accounts</a></li>
-                <li><a href="manage_admins.php">Manage Admins</a></li>
-            <?php endif; ?>
-            
+<nav class="sidebar">
+    <ul>
+        <li><a href="admin_dashboard.php">Dashboard</a></li>
+        <li><a href="manage_products.php">Manage Products</a></li>
+        <li><a href="view_orders.php">View Orders</a></li>
+        <li><a href="stock_management.php">Stock Management</a></li>
+
+        <?php if ($current_admin['role'] === 'super_admin'): ?>
+            <li><a href="user_accounts.php" class="active">User Accounts</a></li>
+            <li><a href="manage_admins.php">Manage Admins</a></li>
             <li><a href="reports.php">Reports</a></li>
-        </ul>
-    </nav>
-
-    <main class="main">
-        <!-- Display success or error messages -->
-        <?php if (isset($_SESSION['error_message'])): ?>
-            <div class="alert error">
-                <?= htmlspecialchars($_SESSION['error_message']) ?>
-            </div>
-            <?php unset($_SESSION['error_message']); ?>
         <?php endif; ?>
+    </ul>
+</nav>
 
-        <?php if (isset($_GET['success'])): ?>
-            <div class="alert success">
-                User deleted successfully!
-            </div>
-        <?php endif; ?>
-
-        <div class="table-card">
-            <h2>User Accounts</h2>
-            <table id="userTable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Created At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($users)): ?>
-                        <tr><td colspan="5" style="text-align:center; color:#999;">No users yet.</td></tr>
-                    <?php else: ?>
-                        <?php foreach ($users as $user): ?>
-                            <tr>
-                                <td><?= htmlspecialchars($user['id']) ?></td>
-                                <td><?= htmlspecialchars($user['name']) ?></td>
-                                <td><?= htmlspecialchars($user['email']) ?></td>
-                                <td><?= htmlspecialchars($user['created_at']) ?></td>
-                                <td>
-                                    <a href="?delete=<?= $user['id'] ?>" 
-                                       class="action-btn delete-btn" 
-                                       onclick="return confirm('Are you sure you want to delete <?= htmlspecialchars($user['name']) ?>?')">
-                                        Delete
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+<main class="main">
+    <?php if (isset($_SESSION['error_message'])): ?>
+        <div class="alert error" style="padding:1rem; background:#ffebee; color:#c62828; border-radius:8px; margin-bottom:2rem;">
+            <?= htmlspecialchars($_SESSION['error_message']) ?>
         </div>
-    </main>
+        <?php unset($_SESSION['error_message']); ?>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['success'])): ?>
+        <div class="alert success" style="padding:1rem; background:#d4edda; color:#155724; border-radius:8px; margin-bottom:2rem;">
+            User deleted successfully!
+        </div>
+    <?php endif; ?>
+
+    <div class="table-card">
+        <h2>Customer User Accounts</h2>
+        <table id="userTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($users)): ?>
+                    <tr>
+                        <td colspan="5" style="text-align:center; padding:6rem; color:#999;">
+                            <i class="fas fa-users fa-3x" style="color:#ddd; margin-bottom:1rem;"></i><br>
+                            No registered customers yet.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($users as $user): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($user['id']) ?></td>
+                            <td><?= htmlspecialchars($user['name']) ?></td>
+                            <td><?= htmlspecialchars($user['email']) ?></td>
+                            <td><?= date('d M Y, H:i', strtotime($user['created_at'])) ?></td>
+                            <td>
+                                <a href="?delete=<?= $user['id'] ?>" 
+                                   class="action-btn delete-btn" 
+                                   onclick="return confirm('Permanently delete <?= htmlspecialchars(addslashes($user['name'])) ?>?\nThis cannot be undone.')">
+                                    Delete
+                                </a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</main>
+
 </body>
 </html>
