@@ -31,7 +31,7 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
         <div class="hero-content">
             <h1 id="heroTitle">Happiness Is a Piece of Cake</h1>
             <p id="heroSubtitle">Our Favorite Bakery House in Town</p>
-            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.html'">Explore Our Menu</button>
+            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.php'">Explore Our Menu</button>
         </div>
     </section>
 
@@ -39,19 +39,19 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
         <div class="container">
             <h2 class="section-title">Shop by Categories</h2>
             <div class="categories-grid">
-                <div class="category-card" onclick="window.location.href='menu.html?category=cake'">
+                <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
                     <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" alt="Cakes" class="category-image">
                     <div class="category-name">Cakes</div>
                 </div>
-                <div class="category-card" onclick="window.location.href='menu.html?category=bread'">
+                <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
                     <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" alt="Bread" class="category-image">
                     <div class="category-name">Bread</div>
                 </div>
-                <div class="category-card" onclick="window.location.href='menu.html?category=pastry'">
+                <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
                     <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=500" alt="Pastries" class="category-image">
                     <div class="category-name">Pastries</div>
                 </div>
-                <div class="category-card" onclick="window.location.href='menu.html?category=cookie'">
+                <div class="category-card" onclick="window.location.href='menu.php?category=cookie'">
                     <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500" alt="Cookies" class="category-image">
                     <div class="category-name">Cookies</div>
                 </div>

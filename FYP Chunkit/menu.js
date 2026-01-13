@@ -4567,7 +4567,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const pageIndicator = document.getElementById('pageIndicator');
 
         // Current filter state
-        let currentCategory = 'cake'; // Default to cake
+        let currentCategory = 'all'; // Default to cake
         let currentSubCategory = 'all';
         let currentSearch = '';
         let currentSort = 'name';
