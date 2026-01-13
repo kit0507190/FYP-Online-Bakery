@@ -1,206 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BakeryHouse - Menu</title>
-    <link rel="stylesheet" href="menu.css">
-</head>
-<body>
-    <!-- Navigation -->
-    <header>
-        <div class="container">
-            <nav class="navbar">
-                <a href="index.html" class="logo">
-                    <img src="Bakery House Logo.png" alt="BakeryHouse">
-                </a>
-                <ul class="nav-links">
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="menu.html" class="active">Menu</a></li>
-                    <li><a href="about_us.html">About</a></li>
-                    <li><a href="contact.html">Contact</a></li>
-                    <li class="cart-icon" id="cartIcon">
-                        <span>🛒 Cart</span>
-                        <span class="cart-count">0</span>
-                    </li>
-                    <li>
-                        <a href="User_Login.php" class="signup-btn">Sign Up</a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+document.addEventListener('DOMContentLoaded', function () {
 
-    <!-- Breadcrumb -->
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="index.html">Home</a> > 
-            <span>Menu</span>
-        </div>
-    </div>
-
-    <!-- Menu Page -->
-    <section class="menu-page">
-        <div class="container">
-            <h1 style="text-align: center; margin: 20px 0; font-size: 32px;">Our Delicious Bakery Products</h1>
-            
-            <!-- Search and Filter Bar -->
-            <div class="search-filter-bar">
-                <div class="search-box">
-                    <input type="text" class="search-input" id="searchInput" placeholder="Search products...">
-                    <button class="search-btn" id="searchBtn">🔍</button>
-                </div>
-                <div class="sort-filter">
-                    <select class="sort-select" id="sortSelect">
-                        <option value="name">Sort by Name</option>
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                        <option value="rating">Highest Rated</option>
-                        <option value="popular">Most Popular</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="menu-layout">
-                <!-- Categories Sidebar -->
-                <div class="categories-sidebar">
-                    <h3 class="category-header">Categories</h3>
-                    
-                    <!-- Cake Category -->
-                    <div class="category-item">
-                        <div class="category-main active" data-category="cake">
-                            <span>Cakes</span>
-                            <span class="category-arrow active">▼</span>
-                        </div>
-                        <div class="subcategories active">
-                            <a class="subcategory-item active" data-subcategory="all">All Cakes</a>
-                            <a class="subcategory-item" data-subcategory="5 inch">5 inch Cake</a>
-                            <a class="subcategory-item" data-subcategory="cheese">Cheese Flavour</a>
-                            <a class="subcategory-item" data-subcategory="chocolate">Chocolate & Coffee</a>
-                            <a class="subcategory-item" data-subcategory="strawberry">Strawberry Flavour</a>
-                            <a class="subcategory-item" data-subcategory="vanilla">Vanilla Flavour</a>
-                            <a class="subcategory-item" data-subcategory="durian">Durian Series</a>
-                            <a class="subcategory-item" data-subcategory="animal">The Animal Series</a>
-                            <a class="subcategory-item" data-subcategory="fondant">Fondant Cake Design</a>
-                            <a class="subcategory-item" data-subcategory="fresh-cream">Fresh Cream Cake</a>
-                            <a class="subcategory-item" data-subcategory="festival">Festival</a>
-                            <a class="subcategory-item" data-subcategory="little">Little Series</a>
-                            <a class="subcategory-item" data-subcategory="mini">Cute Mini Cake</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Bread Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="bread">
-                            <span>Bread</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Bread</a>
-                            <a class="subcategory-item" data-subcategory="sourdough">Sourdough Bread</a>
-                            <a class="subcategory-item" data-subcategory="wholegrain">Whole Grain Bread</a>
-                            <a class="subcategory-item" data-subcategory="artisan">Artisan Bread</a>
-                            <a class="subcategory-item" data-subcategory="sweet">Sweet Bread</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Pastry Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="pastry">
-                            <span>Pastries</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Pastries</a>
-                            <a class="subcategory-item" data-subcategory="croissant">Croissants</a>
-                            <a class="subcategory-item" data-subcategory="danish">Danish Pastries</a>
-                            <a class="subcategory-item" data-subcategory="tart">Tarts</a>
-                            <a class="subcategory-item" data-subcategory="puff">Puff Pastry</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Cookie Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="cookie">
-                            <span>Cookies</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Cookies</a>
-                            <a class="subcategory-item" data-subcategory="chocolatechip">Chocolate Chip</a>
-                            <a class="subcategory-item" data-subcategory="butter">Butter Cookies</a>
-                            <a class="subcategory-item" data-subcategory="oatmeal">Oatmeal Cookies</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Products Section -->
-                <div class="products-section">
-                    <!-- Active Category Display -->
-                    <div class="active-category" id="activeCategory">
-                        All Cakes
-                    </div>
-                    
-                    <!-- Results Info -->
-                    <div class="results-info" id="resultsInfo">
-                        Showing all cakes
-                    </div>
-                    
-                    <!-- Loading Spinner -->
-                    <div class="loading-spinner" id="loadingSpinner" style="display:none;">
-                        <div class="spinner"></div>
-                        <p>Loading delicious products...</p>
-                    </div>
-                    
-                    <!-- Products Grid -->
-                    <div class="products-grid" id="productsGrid">
-                        <!-- Products will be dynamically generated -->
-                    </div>
-                    
-                    <!-- Pagination Controls (Prev / Page / Next) -->
-                    <div class="pagination" id="paginationControls" style="margin-top:18px; display:flex; gap:12px; align-items:center; justify-content:center;">
-                        <button id="prevPageBtn">Prev</button>
-                        <div class="page-indicator" id="pageIndicator">Page 1</div>
-                        <button id="nextPageBtn">Next</button>
-                    </div>
-                    
-                    <!-- The old Load More kept but hidden (not used) -->
-                    <div class="load-more-container" style="display:none;">
-                        <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More Products</button>
-                    </div>
-                    
-                    <!-- Recently Viewed -->
-                    <div class="recently-viewed" id="recentlyViewed" style="display: none; margin-top:30px;">
-                        <h2 class="section-title">Recently Viewed</h2>
-                        <div class="recent-products" id="recentProducts">
-                            <!-- Recently viewed products will be dynamically loaded -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Quick View Modal -->
-    <div class="modal" id="quickViewModal">
-        <div class="modal-content" id="quickViewContent">
-            <!-- Quick view content will be dynamically loaded -->
-        </div>
-    </div>
-
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop" style="display:none;">↑</button>
-
-    <!-- Toast Notification -->
-    <div class="toast" id="toast" style="display:none;"></div>
-
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script>
         // ---------------------------------------------------------
         // PRODUCTS: keep your original items (IDs 1-29) and add 30-38
         // (I preserved your original array entries and appended new ones)
@@ -332,7 +131,7 @@
 },
 {
     id: 78,
-    name: "PEACH CHEESE BLOSSOM",
+    name: "PEACH CHEESE BLOSSOM", 
     price: 98.00,
     category: "cake",
     subcategory: "cheese",
@@ -4900,12 +4699,12 @@
             activeCategory.textContent = currentSubCategory !== 'all' ? (subNames[currentSubCategory] || 'Products') : (subNames['all'] || 'Products');
         }
 
-        // View product details (redirect)
-        function viewProductDetails(productId) {
-            addToRecentlyViewed(productId);
-            sessionStorage.setItem('currentProduct', productId);
-            window.location.href = 'product-details.html';
-        }
+        // 在 menu.js 中找到这个函数并修改
+function viewProductDetails(productId) {
+    addToRecentlyViewed(productId);
+    // 修改这里：跳转到 php 页面，并把 ID 传过去
+    window.location.href = 'product_detail.php?id=' + productId;
+}
 
         // Quick view product in modal
         function quickViewProduct(productId) {
@@ -4991,9 +4790,22 @@
         }
 
         function updateCartCount() {
-            const total = cart.reduce((s, i) => s + i.quantity, 0);
-            cartCount.textContent = total;
-        }
+    // 1. 计算购物车总数
+    const total = cart.reduce((s, i) => s + i.quantity, 0);
+    
+    // 2. 将数量同步到 localStorage，这样跳转到其他页面（如 cart.php）时 header 能读到最新值
+    localStorage.setItem('cartItemCount', total.toString());
+
+    // 3. 更新当前页面 header 里的红色数字
+    // 注意：header.php 中定义的类名是 .cart-count
+    const cartCountElement = document.querySelector('.cart-count');
+    
+    if (cartCountElement) {
+        cartCountElement.textContent = total;
+    } else {
+        console.warn('未找到 .cart-count 元素，请检查 header.php 是否包含该类名');
+    }
+}
 
         function showToast(msg) {
             toast.textContent = msg;
@@ -5015,7 +4827,19 @@
 
         // Setup event listeners for controls and categories
         function setupEventListeners() {
-            cartIcon.addEventListener('click', () => { window.location.href = 'cart.html'; });
+
+    // ✅ 一定要先拿 DOM
+    const cartIcon = document.querySelector('.cart-icon-wrapper');
+
+    // ✅ 一定要防 null
+    if (cartIcon) {
+        cartIcon.addEventListener('click', () => {
+            window.location.href = 'cart.php';
+        });
+    }
+
+
+
 
             document.querySelectorAll('.category-main').forEach(btn => btn.addEventListener('click', function(){
                 const category = this.getAttribute('data-category');
@@ -5065,8 +4889,11 @@
         }
 
         // Initialize after DOM loaded
-        document.addEventListener('DOMContentLoaded', initPage);
+        // document.addEventListener('DOMContentLoaded', initPage);
+		
+		initPage();
+});
 
-    </script>
-</body>
-</html>
+
+
+

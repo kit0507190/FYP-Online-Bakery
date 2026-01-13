@@ -3,6 +3,7 @@ include 'config.php';
 
 $orderSuccess = false;
 $customerName = '';
+$dbErrorMessage = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = $_POST['fullName'] ?? '';
@@ -23,47 +24,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // === 1️⃣ 写入 orders 表 ===
-    $stmt = $pdo->prepare("
-        INSERT INTO orders 
-        (customer_name, customer_email, customer_phone, delivery_address, city, postcode, total, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
-    ");
+    // === 1️⃣ 写入 orders 表 (Create Order, payment_status = pending) ===
+    $paymentMethod = $_POST['paymentMethod'] ?? null;
 
-    $stmt->execute([
-        $customerName,
-        $email,
-        $phone,
-        $address,
-        $city,
-        $postcode,
-        $total
-    ]);
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO orders 
+            (customer_name, customer_email, customer_phone, delivery_address, city, postcode, total, payment_method, payment_status, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending')
+        ");
 
-    // 拿到刚刚的 order id
-    $orderId = $pdo->lastInsertId();
-
-    // === 2️⃣ 写入 orders_detail 表 ===
-    $stmtDetail = $pdo->prepare("
-        INSERT INTO orders_detail
-        (order_id, product_id, product_name, price, quantity, subtotal)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ");
-
-    foreach ($cartData as $item) {
-        $subtotal = $item['price'] * $item['quantity'];
-
-        $stmtDetail->execute([
-            $orderId,
-            $item['id'],
-            $item['name'],
-            $item['price'],
-            $item['quantity'],
-            $subtotal
+        $stmt->execute([
+            $customerName,
+            $email,
+            $phone,
+            $address,
+            $city,
+            $postcode,
+            $total,
+            $paymentMethod
         ]);
-    }
 
-    $orderSuccess = true;
+        // 拿到刚刚的 order id
+        $orderId = $pdo->lastInsertId();
+
+        // === 2️⃣ 写入 orders_detail 表 ===
+        $stmtDetail = $pdo->prepare("
+            INSERT INTO orders_detail
+            (order_id, product_id, product_name, price, quantity, subtotal)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+
+        foreach ($cartData as $item) {
+            $subtotal = $item['price'] * $item['quantity'];
+
+            $stmtDetail->execute([
+                $orderId,
+                $item['id'],
+                $item['name'],
+                $item['price'],
+                $item['quantity'],
+                $subtotal
+            ]);
+        }
+
+        // Redirect to simulated payment flow based on method
+        if ($paymentMethod === 'debitCard') {
+            header("Location: process_debit.php?order_id={$orderId}");
+            exit;
+        } else {
+            // eWallet / fpx / others
+            header("Location: simulate_gateway.php?order_id={$orderId}&method=" . urlencode($paymentMethod));
+            exit;
+        }
+
+    } catch (PDOException $e) {
+        // Log and display a friendly message
+        error_log('DB error during order creation: ' . $e->getMessage());
+        $dbErrorMessage = 'We encountered a database error while creating your order. Please contact support or try again later.';
+    }
 }
 ?>
 
@@ -74,6 +93,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment - BakeryHouse</title>
     <link rel="stylesheet" href="payment.css">
+    <style>
+        /* card input success/error visuals */
+        .form-input.valid { border-color: #28a745 !important; box-shadow: 0 0 0 4px rgba(40,167,69,0.06); }
+        .error-message { display: none; color: #d9534f; }
+        .error-message.visible { display: block; }
+        .error-message.success { display: block; color: #28a745; }
+    </style>
 </head>
 <body>
     <!-- Shared header -->
@@ -101,6 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Payment Form -->
                 <div class="payment-form-container">
                     <h2>Payment Details</h2>
+                    <?php if (!empty($dbErrorMessage)): ?>
+                        <div style="background:#fee;border:1px solid #fbb;padding:0.75rem;margin-bottom:0.75rem;border-radius:4px;color:#800;"><?php echo htmlspecialchars($dbErrorMessage); ?></div>
+                    <?php endif; ?>
                     <!-- 这里和 html 一样，只是加了 name、method、action、hidden input -->
                     <form id="paymentForm" method="post" action="payment.php">
                         <div class="form-group">
@@ -161,10 +190,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label class="form-label">Payment Method</label>
                             <div class="payment-methods">
                                 <div class="payment-method">
-                                    <input type="radio" id="creditCard" name="paymentMethod" value="creditCard">
-                                    <label for="creditCard">Credit Card</label>
-                                </div>
-                                <div class="payment-method">
                                     <input type="radio" id="debitCard" name="paymentMethod" value="debitCard">
                                     <label for="debitCard">Debit Card</label>
                                 </div>
@@ -182,11 +207,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
                         
-                        <!-- Credit Card Details -->
+                        <!-- Card Details -->
                         <div class="payment-details" id="cardDetails">
                             <div class="form-group">
                                 <label class="form-label" for="cardNumber">Card Number</label>
-                                <input type="text" id="cardNumber" class="form-input" placeholder="1234 5678 9012 3456">
+                                <input type="text" id="cardNumber" name="cardNumber" class="form-input" placeholder="1234 5678 9012 3456">
                                 <div class="error-message" id="cardNumberError">
                                     • Please enter a valid 16-digit card number<br>
                                     • Format: XXXX XXXX XXXX XXXX
@@ -195,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             
                             <div class="form-group">
                                 <label class="form-label" for="cardName">Name on Card</label>
-                                <input type="text" id="cardName" class="form-input" placeholder="As shown on your card">
+                                <input type="text" id="cardName" name="cardName" class="form-input" placeholder="As shown on your card">
                                 <div class="error-message" id="cardNameError">
                                     • Please enter the name exactly as shown on your card
                                 </div>
@@ -204,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="form-row">
                                 <div class="form-group">
                                     <label class="form-label" for="expiryDate">Expiry Date</label>
-                                    <input type="text" id="expiryDate" class="form-input" placeholder="MM/YY">
+                                    <input type="text" id="expiryDate" name="expiryDate" class="form-input" placeholder="MM/YY">
                                     <div class="error-message" id="expiryDateError">
                                         • Please enter a valid expiry date<br>
                                         • Format: MM/YY (e.g., 12/25 for December 2025)
@@ -213,7 +238,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 
                                 <div class="form-group">
                                     <label class="form-label" for="cvv">CVV</label>
-                                    <input type="text" id="cvv" class="form-input" placeholder="123">
+                                    <input type="text" id="cvv" name="cvv" class="form-input" placeholder="123">
                                     <div class="error-message" id="cvvError">
                                         • Please enter the 3-digit security code<br>
                                         • Located on the back of your card
@@ -232,7 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </form>
                     
                     <div class="back-link">
-                        <a href="cart.html">← Back to Cart</a>
+                        <a href="cart.php">← Back to Cart</a>
                     </div>
                 </div>
             </div>
@@ -338,7 +363,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const errorElement = document.getElementById(inputId + 'Error');
             
             input.classList.remove('error');
+            input.classList.remove('valid');
             errorElement.style.display = 'none';
+            errorElement.classList.remove('success');
+        }
+
+        // Show success message for a field
+        function showSuccess(inputId, message) {
+            const input = document.getElementById(inputId);
+            const errorElement = document.getElementById(inputId + 'Error');
+            input.classList.remove('error');
+            input.classList.add('valid');
+            errorElement.style.display = 'block';
+            errorElement.classList.add('success');
+            errorElement.innerHTML = '✔ ' + message;
         }
 
         // Validate email format
@@ -353,27 +391,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return phoneRegex.test(phone.replace(/\s/g, ''));
         }
 
-        // Validate card number (simple Luhn check)
+        // Validate card number (require exactly 16 digits)
         function isValidCardNumber(cardNumber) {
-            const cleaned = cardNumber.replace(/\s/g, '');
-            if (!/^\d+$/.test(cleaned) || cleaned.length !== 16) return false;
-            
-            let sum = 0;
-            let isEven = false;
-            
-            for (let i = cleaned.length - 1; i >= 0; i--) {
-                let digit = parseInt(cleaned.charAt(i), 10);
-                
-                if (isEven) {
-                    digit *= 2;
-                    if (digit > 9) digit -= 9;
-                }
-                
-                sum += digit;
-                isEven = !isEven;
-            }
-            
-            return sum % 10 === 0;
+            const cleaned = (cardNumber || '').replace(/\D/g, '');
+            return cleaned.length === 16;
         }
 
         // Validate expiry date
@@ -480,12 +501,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (!value) {
                         showError(fieldId, '• Please enter your card number');
                         return false;
-                    } else if (!isValidCardNumber(value)) {
-                        showError(fieldId, 
-                            '• Please enter a valid 16-digit card number<br>' +
-                            '• Format: XXXX XXXX XXXX XXXX'
-                        );
-                        return false;
+                    } else {
+                        const digits = value.replace(/\D/g, '');
+                        if (digits.length !== 16) {
+                            showError(fieldId, '• Please enter a valid card number (16 digits)');
+                            return false;
+                        }
+
+                        // Passed length rule — show positive feedback
+                        showSuccess(fieldId, 'Valid card number');
                     }
                     break;
                     
@@ -552,8 +576,8 @@ if (!paymentMethod) {
 }
 
             
-            // Additional validation for credit card if selected
-            if (paymentMethod && (paymentMethod.value === 'creditCard' || paymentMethod.value === 'debitCard')) {
+            // Additional validation for card details if debit card selected
+            if (paymentMethod && paymentMethod.value === 'debitCard') {
                 const cardFields = ['cardNumber', 'cardName', 'expiryDate', 'cvv'];
                 cardFields.forEach(field => {
                     if (!validateField(field)) {
@@ -586,7 +610,7 @@ if (!paymentMethod) {
                     });
                     this.closest('.payment-method').classList.add('selected');
                     
-                    if (this.value === 'creditCard' || this.value === 'debitCard') {
+                    if (this.value === 'debitCard') {
                         cardDetails.classList.add('active');
                     } else {
                         cardDetails.classList.remove('active');
@@ -607,6 +631,53 @@ if (!paymentMethod) {
                     hideError(this.id);
                 });
             });
+
+            // Card number: auto-format groups of 4, preserve caret position, and live-validate (16 digits)
+            const cardNumberInput = document.getElementById('cardNumber');
+            if (cardNumberInput) {
+                cardNumberInput.addEventListener('input', function(e) {
+                    const el = this;
+                    const raw = el.value;
+                    const selectionStart = el.selectionStart;
+
+                    // count digits before cursor
+                    const digitsBeforeCursor = raw.slice(0, selectionStart).replace(/\D/g, '').length;
+
+                    // get only digits and limit to 16
+                    const digits = raw.replace(/\D/g, '').slice(0, 16);
+
+                    // format into groups of 4
+                    const formatted = digits.replace(/(.{4})/g, '$1 ').trim();
+
+                    // set formatted value
+                    el.value = formatted;
+
+                    // compute new caret position to keep it after the same number of digits
+                    let pos = 0; let count = 0;
+                    for (let i = 0; i < el.value.length; i++) {
+                        if (/\d/.test(el.value[i])) count++;
+                        if (count >= digitsBeforeCursor) { pos = i + 1; break; }
+                    }
+                    if (digitsBeforeCursor === 0) pos = 0;
+                    if (count < digitsBeforeCursor) pos = el.value.length;
+
+                    try { el.setSelectionRange(pos, pos); } catch (err) {}
+
+                    // live validation: show success when exactly 16 digits, otherwise show a red hint
+                    if (digits.length === 16) {
+                        showSuccess('cardNumber', 'Valid card number');
+                    } else if (digits.length > 0) {
+                        showError('cardNumber', '• Please enter a valid card number (16 digits)');
+                    } else {
+                        hideError('cardNumber');
+                    }
+                });
+
+                // validate on blur to finalize state
+                cardNumberInput.addEventListener('blur', function() {
+                    validateField('cardNumber');
+                });
+            }
             
             // Payment form submission => 改成真正 POST 去 PHP
             paymentForm.addEventListener('submit', function(e) {
@@ -647,14 +718,7 @@ if (!paymentMethod) {
         });
     </script>
 
-<?php if ($orderSuccess): ?>
-    <script>
-        // 下单成功后：清空 localStorage + 弹出提示 + 回首页
-        localStorage.removeItem('bakeryCart');
-        alert('Order placed successfully! 🎉 Thank you, <?php echo addslashes($customerName); ?>!');
-        window.location.href = 'index.html';
-    </script>
-<?php endif; ?>
+
 
 </body>
 </html>

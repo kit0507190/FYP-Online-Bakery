@@ -1,20 +1,26 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BakeryHouse - Menu</title>
     <link rel="stylesheet" href="menu.css">
+    <link rel="stylesheet" href="footer.css">
 </head>
-<body>
-    <!-- Shared header -->
-    <?php include 'header.php'; ?>
-    <!-- End shared header -->
 
-    <!-- Breadcrumb -->
+<body>
+
+<!-- 只多这一行 -->
+<?php include 'header.php'; ?>
+
+
+
+<!-- ↓↓↓ 从这里开始：下面全部照抄 menu.html，一行不改 ↓↓↓ -->
+
+<!-- Breadcrumb -->
     <div class="container">
         <div class="breadcrumb">
-            <a href="mainpage.php">Home</a> > 
+            <a href="index.php">Home</a> > 
             <span>Menu</span>
         </div>
     </div>
@@ -174,15 +180,10 @@
     <!-- Toast Notification -->
     <div class="toast" id="toast" style="display:none;"></div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-        </div>
-    </footer>
-
-    <script>
-        // (menu page JS omitted for brevity) — please keep original scripts from `menu.html` when needed
-    </script>
-
+    <?php include 'footer.php'; ?>
+	
+	<!-- ⚠️ JS 一定在这里，和 menu.html 一模一样 -->
+	<script src="menu.js"></script>
+	
 </body>
 </html>

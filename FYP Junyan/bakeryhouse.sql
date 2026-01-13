@@ -112,6 +112,8 @@ CREATE TABLE `orders` (
   `postcode` varchar(10) DEFAULT NULL,
   `items` text NOT NULL,
   `total` decimal(10,2) NOT NULL,
+  `payment_method` varchar(50) DEFAULT NULL,
+  `payment_status` enum('pending','paid','failed') DEFAULT 'pending',
   `status` enum('pending','preparing','ready','delivered','cancelled') DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -120,8 +122,8 @@ CREATE TABLE `orders` (
 -- 转存表中的数据 `orders`
 --
 
-INSERT INTO `orders` (`id`, `customer_name`, `customer_email`, `customer_phone`, `delivery_address`, `city`, `postcode`, `items`, `total`, `status`, `created_at`) VALUES
-(2, 'test', 'test@bakery.com', '012-3456789', '30, Bukit Beruang, Ayer Keroh', 'Melaka', '75450', '[{\"id\":1,\"name\":\"A LITTLE SWEET\",\"price\":98,\"image\":\"cake\\/A_Little_Sweet.jpg\",\"quantity\":1}]', 98.00, 'delivered', '2025-12-02 15:29:27');
+INSERT INTO `orders` (`id`, `customer_name`, `customer_email`, `customer_phone`, `delivery_address`, `city`, `postcode`, `items`, `total`, `payment_method`, `payment_status`, `status`, `created_at`) VALUES
+(2, 'test', 'test@bakery.com', '012-3456789', '30, Bukit Beruang, Ayer Keroh', 'Melaka', '75450', '[{"id":1,"name":"A LITTLE SWEET","price":98,"image":"cake\/A_Little_Sweet.jpg","quantity":1}]', 98.00, NULL, 'pending', 'delivered', '2025-12-02 15:29:27');
 
 -- --------------------------------------------------------
 

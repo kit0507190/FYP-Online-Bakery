@@ -1,0 +1,281 @@
+/* ============================================================
+   HEADER GLOBAL STYLES
+   ============================================================ */
+ 
+/* 必须先告诉浏览器去哪里下载这个字体 */
+@font-face {
+    font-family: 'BonvenoCF';
+    src: url('fonts/BonvenoCF.woff2') format('woff2'), /* 这里的路径要改成你实际存放字体的路径 */
+         url('fonts/BonvenoCF.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+:root {
+    --main-font: 'BonvenoCF', sans-serif;
+    --serif-font: 'AvenirNext LT Pro', serif;
+    --main-color: #5a3921;
+    --accent-color: #d4a76a;
+}
+
+.main-header {
+    /* 改为 sticky 定位：它会自动占据页面空间，内容不再会被“吃到”下面 */
+    position: -webkit-sticky; 
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+    background-color: #ffffff;
+    padding: 12px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* ✅ 既然使用了 sticky，body 就不再需要 padding-top 了。
+   内容会自动从 header 的底部开始排列。
+*/
+body {
+    margin: 0;
+    padding-top: 0 !important; 
+    /* 核心修改：指定字体 */
+    font-family: var(--main-font) !important;
+    background-color: #fff7ec; /* 建议加上 cart.php 的背景色，让风格更统一 */
+}
+
+/* Header 容器 */
+.header-navbar {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* ============================================================
+   LOGO / BRAND
+   ============================================================ */
+
+.logo-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    text-decoration: none;
+}
+
+.logo-brand img {
+    height: 60px;
+    width: auto;
+}
+
+.brand-name {
+    /* 核心修改：更换字体并去掉全大写(如果你想完全模仿cart) */
+    font-family: var(--main-font) !important;
+    font-size: 24px;
+    font-weight: 800;
+    color: #5a3921;
+    letter-spacing: 0.5px;
+    text-transform: none; /* 如果你觉得全大写太硬，可以改为 none */
+}
+
+/* ============================================================
+   NAVIGATION LINKS
+   ============================================================ */
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li {
+    display: flex;
+    align-items: center;
+}
+
+/* Nav link base */
+.nav-links a {
+    position: relative;
+    text-decoration: none;
+    color: #5a3921;
+    /* 核心修改：更换字体并调整粗细 */
+    font-family: var(--main-font) !important;
+    font-weight: 500; 
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+/* Underline animation */
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px;
+    width: 0;
+    height: 2.5px;
+    background-color: #d4a76a;
+    transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after,
+.nav-links a.active::after {
+    width: 100%;
+}
+
+.nav-links a:hover,
+.nav-links a.active {
+    color: #d4a76a;
+}
+
+/* ============================================================
+   CART (修改后的统一版本)
+   ============================================================ */
+
+.cart-icon-wrapper {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative; /* 必须加这一行：作为数字定位的基准 */
+}
+
+/* 购物车链接样式 */
+.cart-link {
+    text-decoration: none;
+    color: #5a3921;
+    font-weight: 600;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-right: 8px; /* 给右侧数字留一点空间 */
+}
+
+/* ✅ 核心修改：数字图标绝对定位到右上角 */
+.cart-count {
+    position: absolute; /* 绝对定位，脱离正常文档流 */
+    top: -8px;          /* 向上偏移，根据视觉效果微调 */
+    right: -5px;        /* 向右偏移，根据视觉效果微调 */
+    
+    background-color: #e74c3c; /* 红色背景 */
+    color: #ffffff;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    font-weight: bold;
+    
+    /* 确保内部数字居中 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+/* ============================================================
+   SIGN IN BUTTON
+   ============================================================ */
+
+.sign-in-btn {
+    background-color: #d4a76a;
+    color: #ffffff !important;
+    padding: 8px 16px;
+    border-radius: 5px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.sign-in-btn:hover {
+    background-color: #c2955a;
+}
+
+/* ============================================================
+   USER AVATAR & DROPDOWN
+   ============================================================ */
+
+.user-menu-wrapper {
+    position: relative;
+}
+
+.user-icon-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4a574, #b8864e);
+    border: 3px solid #f8e8d8;
+    color: #ffffff;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.user-icon-circle:hover {
+    transform: scale(1.1);
+}
+
+/* Dropdown menu */
+.dropdown-box {
+    position: absolute;
+    top: 110%;
+    right: 0;
+    min-width: 150px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+    display: none;
+    z-index: 3000;
+}
+
+.dropdown-box.show {
+    display: block;
+}
+
+.dropdown-box a {
+    display: block;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: #5a3921;
+    text-decoration: none;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-box a:hover {
+    background-color: #fff7ec;
+    color: #d4a76a;
+}
+
+.dropdown-box a:last-child {
+    border-bottom: none;
+}
+
+/* ============================================================
+   ⭐ FIX: Menu Quick View / Modal 被 header 压住
+   ============================================================ */
+
+.modal {
+    position: fixed;
+    z-index: 9999;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 768px) {
+    .brand-name {
+        display: none;
+    }
+
+    .nav-links {
+        gap: 15px;
+    }
+}

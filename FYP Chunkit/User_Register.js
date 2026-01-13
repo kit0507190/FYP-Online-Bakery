@@ -1,137 +1,84 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // ==================== 1. 注册表单验证（你原来的全部保留） ====================
-    const form = document.getElementById('registerForm');
-    const fullName = document.getElementById('fullName');
-    const email = document.getElementById('email');
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('confirmPassword');
-    const agreeTerms = document.getElementById('agreeTerms');
-    const togglePassword = document.getElementById('togglePassword');
+    // 1. 密码显示切换
+    const setupToggle = (btnId, inputId) => {
+        const btn = document.getElementById(btnId);
+        const input = document.getElementById(inputId);
+        if (btn && input) {
+            btn.addEventListener('click', () => {
+                const isPass = input.type === 'password';
+                input.type = isPass ? 'text' : 'password';
+                btn.textContent = isPass ? 'Hide' : 'Show';
+            });
+        }
+    };
+    setupToggle('togglePassword', 'password');
+    setupToggle('toggleConfirmPassword', 'confirmPassword');
 
-    // Show/Hide 密码
-    togglePassword.addEventListener('click', function () {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.textContent = type === 'password' ? 'Show' : 'Hide';
+    // 2. Email 实时检查逻辑 (非 alert)
+    const emailInput = document.getElementById('emailInput');
+    const emailError = document.getElementById('emailError');
+
+    emailInput.addEventListener('blur', function() {
+        const val = this.value.trim().toLowerCase();
+        
+        if (val === "") {
+            clearError();
+        } else if (!val.endsWith('@gmail.com')) {
+            emailError.textContent = "* Please use a valid @gmail.com address.";
+            this.classList.add('input-error');
+        } else {
+            clearError();
+        }
     });
 
-    function validateField(field, validationFn) {
-        const formGroup = field.parentElement;
-        const isValid = validationFn(field.value);
+    emailInput.addEventListener('input', clearError);
 
-        if (isValid) {
-            formGroup.classList.remove('error');
-            formGroup.classList.add('success');
-        } else {
-            formGroup.classList.remove('success');
-            formGroup.classList.add('error');
-        }
-        return isValid;
+    function clearError() {
+        emailError.textContent = "";
+        emailInput.classList.remove('input-error');
     }
 
-    const validateName = name => name.trim().length >= 2;
-    const validateEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const validatePassword = pass => /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/.test(pass);
-    const validateConfirmPassword = confirmPass => confirmPass === password.value;
+    // 3. 重新添加 Modal 逻辑
+    const modal = document.getElementById('policyModal');
+    const title = document.getElementById('policyTitle');
+    const body = document.getElementById('policyBody');
 
-    fullName.addEventListener('blur', () => validateField(fullName, validateName));
-    email.addEventListener('blur', () => validateField(email, validateEmail));
-    password.addEventListener('blur', () => {
-        validateField(password, validatePassword);
-        if (confirmPassword.value) validateField(confirmPassword, validateConfirmPassword);
-    });
-    confirmPassword.addEventListener('blur', () => validateField(confirmPassword, validateConfirmPassword));
-
-    form.addEventListener('submit', function (e) {
-        const isNameValid = validateField(fullName, validateName);
-        const isEmailValid = validateField(email, validateEmail);
-        const isPasswordValid = validateField(password, validatePassword);
-        const isConfirmPasswordValid = validateField(confirmPassword, validateConfirmPassword);
-        const isTermsAccepted = agreeTerms.checked;
-
-        if (!isTermsAccepted) {
-            e.preventDefault();
-            alert('Please agree to the Terms of Service and Privacy Policy');
-            return;
-        }
-
-        if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
-            e.preventDefault();
-            alert('Please fill in all fields correctly');
-        }
-        // If all valid, form will submit normally to PHP
-    });
-
-    // ==================== 2. 可爱条款弹窗功能（已完美合并） ====================
-    const modal = document.getElementById('termsModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-
-    const termsContent = {
+    const contents = {
         terms: `
-            <h4>Welcome to Bakery House ♡</h4>
-            <p>By creating an account, you're joining our warm family!</p>
-            <ul>
-                <li>Be over 13 years old (or have parent permission)</li>
-                <li>Be kind to others — we're all here for cake!</li>
-                <li>Don't share your account</li>
-                <li>Allow sweet emails from us ♡</li>
-            </ul>
-            <p style="margin-top:20px;font-style:italic;color:#b8864e;">Thank you for choosing Bakery House ♡</p>
+            <h4>1. Acceptance</h4>
+            <p>By creating an account at Bakery House, you agree to comply with our community standards and respect our staff.</p>
+            <h4>2. Account</h4>
+            <p>You are responsible for maintaining the confidentiality of your account password.</p>
+            <h4>3. Orders</h4>
+            <p>Orders made through this platform are subject to product availability.</p>
         `,
         privacy: `
-            <h4>Privacy Policy ♡</h4>
-            <p>We only collect your name and email to serve you better.</p>
-            <p>We will <strong>never</strong> sell or share your data.</p>
-            <p>You can delete your account anytime.</p>
-            <p style="margin-top:20px;font-style:italic;color:#b8864e;">Your trust is our most precious ingredient ♡</p>
+            <h4>1. Data Collection</h4>
+            <p>We only collect your name and email to manage your account and process your orders.</p>
+            <h4>2. Security</h4>
+            <p>We implement security measures to protect your personal data from unauthorized access.</p>
         `
     };
 
-    // 点击 Terms / Privacy 链接打开弹窗
-    document.querySelectorAll('.terms-link').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            const type = this.getAttribute('data-type');
-            modalTitle.textContent = type === 'terms' ? 'Terms of Service' : 'Privacy Policy';
-            modalBody.innerHTML = termsContent[type];
-            modal.style.display = 'block';
-        });
-    });
+    document.getElementById('termsLink').onclick = (e) => {
+        e.preventDefault();
+        title.textContent = "Terms of Service";
+        body.innerHTML = contents.terms;
+        modal.style.display = 'block';
+    };
+
+    document.getElementById('privacyLink').onclick = (e) => {
+        e.preventDefault();
+        title.textContent = "Privacy Policy";
+        body.innerHTML = contents.privacy;
+        modal.style.display = 'block';
+    };
 
     // 关闭弹窗
-    document.querySelectorAll('.modal-close, #closeModal').forEach(btn => {
-        btn.addEventListener('click', () => modal.style.display = 'none');
-    });
-
-    window.addEventListener('click', e => {
-        if (e.target === modal) modal.style.display = 'none';
-    });
-
-    // ==================== 3. 服务器端错误处理 ====================
-    const serverErrors = document.getElementById('serverErrors');
-    if (serverErrors) {
-        // 如果有服务器端错误，为相关字段添加错误样式
-        const errors = serverErrors.textContent.toLowerCase();
-        
-        if (errors.includes('name') || errors.includes('2 characters')) {
-            fullName.parentElement.classList.add('error');
-        }
-        
-        if (errors.includes('email') || errors.includes('invalid')) {
-            email.parentElement.classList.add('error');
-        }
-        
-        if (errors.includes('password') || errors.includes('8+ chars')) {
-            password.parentElement.classList.add('error');
-        }
-        
-        if (errors.includes('passwords do not match')) {
-            confirmPassword.parentElement.classList.add('error');
-        }
-        
-        if (errors.includes('agree') || errors.includes('terms')) {
-            // 可以添加terms的错误样式
-        }
-    }
+    const closeModal = () => modal.style.display = 'none';
+    document.querySelector('.close-modal').onclick = closeModal;
+    document.getElementById('modalCloseBtn').onclick = closeModal;
+    
+    // 点击遮罩层关闭
+    window.onclick = (e) => { if (e.target === modal) closeModal(); };
 });
