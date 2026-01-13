@@ -1,57 +1,65 @@
 <?php
-// reset_password_page.php - 重置密码页面
+// resetpassword.php
+session_start();
 
-// 1. 数据库连接配置
-// ********** 请确保这里的配置与之前的一致 **********
+/**
+ * 原理阶段 1：安全关卡 (Session 门票)
+ * 只要用户没关浏览器，这个 Session 就会记录他已经通过了验证码校验。
+ */
+if (!isset($_SESSION['code_verified']) || $_SESSION['code_verified'] !== true) {
+    header("Location: forgotpassword.php?message=" . urlencode("Please verify your code first."));
+    exit;
+}
+
+// 数据库连接
 $host = 'localhost';
-$db   = 'bakeryhouse'; // 你的数据库名称
+$db   = 'bakeryhouse'; 
 $user = 'root'; 
 $pass = ''; 
-// **********************************************
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    // 数据库连接失败
-    $error = 'System error: Database connection failed.';
+    die('System error: Database connection failed.');
 }
-
 
 $error = '';
 $valid_token = false;
+$email = '';
 
-// 检查 URL 中是否包含 token 参数
+/**
+ * 原理阶段 2：状态保持
+ * 当用户从 submit 页面因为密码不合格被跳回来时，URL 会带着 token。
+ * 我们利用这个 token 重新维持页面状态。
+ */
 if (isset($_GET['token'])) {
     $token = $_GET['token'];
-
-    // 2. 验证 Token
+    
+    // 从数据库检查这个验证码是否依然有效（没过期且存在）
     $stmt = $pdo->prepare("SELECT email, created_at FROM password_resets WHERE token = ?");
     $stmt->execute([$token]);
     $reset_request = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($reset_request) {
+        date_default_timezone_set('Asia/Kuala_Lumpur');
         $expiry_time = strtotime($reset_request['created_at']);
         $current_time = time();
         
-        // Token 有效期检查（created_at 字段存储的是 Token 过期的时间点）
         if ($current_time <= $expiry_time) { 
-            // Token 有效
             $valid_token = true;
-            $email = $reset_request['email']; // 获取用户的邮箱
+            $email = $reset_request['email']; 
         } else {
-            // Token 过期
-            $error = 'The link has expired. Please request a new password reset link.';
+            $error = 'Your session has expired. Please request a new code.';
         }
     } else {
-        // Token 不存在或已被使用
-        $error = 'Invalid link or the link has already been used.';
+        $error = 'Invalid request. Please try the process again.';
     }
 } else {
-    $error = 'Missing reset credential (Token).';
+    $error = 'Security token missing.';
 }
 
-// 检查是否有提交错误信息重定向回来
+// 接收来自 reset_password_submit.php 的原地纠错提示
 if (isset($_GET['error'])) {
     $error = htmlspecialchars($_GET['error']);
 }
@@ -61,18 +69,25 @@ if (isset($_GET['error'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Reset Password - Bakery House</title>
-    <link rel="stylesheet" href="styles.css"> <style>
-        /* 保持与 User_Login.php 相似的样式结构 */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #fdf6f0 0%, #f8e8d8 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-        .container { background-color: white; border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); padding: 40px; max-width: 500px; width: 100%; text-align: center; }
-        h1 { color: #5a3921; margin-bottom: 20px; }
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 8px; color: #5a3921; font-weight: 500; }
-        .form-group input { width: 100%; padding: 12px 15px; border: 2px solid #e1e1e1; border-radius: 10px; font-size: 16px; }
-        .btn { width: 100%; padding: 14px; background: #d4a76a; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s ease; }
+    <title>Set New Password - Bakery House</title>
+    <style>
+        /* 保持你的 Bakery House 风格 */
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #fdf6f0 0%, #f8e8d8 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { background-color: white; border-radius: 20px; box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1); padding: 40px; max-width: 450px; width: 100%; text-align: center; }
+        h1 { color: #5a3921; margin-bottom: 25px; font-size: 28px; }
+        .account-info { background: #fdf6f0; padding: 10px; border-radius: 10px; color: #5a3921; margin-bottom: 25px; font-size: 14px; border: 1px dashed #d4a76a; }
+        .form-group { margin-bottom: 20px; text-align: left; position: relative; }
+        .form-group label { display: block; margin-bottom: 8px; color: #5a3921; font-weight: 600; }
+        .form-group input { width: 100%; padding: 12px 15px; border: 2px solid #e1e1e1; border-radius: 10px; font-size: 16px; box-sizing: border-box; transition: border-color 0.3s; }
+        .form-group input:focus { border-color: #d4a76a; outline: none; }
+        
+        .password-toggle { position: absolute; right: 15px; top: 40px; color: #d4a76a; cursor: pointer; font-size: 13px; font-weight: bold; }
+
+        .btn { width: 100%; padding: 14px; background: #d4a76a; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
         .btn:hover { background: #c2955a; }
-        .error-message { color: #e74c3c; background: #f8d7da; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #f5c6cb; text-align: left; }
+        
+        /* 错误消息美化：原地纠错时非常醒目 */
+        .error-message { color: #e74c3c; background: #f8d7da; padding: 12px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #f5c6cb; font-size: 14px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -80,32 +95,60 @@ if (isset($_GET['error'])) {
         <h1>Set New Password</h1>
         
         <?php if ($error): ?>
-            <div class="error-message">
-                <?= $error ?>
-            </div>
-            <p><a href="../forgot_password.php">Click here to request a new link</a></p>
+            <div class="error-message">⚠️ <?= $error ?></div>
+        <?php endif; ?>
 
-        <?php elseif ($valid_token): ?>
-            <p style="margin-bottom: 20px; color: #5a3921;">Account: <strong><?= htmlspecialchars($email) ?></strong></p>
+        <?php if ($valid_token): ?>
+            <div class="account-info">
+                Resetting password for:<br><strong><?= htmlspecialchars($email) ?></strong>
+            </div>
             
-            <form action="reset_password_submit.php" method="POST">
+            <form action="reset_password_submit.php" method="POST" id="resetForm">
                 <input type="hidden" name="token" value="<?= htmlspecialchars($token) ?>">
                 
                 <div class="form-group">
-                    <label for="password">New Password:</label>
-                    <input type="password" id="password" name="password" required>
+                    <label>New Password</label>
+                    <input type="password" id="password" name="password" placeholder="Min. 8 characters" required>
+                    <span class="password-toggle" onclick="togglePass('password', this)">Show</span>
                 </div>
                 
                 <div class="form-group">
-                    <label for="confirm_password">Confirm New Password:</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat password" required>
+                    <span class="password-toggle" onclick="togglePass('confirm_password', this)">Show</span>
                 </div>
                 
-                <button type="submit" class="btn">Change Password</button>
+                <button type="submit" class="btn">Update Password</button>
             </form>
-        
+        <?php else: ?>
+            <p style="margin-top:20px;"><a href="forgotpassword.php" style="color: #d4a76a; font-weight:bold;">Return and get a new code</a></p>
         <?php endif; ?>
-
     </div>
+
+    <script>
+        function togglePass(inputId, toggleText) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                toggleText.textContent = "Hide";
+            } else {
+                input.type = "password";
+                toggleText.textContent = "Show";
+            }
+        }
+
+        // 前端初步检查：在数据还没发给后端前先挡住明显的错误
+        document.getElementById('resetForm').onsubmit = function(e) {
+            const p = document.getElementById('password').value;
+            const cp = document.getElementById('confirm_password').value;
+            if (p.length < 8) {
+                alert("Password must be at least 8 characters long.");
+                e.preventDefault();
+            } else if (p !== cp) {
+                alert("Passwords do not match.");
+                e.preventDefault();
+            }
+        };
+    </script>
 </body>
 </html>

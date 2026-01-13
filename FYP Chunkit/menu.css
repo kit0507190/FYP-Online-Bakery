@@ -178,7 +178,7 @@ header {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     height: 75vh;              /* ✅ 固定高度 */
     position: sticky;
-    top: 120px;
+    top: 100px;
     overflow-y: auto;         /* ✅ 开启内部滚动 */
 }
 
@@ -690,4 +690,16 @@ footer {
     .products-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ===== 真正修复 header 下第一个区块被贴住的问题 ===== */
+header + .container {
+    padding-top: 30px;
+}
+/* ===== 修复 sticky header 顶住内容 ===== */
+.page-content {
+    padding-top: 30px;   /* 可调 20–40px */
+}
+.page-content {
+    padding-top: 90px; /* 视你的 header 高度微调 */
 }

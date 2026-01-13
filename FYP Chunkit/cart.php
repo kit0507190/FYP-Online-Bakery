@@ -1,9 +1,15 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="footer.css">
     <title>Shopping Cart - BakeryHouse</title>
+
+    <!-- 原本的 style 完全保留 -->
     <style>
         /* 基础样式 */
         :root {
@@ -570,61 +576,57 @@
             }
         }
     </style>
-    <!-- 添加统一的header样式 -->
+
+    <!-- Header 样式 -->
     <link rel="stylesheet" href="header-styles.css">
 </head>
 <body>
-    <!-- Header will be loaded here -->
-    <div id="mainHeader"></div>
 
-    <!-- Breadcrumb -->
+<!-- ✅ Header（推荐之后用 include） -->
+<?php include 'header.php'; ?>
+
+<!-- Breadcrumb -->
 <div class="container">
     <div class="breadcrumb">
         <div class="breadcrumb-links">
-            <a href="index.html">Home</a>
+            <a href="index.php">Home</a>
             <span class="breadcrumb-separator">&gt;</span>
-            <a href="menu.html">Menu</a>
+            <a href="menu.php">Menu</a>
             <span class="breadcrumb-separator">&gt;</span>
             <span class="breadcrumb-current">Shopping Cart</span>
         </div>
     </div>
 </div>
 
-    <!-- Cart Content -->
-    <div class="container">
-        <div class="cart-content">
-            <h1 class="cart-title">Your Shopping Cart</h1>
-            
-            <div id="cartContainer">
-                <!-- Cart items will be dynamically loaded -->
-            </div>
+<!-- Cart Content -->
+<div class="container">
+    <div class="cart-content">
+        <h1 class="cart-title">Your Shopping Cart</h1>
 
-            <!-- Recommended Products -->
-            <div class="recommended-section" id="recommendedSection" style="display: none;">
-                <h2 class="section-title">You Might Also Like</h2>
-                <div class="recommended-products" id="recommendedProducts">
-                    <!-- Recommended products will be dynamically loaded -->
-                </div>
-            </div>
+        <div id="cartContainer">
+            <!-- JS 动态生成 -->
+        </div>
+
+        <!-- Recommended Products -->
+        <div class="recommended-section" id="recommendedSection" style="display: none;">
+            <h2 class="section-title">You Might Also Like</h2>
+            <div class="recommended-products" id="recommendedProducts"></div>
         </div>
     </div>
+</div>
 
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop">↑</button>
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop">↑</button>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast"></div>
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
-    <footer>
-        <div class="container">
-            <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-        </div>
-    </footer>
+<?php include 'footer.php'; ?>
 
-    <!-- 添加header管理脚本 -->
-    <script src="header-manager.js"></script>
-    
-    <script>
+<!-- ⚠️ 你的 JS 原封不动放回 -->
+<script src="header-manager.js"></script>
+
+<script>
         // Shopping cart with enhanced features
         let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
         let appliedPromo = null;
@@ -1064,5 +1066,6 @@
             }, 100);
         });
     </script>
+
 </body>
 </html>

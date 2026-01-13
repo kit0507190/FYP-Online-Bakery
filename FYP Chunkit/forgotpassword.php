@@ -195,7 +195,7 @@ $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
                     <input type="email" name="email" id="email" required placeholder="name@example.com">
                 </div>
 
-                <button type="submit" class="btn">Send Reset Link</button>
+                <button type="submit" class="btn">Send Verification Code</button>
             </form>
             
             <div class="back-link">

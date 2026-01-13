@@ -1,52 +1,36 @@
-// profile.js - Profile页面核心功能
+/**
+ * profile.js - 处理页面交互
+ */
 
+/**
+ * 功能：关闭成功提示弹窗
+ */
+function closeToast() {
+    // 1. 找到弹窗遮罩层元素
+    const overlay = document.getElementById('toastOverlay');
+    
+    if (overlay) {
+        // 2. 添加淡出动画效果
+        overlay.style.transition = '0.3s';
+        overlay.style.opacity = '0';
+        
+        // 3. 等动画结束后从页面上彻底移除
+        setTimeout(() => {
+            overlay.remove();
+            
+            // 4. 重要：清理地址栏的 ?success=1 参数
+            // 这样用户按 F5 刷新页面时，弹窗不会再次蹦出来
+            if (window.history.replaceState) {
+                // 获取当前纯净的 URL（不带参数）
+                const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                // 在不刷新页面的情况下修改地址栏
+                window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+            }
+        }, 300);
+    }
+}
+
+// 页面加载后的其他逻辑可以写在这里
 document.addEventListener('DOMContentLoaded', function() {
-    initUserMenu();
+    console.log("Profile page loaded.");
 });
-
-/**
- * 初始化用户菜单
- */
-function initUserMenu() {
-    const userIcon = document.querySelector('.user-icon');
-    const dropdownMenu = document.getElementById('dropdownMenu');
-    
-    if (userIcon && dropdownMenu) {
-        // 点击用户图标切换菜单
-        userIcon.addEventListener('click', function(e) {
-            e.stopPropagation();
-            toggleDropdown(dropdownMenu);
-        });
-        
-        // 点击页面其他地方关闭菜单
-        document.addEventListener('click', function(e) {
-            if (!userIcon.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                dropdownMenu.style.display = 'none';
-                dropdownMenu.classList.remove('active');
-            }
-        });
-        
-        // 按ESC键关闭菜单
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && dropdownMenu.style.display === 'block') {
-                dropdownMenu.style.display = 'none';
-                dropdownMenu.classList.remove('active');
-            }
-        });
-    }
-}
-
-/**
- * 切换下拉菜单显示/隐藏
- */
-function toggleDropdown(dropdown) {
-    if (!dropdown) return;
-    
-    if (dropdown.style.display === 'block') {
-        dropdown.style.display = 'none';
-        dropdown.classList.remove('active');
-    } else {
-        dropdown.style.display = 'block';
-        dropdown.classList.add('active');
-    }
-}
