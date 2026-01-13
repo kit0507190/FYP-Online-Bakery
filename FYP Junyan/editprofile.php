@@ -113,7 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group required-field">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-input" value="<?php echo $name; ?>" required>
+                         <input type="text" name="name" class="form-input" value="<?php echo $name; ?>" 
+                                 pattern="[a-zA-Z\s]+" title="Only letters and spaces allowed" required>
                     </div>
                     
                     <div class="form-group required-field">
@@ -123,7 +124,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group">
                         <label class="form-label">Phone Number</label>
-                        <input type="tel" name="phone" class="form-input" value="<?php echo $phone; ?>" placeholder="e.g., 011-2345678">
+                        <input type="tel" name="phone" class="form-input" value="<?php echo $phone; ?>" 
+                                placeholder="e.g., 0123456789"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                                maxlength="11">
+                         <small style="color: #666;">Format: 10-11 digits, numbers only.</small>
                     </div>
                 </div>
 
