@@ -48,22 +48,21 @@ $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
  * 能够同时识别和美化处理旧格式 (|) 和新格式 (,)
  */
 function formatAddress($raw) {
-    if (empty($raw)) return "No address detail";
-
-    // 如果是旧格式 Area|Postcode|Line
+    if (empty($raw)) return "";
+    
     if (strpos($raw, '|') !== false) {
         $parts = explode('|', $raw);
-        if (count($parts) >= 3) {
-            $area = ($parts[0] === 'other' && isset($parts[3])) ? $parts[3] : $parts[0];
-            $postcode = $parts[1];
-            $street = $parts[2];
-            return htmlspecialchars($street) . ", " . htmlspecialchars($area) . ", " . htmlspecialchars($postcode);
-        }
+        // 按照 街道|地区|邮编|其他 的顺序解析
+        $street   = $parts[0] ?? '';
+        $area     = $parts[1] ?? '';
+        $postcode = $parts[2] ?? '';
+        
+        return htmlspecialchars($street) . ", " . htmlspecialchars($area) . ", " . htmlspecialchars($postcode);
     }
-    
-    // 如果是新格式或其他纯文本，直接返回并处理换行
-    return nl2br(htmlspecialchars($raw));
+    // 兼容旧的逗号格式数据
+    return htmlspecialchars($raw);
 }
+
 ?>
 
 <!DOCTYPE html>

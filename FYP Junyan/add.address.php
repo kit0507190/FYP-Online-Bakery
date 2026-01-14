@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             // 拼接最终存储的地址字符串
             $display_area = ($address_area === 'other') ? $other_area : $address_area;
-            $fullAddress = $address_line . ", " . $display_area . ", " . $address_postcode;
+            $fullAddress = $address_area . "|" . $address_postcode . "|" . $address_line . "|" . $other_area;
 
             // A. 检查已有地址数量
             $countQuery = "SELECT COUNT(*) FROM user_addresses WHERE user_id = ?";

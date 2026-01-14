@@ -31,38 +31,41 @@ try {
         header("Location: manageaddress.php");
         exit();
     }
+// --- 3. 拆解地址字符串 (匹配新顺序) ---
+$address_area = $address_postcode = $address_line = $other_area = '';
+$text = $addressData['address_text'];
 
-    // 3. 拆解地址字符串 (适配旧的 | 格式和新的 , 格式)
-    $address_area = $address_postcode = $address_line = $other_area = '';
-    $text = $addressData['address_text'];
+if (strpos($text, '|') !== false) {
+    $parts = explode('|', $text);
     
-    if (strpos($text, ', ') !== false) {
-        $parts = explode(', ', $text);
-        // 新格式：Line, Area, Postcode
-        $address_line = $parts[0] ?? '';
-        $address_area = $parts[1] ?? '';
-        $address_postcode = $parts[2] ?? '';
-    } elseif (strpos($text, '|') !== false) {
-        $parts = explode('|', $text);
-        // 旧格式：Area|Postcode|Line|Other
-        $address_area = $parts[0] ?? '';
-        $address_postcode = $parts[1] ?? '';
-        $address_line = $parts[2] ?? '';
-        $other_area = $parts[3] ?? '';
+    // 对应你的新顺序：
+    $address_line     = $parts[0] ?? ''; // 索引 0 是街道
+    $address_area     = $parts[1] ?? ''; // 索引 1 是地区
+    $address_postcode = $parts[2] ?? ''; // 索引 2 是邮编
+    $other_area       = $parts[3] ?? ''; // 索引 3 是备用地区名
+    
+    // 检查 Area 是否属于 "Other"
+    $known_areas = ["Bandar Melaka", "Ayer Keroh", "Bukit Beruang"];
+    if (!empty($address_area) && !in_array($address_area, $known_areas)) {
+        $other_area = $address_area;
+        $address_area = 'other';
     }
+}
+
 
 } catch (PDOException $e) {
     die("Error: " . $e->getMessage());
 }
 
-// 4. 处理表单提交更新
+/// --- 4. 处理表单提交更新 ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $address_area = trim($_POST['address_area'] ?? '');
+    // A. 接收用户从输入框填写的【新资料】
+    $address_area     = trim($_POST['address_area'] ?? '');
     $address_postcode = trim($_POST['address_postcode'] ?? '');
-    $address_line = trim($_POST['address_line'] ?? '');
-    $other_area = trim($_POST['other_area'] ?? '');
+    $address_line     = trim($_POST['address_line'] ?? '');
+    $other_area       = trim($_POST['other_area'] ?? '');
 
-    // 邮编对照字典
+    // B. 验证逻辑 (确保数据准确)
     $postcode_map = [
         "Bandar Melaka" => ["75000", "75100", "75200", "75300"],
         "Ayer Keroh"    => ["75450"],
@@ -80,23 +83,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($address_line)) { $errors[] = "Street address is required."; }
     if ($address_area === 'other' && empty($other_area)) { $errors[] = "Please specify your area name."; }
 
+    // C. 如果没有错误，执行更新
     if (empty($errors)) {
-        try {
-            // 统一使用逗号拼接逻辑存储
-            $display_area = ($address_area === 'other') ? $other_area : $address_area;
-            $fullAddress = $address_line . ", " . $display_area . ", " . $address_postcode;
+    try {
+        $display_area = ($address_area === 'other') ? $other_area : $address_area;
+        
+        // 按照你要求的顺序：街道|地区|邮编|其他名
+        $fullAddress = $address_line . "|" . $display_area . "|" . $address_postcode . "|" . $other_area;
 
-            // 仅更新 user_addresses 表
-            $updateSql = "UPDATE user_addresses SET address_text = ?, updated_at = NOW() WHERE id = ? AND user_id = ?";
-            $updateStmt = $pdo->prepare($updateSql);
-            $updateStmt->execute([$fullAddress, $addressId, $userId]);
+        $updateSql = "UPDATE user_addresses SET address_text = ?, updated_at = NOW() WHERE id = ? AND user_id = ?";
+        $updateStmt = $pdo->prepare($updateSql);
+        $updateStmt->execute([$fullAddress, $addressId, $userId]);
 
-            header("Location: manageaddress.php");
-            exit();
-        } catch (PDOException $e) {
-            $errors[] = "Update failed: " . $e->getMessage();
-        }
+        header("Location: manageaddress.php");
+        exit();
+    } catch (PDOException $e) {
+        $errors[] = "Update failed: " . $e->getMessage();
     }
+}
 }
 ?>
 
@@ -190,10 +194,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <p>Sweet & Delicious</p>
                 <div class="footer-links">
-                    <a href="mainpage.php">Home</a>
+                    <a href="index.php">Home</a>
                     <a href="menu.php">Menu</a>
-                    <a href="about_us.php">About</a>
+                    <a href="about_us.php" class="active">About</a>
                     <a href="contact_us.php">Contact</a>
+                    <a href="privacypolicy.php">Privacy Policy</a>
+                    <a href="termservice.php">Terms of Service</a>
                 </div>
                 <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
             </div>
