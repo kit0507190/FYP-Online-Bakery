@@ -45,7 +45,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_message'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us - Bakery House</title>
-    <link rel="stylesheet" href="footer.css">
     <link rel="stylesheet" href="contact_us.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -120,7 +119,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_message'])) {
         </div>
     </main>
 
-   <?php include 'footer.php'; ?>
+   <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="Bakery House Logo.png" alt="BakeryHouse">
+                </div>
+                <p>Sweet & Delicious</p>
+                <div class="footer-links">
+                    <a href="mainpage.php">Home</a>
+                    <a href="menu.php">Menu</a>
+                    <a href="about_us.php">About</a>
+                    <a href="contact_us.php">Contact</a>
+                    <a href="privacypolicy.php">Privacy Policy</a>
+                    <a href="termservice.php">Terms of Service</a>
+                </div>
+                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="contact_us.js"></script>
 </body>

@@ -51,9 +51,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
 
-    // --- 后端基础验证 ---
-    if (empty($name)) { $errors[] = "Full name is required."; }
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) { $errors[] = "Valid email is required."; }
+  // --- 后端基础验证 ---
+    if (empty($name)) { 
+        $errors[] = "Full name is required."; 
+    } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        $errors[] = "Full name can only contain letters and spaces.";
+    }
+
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) { 
+        $errors[] = "Valid email is required."; 
+    }
+
+    // --- 电话号码验证 (马来西亚格式) ---
+    if (!empty($phone)) {
+        // ^01 表示必须以 01 开头
+        // [0-9]{8,9} 表示后面跟着 8 到 9 位数字 (总长就是 10-11位)
+        if (!preg_match("/^01[0-9]{8,9}$/", $phone)) {
+            $errors[] = "Phone number must start with '01' and be 10-11 digits long.";
+        }
+    }
 
     // 5. 如果没有错误，执行更新 (仅更新基本资料)
     if (empty($errors)) {
@@ -113,7 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                     <div class="form-group required-field">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-input" value="<?php echo $name; ?>" required>
+                         <input type="text" name="name" class="form-input" value="<?php echo $name; ?>" 
+                                 pattern="[a-zA-Z\s]+" title="Only letters and spaces allowed" required>
                     </div>
                     
                     <div class="form-group required-field">
@@ -122,8 +139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Phone Number</label>
-                        <input type="tel" name="phone" class="form-input" value="<?php echo $phone; ?>" placeholder="e.g., 011-2345678">
+                         <label class="form-label">Phone Number</label>
+                         <input type="tel" name="phone" class="form-input" 
+                                value="<?php echo $phone; ?>" 
+                                placeholder="e.g., 0123456789"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '');" 
+                                maxlength="11">
+                        <small style="color: #666;">Must start with 01 (e.g., 0123456789)</small>
                     </div>
                 </div>
 
