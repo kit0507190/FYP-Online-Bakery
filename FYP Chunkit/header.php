@@ -72,8 +72,9 @@ $cur_file  = basename($_SERVER['PHP_SELF']);
 
                     <div class="dropdown-box" id="headerDropdownMenu">
                         <a href="profile.php">Profile</a>
+                        <a href="purchase_history.php">Purchase History</a>
                         <a href="logout.php">Log Out</a>
-                    </div>
+</div>
                 </li>
             <?php else: ?>
                 <li>
