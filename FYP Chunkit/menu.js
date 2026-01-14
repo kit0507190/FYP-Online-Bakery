@@ -4567,7 +4567,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const pageIndicator = document.getElementById('pageIndicator');
 
         // Current filter state
-        let currentCategory = 'all'; // Default to cake
+        let currentCategory = 'cake'; // Default to cake
         let currentSubCategory = 'all';
         let currentSearch = '';
         let currentSort = 'name';
@@ -4778,16 +4778,38 @@ function viewProductDetails(productId) {
         }
 
         // Add to cart
-        function addToCart(productId, quantity = 1) {
-            const product = products.find(p => p.id === productId);
-            if (!product) return;
-            const existing = cart.find(i => i.id === productId);
-            if (existing) existing.quantity += quantity;
-            else cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, quantity });
-            localStorage.setItem('bakeryCart', JSON.stringify(cart));
-            updateCartCount();
-            showToast(`${product.name} added to cart!`);
-        }
+        // --- 修改后的 addToCart 函数 ---
+function addToCart(productId, quantity = 1) {
+    // 🟢 核心修改点：统一使用 window.isLoggedIn 来判断
+    // 这样只要 header 识别到你登录了（不管换哪个号），这里都会是 true
+    if (window.isLoggedIn !== true) { 
+        showLoginPrompt(); // 如果没登录，显示弹窗
+        return;            // 拦截！
+    }
+
+    // 2. 如果已登录，继续执行原来的加购逻辑
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const existing = cart.find(i => i.id === productId);
+    if (existing) {
+        existing.quantity += quantity;
+    } else {
+        cart.push({ 
+            id: product.id, 
+            name: product.name, 
+            price: product.price, 
+            image: product.image, 
+            quantity: quantity 
+        });
+    }
+    
+    localStorage.setItem('bakeryCart', JSON.stringify(cart));
+    updateCartCount();
+    showToast(`${product.name} added to cart!`);
+}
+
+
 
         function updateCartCount() {
     // 1. 计算购物车总数
@@ -4828,8 +4850,7 @@ function viewProductDetails(productId) {
         // Setup event listeners for controls and categories
         function setupEventListeners() {
 
-    // ✅ 一定要先拿 DOM
-    const cartIcon = document.querySelector('.cart-icon-wrapper');
+    
 
     // ✅ 一定要防 null
     if (cartIcon) {
@@ -4892,8 +4913,23 @@ function viewProductDetails(productId) {
         // document.addEventListener('DOMContentLoaded', initPage);
 		
 		initPage();
+
+        
 });
 
+// 🟢 把下面这两个函数移动到这一行（也就是最外面）
+function showLoginPrompt() {
+    const modal = document.getElementById('loginPromptModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
 
+function closeLoginPrompt() {
+    const modal = document.getElementById('loginPromptModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
 
 
