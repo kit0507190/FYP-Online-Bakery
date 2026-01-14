@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： 127.0.0.1
--- 生成日期： 2026-01-03 15:38:33
+-- 生成日期： 2026-01-14 14:39:33
 -- 服务器版本： 10.4.32-MariaDB
 -- PHP 版本： 8.2.12
 
@@ -94,7 +94,8 @@ INSERT INTO `contact_messages` (`id`, `user_id`, `name`, `email`, `message`, `st
 (4, 18, 'test', 'iplaygame317@gmail.com', 'goood', 'unread', '2026-01-02 10:50:41'),
 (5, 18, 'test', 'iplaygame317@gmail.com', 'goood', 'unread', '2026-01-02 10:56:44'),
 (6, 18, 'test', 'iplaygame317@gmail.com', 'goood', 'unread', '2026-01-02 10:56:49'),
-(7, NULL, 'test', 'test@gmail.com', 'good food', 'unread', '2026-01-02 11:07:05');
+(7, NULL, 'test', 'test@gmail.com', 'good food', 'unread', '2026-01-02 11:07:05'),
+(8, 20, 'david', 'davidchong1121@gmail.com', 'nice service,good decoration', 'unread', '2026-01-05 09:06:22');
 
 -- --------------------------------------------------------
 
@@ -112,8 +113,6 @@ CREATE TABLE `orders` (
   `postcode` varchar(10) DEFAULT NULL,
   `items` text NOT NULL,
   `total` decimal(10,2) NOT NULL,
-  `payment_method` varchar(50) DEFAULT NULL,
-  `payment_status` enum('pending','paid','failed') DEFAULT 'pending',
   `status` enum('pending','preparing','ready','delivered','cancelled') DEFAULT 'pending',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -122,8 +121,8 @@ CREATE TABLE `orders` (
 -- 转存表中的数据 `orders`
 --
 
-INSERT INTO `orders` (`id`, `customer_name`, `customer_email`, `customer_phone`, `delivery_address`, `city`, `postcode`, `items`, `total`, `payment_method`, `payment_status`, `status`, `created_at`) VALUES
-(2, 'test', 'test@bakery.com', '012-3456789', '30, Bukit Beruang, Ayer Keroh', 'Melaka', '75450', '[{"id":1,"name":"A LITTLE SWEET","price":98,"image":"cake\/A_Little_Sweet.jpg","quantity":1}]', 98.00, NULL, 'pending', 'delivered', '2025-12-02 15:29:27');
+INSERT INTO `orders` (`id`, `customer_name`, `customer_email`, `customer_phone`, `delivery_address`, `city`, `postcode`, `items`, `total`, `status`, `created_at`) VALUES
+(2, 'test', 'test@bakery.com', '012-3456789', '30, Bukit Beruang, Ayer Keroh', 'Melaka', '75450', '[{\"id\":1,\"name\":\"A LITTLE SWEET\",\"price\":98,\"image\":\"cake\\/A_Little_Sweet.jpg\",\"quantity\":1}]', 98.00, 'delivered', '2025-12-02 15:29:27');
 
 -- --------------------------------------------------------
 
@@ -186,9 +185,14 @@ INSERT INTO `user_addresses` (`id`, `user_id`, `address_text`, `is_default`, `up
 (2, 11, '7,taman oren,oren tambah susu,melaka,75453', 1, '2026-01-03 13:58:26'),
 (3, 12, '18,taman bunga,melaka,76542', 1, '2026-01-03 13:58:26'),
 (4, 15, 'Ayer Keroh|75000|123,jalan merdeka', 1, '2026-01-03 13:58:26'),
-(5, 18, 'Ayer Keroh|75100|17,taman bunga 4/12', 0, '2026-01-03 14:33:26'),
-(9, 18, 'Ayer Keroh|75310|8,taman oren,5/23', 0, '2026-01-03 14:32:32'),
-(11, 18, 'Bandar Melaka|75230|99,taman nine 9/9', 1, '2026-01-03 14:33:26');
+(9, 18, 'Ayer Keroh|75310|8,taman oren,5/23', 0, '2026-01-14 13:32:30'),
+(14, 20, 'Bukit Beruang|75310|19,jalan kuning 1/21', 1, '2026-01-05 09:08:16'),
+(15, 18, 'Ayer Keroh|75000|8,jalan mmu 8/8', 0, '2026-01-14 13:28:15'),
+(17, 22, 'Bandar Melaka|75100|77,jalan height 9/99', 0, '2026-01-09 19:10:33'),
+(18, 22, 'Ayer Keroh|75000|88,jalan jonker 88/8', 1, '2026-01-09 19:10:33'),
+(19, 23, 'Ayer Keroh|73100|3,jalan lotus 3/33', 0, '2026-01-09 19:24:00'),
+(20, 23, 'Bandar Melaka|75000|2,jalan aeon ,2/22', 1, '2026-01-09 19:24:00'),
+(21, 18, '17,updated taman jonker 8/12, Ayer Keroh, 75450', 1, '2026-01-14 13:32:30');
 
 -- --------------------------------------------------------
 
@@ -202,7 +206,6 @@ CREATE TABLE `user_db` (
   `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
   `phone` varchar(20) DEFAULT NULL,
-  `address` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -211,18 +214,20 @@ CREATE TABLE `user_db` (
 -- 转存表中的数据 `user_db`
 --
 
-INSERT INTO `user_db` (`id`, `name`, `email`, `password`, `phone`, `address`, `created_at`, `updated_at`) VALUES
-(1, 'Debug User', 'debug@123.com', '$2y$10$Ul6J1xAZIEGEhAeGta.6Y.kW/yFXfKZ3aTpaq956xGB0dFIonlAuu', NULL, NULL, '2025-11-25 18:13:56', '2025-11-25 18:13:56'),
-(2, 'Test User', 'test@bakery.com', '$2y$10$1oETZt6Gm7WhRxBcFx045Ob40XfQHnAxW9hUr2XusPU1kuTC36odq', NULL, NULL, '2025-11-25 18:16:16', '2025-11-25 18:16:16'),
-(3, 'test2', 'test2@bakery.com', '$2y$10$J8Dqf8OTQlZNotVR7PgSyOBAVURHx6dzDELxnZVEBSbcq6JFSicRm', NULL, NULL, '2025-11-26 21:11:42', '2025-11-26 21:11:42'),
-(9, 'gigo', 'gigo@gmail.com', '$2y$10$FDFTjifntwtNo5ZXzBxSWuJqx.HNKAzZGtzCd25bO2FC0tmePzZku', '01123457798', '18,jalan bunga,taman bunga,melaka,74535', '2025-11-30 06:05:03', '2025-12-01 15:02:14'),
-(11, 'janustan', 'janustan1156@gmail.com', '$2y$10$0yZJhx7kmGB7FnU1TfJkpeppCA9ChYRxBcm9cqCgaXMWBoV6vX/ea', '0156677235', '7,taman oren,oren tambah susu,melaka,75453', '2025-12-01 15:03:24', '2025-12-01 15:26:38'),
-(12, 'bruce', 'bruce123@gmail.com', '$2y$10$3lfZz23rdWSSkX719GHDNOLnJ45YPFhevjgrxrTzkFU/fx0esQ9mC', '012345656', '18,taman bunga,melaka,76542', '2025-12-03 06:40:40', '2025-12-03 06:45:37'),
-(13, 'shane', 'shane@gmail.com', '$2y$10$kbYtPYQxJsHuzzcNzpvCmuIy/Qtfg83RfYCOgQGfARKsuDNkZZ7v6', NULL, NULL, '2025-12-03 16:57:58', '2025-12-03 16:57:58'),
-(14, 'jackson', 'jackson16@gmail.com', '$2y$10$O/BR780RknNnUtBxAZvMbuijC/wAjWpvmRuHjHXCyiTzosLnfiSdy', '', '', '2025-12-08 08:53:28', '2025-12-08 09:04:49'),
-(15, 'test', 'test@gmail.com', '$2y$10$Ztpnyf7PmViK7ew/Ju2Lt.kg6bKB31BslzLjglUJ.KO0K4M0ostA6', '01234567', 'Ayer Keroh|75000|123,jalan merdeka', '2025-12-13 10:22:04', '2025-12-16 07:11:55'),
-(18, 'test', 'iplaygame317@gmail.com', '$2y$10$2qxwckkyKPDonD4rqis/MODgh1os.yHjG6NV7lKJsIEk0BULgbZby', '01298765453', 'Bandar Melaka|75100|17,taman bunga 4/12', '2025-12-25 09:57:43', '2026-01-03 13:35:18'),
-(19, 'test', 'iplaygame317@example.com', '$2y$10$/OvGfpUHQpI1496rWysBY.o/NOE6Smb9/pqUD3Y/NMmI.QHCdfR0G', NULL, NULL, '2026-01-03 08:41:41', '2026-01-03 08:41:41');
+INSERT INTO `user_db` (`id`, `name`, `email`, `password`, `phone`, `created_at`, `updated_at`) VALUES
+(1, 'Debug User', 'debug@123.com', '$2y$10$Ul6J1xAZIEGEhAeGta.6Y.kW/yFXfKZ3aTpaq956xGB0dFIonlAuu', NULL, '2025-11-25 18:13:56', '2025-11-25 18:13:56'),
+(2, 'Test User', 'test@bakery.com', '$2y$10$1oETZt6Gm7WhRxBcFx045Ob40XfQHnAxW9hUr2XusPU1kuTC36odq', NULL, '2025-11-25 18:16:16', '2025-11-25 18:16:16'),
+(3, 'test2', 'test2@bakery.com', '$2y$10$J8Dqf8OTQlZNotVR7PgSyOBAVURHx6dzDELxnZVEBSbcq6JFSicRm', NULL, '2025-11-26 21:11:42', '2025-11-26 21:11:42'),
+(9, 'gigo', 'gigo@gmail.com', '$2y$10$FDFTjifntwtNo5ZXzBxSWuJqx.HNKAzZGtzCd25bO2FC0tmePzZku', '01123457798', '2025-11-30 06:05:03', '2025-12-01 15:02:14'),
+(11, 'janustan', 'janustan1156@gmail.com', '$2y$10$0yZJhx7kmGB7FnU1TfJkpeppCA9ChYRxBcm9cqCgaXMWBoV6vX/ea', '0156677235', '2025-12-01 15:03:24', '2025-12-01 15:26:38'),
+(12, 'bruce', 'bruce123@gmail.com', '$2y$10$3lfZz23rdWSSkX719GHDNOLnJ45YPFhevjgrxrTzkFU/fx0esQ9mC', '012345656', '2025-12-03 06:40:40', '2025-12-03 06:45:37'),
+(13, 'shane', 'shane@gmail.com', '$2y$10$kbYtPYQxJsHuzzcNzpvCmuIy/Qtfg83RfYCOgQGfARKsuDNkZZ7v6', NULL, '2025-12-03 16:57:58', '2025-12-03 16:57:58'),
+(14, 'jackson', 'jackson16@gmail.com', '$2y$10$O/BR780RknNnUtBxAZvMbuijC/wAjWpvmRuHjHXCyiTzosLnfiSdy', '', '2025-12-08 08:53:28', '2025-12-08 09:04:49'),
+(15, 'test', 'test@gmail.com', '$2y$10$Ztpnyf7PmViK7ew/Ju2Lt.kg6bKB31BslzLjglUJ.KO0K4M0ostA6', '01234567', '2025-12-13 10:22:04', '2025-12-16 07:11:55'),
+(18, 'testtt', 'iplaygame317@gmail.com', '$2y$10$BMBfprFHFF5xpq0IB7QszekjCI6B445vWaEAzwReBEoMsmXto9Luq', '01213234234', '2025-12-25 09:57:43', '2026-01-13 14:19:44'),
+(19, 'test', 'iplaygame317@example.com', '$2y$10$/OvGfpUHQpI1496rWysBY.o/NOE6Smb9/pqUD3Y/NMmI.QHCdfR0G', NULL, '2026-01-03 08:41:41', '2026-01-03 08:41:41'),
+(20, 'david', 'davidchong1121@gmail.com', '$2y$10$ArFTME1ZtNgq8GNLfDltgeHxaEjNoekFtcdfcFPPFqB9PEbBbToky', '0117534567', '2026-01-05 09:02:36', '2026-01-05 09:09:38'),
+(23, 'all new', 'yitanglong857@gmail.com', '$2y$10$qbtFb6s33IJoOAzLtqtx/uy3bSuXmpoh5uMtkax.o53fEMHUYF.c.', NULL, '2026-01-09 19:22:40', '2026-01-09 19:23:13');
 
 --
 -- 转储表的索引
@@ -299,7 +304,7 @@ ALTER TABLE `categories`
 -- 使用表AUTO_INCREMENT `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Unique message ID', AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Unique message ID', AUTO_INCREMENT=9;
 
 --
 -- 使用表AUTO_INCREMENT `orders`
@@ -311,19 +316,19 @@ ALTER TABLE `orders`
 -- 使用表AUTO_INCREMENT `password_resets`
 --
 ALTER TABLE `password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- 使用表AUTO_INCREMENT `user_addresses`
 --
 ALTER TABLE `user_addresses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- 使用表AUTO_INCREMENT `user_db`
 --
 ALTER TABLE `user_db`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- 限制导出的表
