@@ -1,5 +1,29 @@
 <?php
-session_start();
+// 1. 启动会话并引入数据库连接
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+require_once 'config.php'; // 👈 确保这个文件名和你的数据库连接文件名一致
+
+// 2. 如果没登录，直接跳转回登录页
+if (!isset($_SESSION['user_id'])) {
+    header("Location: User_Login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+
+// 3. 从数据库中获取该用户的购物车商品 (ID 和 数量)
+try {
+    $stmt = $pdo->prepare("SELECT product_id, quantity FROM cart_items WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $db_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $db_items = [];
+}
+
+// 4. 将查到的数据存入一个 JavaScript 变量，方便下面 JS 调用
+echo "<script>const dbCartItems = " . json_encode($db_items) . ";</script>";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -577,6 +601,68 @@ session_start();
         }
     </style>
 
+    <script>
+    // 1. 🟢 这一步非常重要：把你 menu.js 顶部那个巨大的 products 数组完整复制到这里
+    // 这样 cart.php 才知道 ID 为 1 的蛋糕叫什么名字、多少钱。
+    const products = [
+        /* 这里粘贴你 menu.js 里的 products 数组内容 */
+        {
+            id: 1,
+            name: "A LITTLE SWEET",
+            price: 98.00,
+            image: "cake/A_Little_Sweet.jpg",
+            // ... 其他产品
+        },
+        // ...
+    ];
+
+    // 2. 修改 loadCartItems 函数，让它读数据库传来的数据
+    function loadCartItems() {
+        // 🔴 找到你原来的这行并删掉：const cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+        
+        // 🟢 改为使用 PHP 传过来的 dbCartItems
+        const cart = dbCartItems; 
+        const cartContainer = document.getElementById('cartItemsContainer');
+
+        if (!cart || cart.length === 0) {
+            cartContainer.innerHTML = '<div style="text-align:center; padding:50px;"><h3>Your cart is empty</h3><a href="menu.php" style="color:#d4a76a;">Go to Menu</a></div>';
+            updateSummary(0);
+            return;
+        }
+
+        let cartHTML = '';
+        let subtotal = 0;
+
+        cart.forEach(item => {
+            // 根据数据库的 product_id 找到对应的详细信息
+            const product = products.find(p => p.id == item.product_id);
+            if (product) {
+                const itemTotal = product.price * item.quantity;
+                subtotal += itemTotal;
+                
+                cartHTML += `
+                    <div class="cart-item">
+                        <img src="${product.image}" alt="${product.name}">
+                        <div class="item-details">
+                            <h4>${product.name}</h4>
+                            <p>RM ${product.price.toFixed(2)}</p>
+                        </div>
+                        <div class="item-quantity">
+                            <button onclick="changeQty(${product.id}, -1)">-</button>
+                            <span>${item.quantity}</span>
+                            <button onclick="changeQty(${product.id}, 1)">+</button>
+                        </div>
+                        <div class="item-total">RM ${itemTotal.toFixed(2)}</div>
+                        <button class="remove-btn" onclick="removeItem(${product.id})">🗑️</button>
+                    </div>`;
+            }
+        });
+
+        cartContainer.innerHTML = cartHTML;
+        updateSummary(subtotal);
+    }
+</script>
+
     <!-- Header 样式 -->
     <link rel="stylesheet" href="header-styles.css">
 </head>
@@ -685,7 +771,7 @@ session_start();
                         <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Empty Cart">
                         <h2>Your cart is empty</h2>
                         <p>Add some delicious bakery items to your cart!</p>
-                        <a href="menu.html" class="continue-shopping">Continue Shopping</a>
+                        <a href="menu.php" class="continue-shopping">Continue Shopping</a>
                     </div>
                 `;
                 recommendedSection.style.display = 'none';
@@ -724,7 +810,7 @@ session_start();
                     </div>
                     <button class="checkout-btn" id="checkoutBtn">Proceed to Checkout</button>
                     <div class="action-buttons">
-                        <a href="menu.html" class="continue-shopping">Continue Shopping</a>
+                        <a href="menu.php" class="continue-shopping">Continue Shopping</a>
                     </div>
                 </div>
             `;

@@ -55,13 +55,13 @@ $cur_file  = basename($_SERVER['PHP_SELF']);
 
             <!-- Cart（永远显示，不做 session 判断） -->
             <li class="cart-icon cart-icon-wrapper">
-                <a href="cart.php" class="cart-link">
-                    🛒 Cart
-                    <span class="cart-count">
-                        <?= isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0 ?>
-                    </span>
-                </a>
-            </li>
+    <a href="cart.php" class="cart-link" onclick="return checkCartLogin(event)">
+        🛒 Cart
+        <span class="cart-count">
+            <?= isset($_SESSION['cart']) ? count($_SESSION['cart']) : 0 ?>
+        </span>
+    </a>
+</li>
 
             <!-- User -->
             <?php if ($isLoggedIn): ?>
@@ -89,6 +89,10 @@ $cur_file  = basename($_SERVER['PHP_SELF']);
 
 <!-- Header JS（只处理 header dropdown，不干扰其他 JS） -->
 <script>
+
+// 🟢 第一步：这是全站唯一的登录开关，直接读取 PHP 的 Session 状态
+window.isLoggedIn = <?php echo (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) ? 'true' : 'false'; ?>;
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- 1. 用户头像下拉菜单逻辑 ---
     const avatar = document.getElementById('userAvatar');
@@ -140,4 +144,46 @@ document.addEventListener('DOMContentLoaded', () => {
     // 自定义事件：如果你在同一个页面的 JS 里修改了购物车，也可以触发这个刷新
     window.addEventListener('cartUpdated', updateHeaderCartCount);
 });
+
+// 🟢 新增：拦截 Cart 点击的函数
+function checkCartLogin(event) {
+    if (!window.isLoggedIn) {
+        event.preventDefault(); // 阻止跳转到 cart.php
+        showLoginPrompt();      // 显示登录弹窗
+        return false;
+    }
+    return true; // 已登录则正常跳转
+}
+
+// 🟢 新增：控制弹窗的全局函数
+function showLoginPrompt() {
+    const modal = document.getElementById('loginPromptModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeLoginPrompt() {
+    const modal = document.getElementById('loginPromptModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function updateHeaderCartCount() {
+    const cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+    const totalItems = cart.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+    const cartCountElement = document.querySelector('.cart-count');
+    if (cartCountElement) cartCountElement.textContent = totalItems;
+}
+
 </script>
+
+<div class="modal" id="loginPromptModal" style="display:none; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
+    <div class="modal-content" style="max-width: 350px; text-align: center; padding: 30px; border-radius: 15px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin: auto;">
+        <div style="font-size: 50px; margin-bottom: 15px;">🧁</div>
+        <h2 style="color: #5a3921; margin-bottom: 10px;">Please Sign In</h2>
+        <p style="color: #888; margin-bottom: 25px; line-height: 1.5;">You need to log in to your account before viewing your cart or adding items.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button onclick="window.location.href='User_Login.php'" style="background: #d4a76a; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px;">Go to Login</button>
+            <button onclick="closeLoginPrompt()" style="background: none; border: none; color: #aaa; cursor: pointer; text-decoration: underline; font-size: 14px;">Maybe Later</button>
+        </div>
+    </div>
+</div>
