@@ -1,6 +1,6 @@
 <?php
 /**
- * profile.php - 用户资料展示页
+ * profile.php - 用户资料展示页 (已移除 user_db 地址冗余)
  */
 session_start();
 
@@ -15,10 +15,9 @@ require_once 'config.php';
 
 $userId = $_SESSION['user_id'];
 
-// --- 3. 从数据库读取最新资料 ---
 try {
-    // 首先读取基础用户信息
-    $query = "SELECT name, email, phone, address, created_at FROM user_db WHERE id = ?";
+    // 首先读取基础用户信息 (注意：已经移除了 address 字段)
+    $query = "SELECT name, email, phone, created_at FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userId]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -29,23 +28,19 @@ try {
         $phone = htmlspecialchars($user['phone'] ?? 'Not provided');
         $memberSince = date("F j, Y", strtotime($user['created_at']));
         
-        // --- 核心修复：读取 user_addresses 表里的默认地址 ---
+        // --- 核心修改：仅从 user_addresses 表读取默认地址 ---
         $addrQuery = "SELECT address_text FROM user_addresses WHERE user_id = ? AND is_default = 1 LIMIT 1";
         $addrStmt = $pdo->prepare($addrQuery);
         $addrStmt->execute([$userId]);
         $defaultAddr = $addrStmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($defaultAddr) {
-            // 如果在 user_addresses 找到了默认地址，使用它
-            $raw_address = $defaultAddr['address_text'];
-        } else {
-            // 如果没找到，则回退使用 user_db 里的旧地址（兼容性考虑）
-            $raw_address = $user['address'];
-        }
-
-        // --- 解析地址显示逻辑 (保持你原有的逻辑不变) ---
         $address_display = "No default address set";
-        if (!empty($raw_address)) {
+
+        if ($defaultAddr) {
+            $raw_address = $defaultAddr['address_text'];
+
+            // --- 解析地址显示逻辑 ---
+            // 兼容旧的竖线分隔符格式
             if (strpos($raw_address, '|') !== false) {
                 $parts = explode('|', $raw_address);
                 if (count($parts) >= 3) {
@@ -54,12 +49,23 @@ try {
                     $addrPost = htmlspecialchars($parts[1]);
                     $address_display = "$addrLine<br>$addrArea, $addrPost Melaka<br>Malaysia";
                 }
-            } else {
+            } 
+            // 兼容新的逗号分隔符格式 (Street, Area, Postcode)
+            elseif (strpos($raw_address, ', ') !== false) {
+                $address_display = nl2br(htmlspecialchars($raw_address));
+            } 
+            // 其他纯文本情况
+            else {
                 $address_display = htmlspecialchars($raw_address);
             }
         }
+        
         $isLoggedIn = true;
         $userName = $user['name'];
+    } else {
+        session_destroy();
+        header("Location: User_Login.php");
+        exit();
     }
 } catch (PDOException $e) {
     die("Error: " . $e->getMessage());
@@ -83,7 +89,7 @@ try {
         <div class="toast-card">
             <div class="toast-icon"><i class="fas fa-check"></i></div>
             <h3>Profile Updated!</h3>
-            <p>Your account information has been baked to perfection. Everything is up to date!</p>
+            <p>Your account information has been updated successfully.</p>
             <button class="close-toast" onclick="closeToast()">Done</button>
         </div>
     </div>
@@ -117,19 +123,19 @@ try {
             </div>
 
             <div class="info-card">
-                <div class="address-header">
-                    <h2><i class="fas fa-map-marker-alt"></i> Default Address</h2>
-                    <a href="manageaddress.php" class="btn-manage-address">
+                <div class="address-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="border-bottom: none; margin-bottom: 0;"><i class="fas fa-map-marker-alt"></i> Default Address</h2>
+                    <a href="manageaddress.php" class="btn-manage-address" style="text-decoration: none; color: #d4a76a; font-weight: bold;">
                         <i class="fas fa-cog"></i> Manage
                     </a>
                 </div>
                 <div class="info-row">
                     <div class="info-label">ADDRESS:</div>
-                    <div class="info-value"><?php echo $address_display; ?></div>
+                    <div class="info-value" style="line-height: 1.6;"><?php echo $address_display; ?></div>
                 </div>
             </div>
 
-           <div class="action-buttons">
+            <div class="action-buttons">
                 <a href="editprofile.php" class="btn btn-edit">
                     <i class="fas fa-edit"></i> Edit Profile
                 </a>

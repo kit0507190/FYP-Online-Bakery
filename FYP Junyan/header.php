@@ -11,8 +11,8 @@ $cur_file  = basename($_SERVER['PHP_SELF']);
 ?>
 
 <!-- Header CSS（只负责 header 样式） -->
-<link rel="stylesheet" href="header.css">
-
+<link rel="stylesheet" href="header.css">     
+      
 <header class="main-header">
     <div class="header-navbar navbar">
 
