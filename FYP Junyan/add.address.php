@@ -73,12 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$userId, $fullAddress, $final_is_default]);
 
-            // D. 同步更新 user_db 表 (如果是默认地址)
-            if ($final_is_default == 1) {
-                $updateUserSql = "UPDATE user_db SET address = ? WHERE id = ?";
-                $updateUserStmt = $pdo->prepare($updateUserSql);
-                $updateUserStmt->execute([$fullAddress, $userId]);
-            }
 
             header("Location: manageaddress.php");
             exit();

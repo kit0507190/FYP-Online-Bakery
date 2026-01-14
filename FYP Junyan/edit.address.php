@@ -1,6 +1,6 @@
 <?php
 /**
- * edit.address.php - 编辑现有地址页面
+ * edit.address.php - 编辑现有地址页面 (已移除 user_db 同步逻辑)
  */
 session_start();
 require_once 'config.php';
@@ -36,15 +36,15 @@ try {
     $address_area = $address_postcode = $address_line = $other_area = '';
     $text = $addressData['address_text'];
     
-    // 兼容逻辑：先尝试用逗号拆分，如果不行再用竖线
     if (strpos($text, ', ') !== false) {
         $parts = explode(', ', $text);
+        // 新格式：Line, Area, Postcode
         $address_line = $parts[0] ?? '';
         $address_area = $parts[1] ?? '';
         $address_postcode = $parts[2] ?? '';
-        // 如果是 Other 选项，之前的拼接逻辑可能需要根据实际存入的情况微调
     } elseif (strpos($text, '|') !== false) {
         $parts = explode('|', $text);
+        // 旧格式：Area|Postcode|Line|Other
         $address_area = $parts[0] ?? '';
         $address_postcode = $parts[1] ?? '';
         $address_line = $parts[2] ?? '';
@@ -78,23 +78,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     if (empty($address_line)) { $errors[] = "Street address is required."; }
+    if ($address_area === 'other' && empty($other_area)) { $errors[] = "Please specify your area name."; }
 
     if (empty($errors)) {
         try {
-            // 统一使用逗号拼接逻辑
+            // 统一使用逗号拼接逻辑存储
             $display_area = ($address_area === 'other') ? $other_area : $address_area;
             $fullAddress = $address_line . ", " . $display_area . ", " . $address_postcode;
 
+            // 仅更新 user_addresses 表
             $updateSql = "UPDATE user_addresses SET address_text = ?, updated_at = NOW() WHERE id = ? AND user_id = ?";
             $updateStmt = $pdo->prepare($updateSql);
             $updateStmt->execute([$fullAddress, $addressId, $userId]);
-
-            // 如果是默认地址，同步更新到 user_db
-            if ($addressData['is_default'] == 1) {
-                $syncSql = "UPDATE user_db SET address = ? WHERE id = ?";
-                $syncStmt = $pdo->prepare($syncSql);
-                $syncStmt->execute([$fullAddress, $userId]);
-            }
 
             header("Location: manageaddress.php");
             exit();
@@ -111,8 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Address - Bakery House</title>
-    <link rel="stylesheet" href="edit.address.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="editprofile.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     
@@ -196,12 +190,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <p>Sweet & Delicious</p>
                 <div class="footer-links">
-                    <a href="index.php">Home</a>
+                    <a href="mainpage.php">Home</a>
                     <a href="menu.php">Menu</a>
-                    <a href="about_us.php" class="active">About</a>
+                    <a href="about_us.php">About</a>
                     <a href="contact_us.php">Contact</a>
-                    <a href="privacypolicy.php">Privacy Policy</a>
-                    <a href="termservice.php">Terms of Service</a>
                 </div>
                 <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
             </div>
