@@ -74,7 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function parseAddr($raw) {
     if (strpos($raw, '|') !== false) {
         $p = explode('|', $raw);
-       return ['street' => $p[0], 'area' => $p[1], 'postcode' => $p[2]];
+        // 索引 0 是街道，1 是地区，2 是邮编
+        return ['street' => $p[0], 'area' => $p[1], 'postcode' => $p[2]];
     }
     return ['street' => $raw, 'area' => '', 'postcode' => ''];
 }
@@ -308,28 +309,34 @@ function parseAddr($raw) {
 
                 <div class="right-column">
                     <div class="card">
-                        <div class="card-title">
-                            <i class="fas fa-map-marker-alt"></i> Delivery Address
-                            <span class="btn-change" onclick="toggleModal(true)">Change</span>
-                        </div>
-                        <div class="address-box">
-                            <i class="fas fa-location-dot"></i>
-                            <div>
-                                <div class="user-meta">
-                                    <span><?php echo htmlspecialchars($userData['name']); ?></span> 
-                                    <span style="margin-left:15px;"><?php echo htmlspecialchars($userData['phone'] ?? ''); ?></span>
-                                </div>
-                                <div class="address-text" id="addressLabel">Loading address...</div>
-                            </div>
-                        </div>
-                        <input type="hidden" name="fullName" value="<?php echo htmlspecialchars($userData['name']); ?>">
-                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
-                        <input type="hidden" name="phone" value="<?php echo htmlspecialchars($userData['phone'] ?? ''); ?>">
-                        <input type="hidden" name="address" id="hiddenAddress">
-                        <input type="hidden" name="city" id="hiddenCity">
-                        <input type="hidden" name="postcode" id="hiddenPostcode">
-                        <input type="hidden" name="cart_data" id="cartDataInput">
-                    </div>
+    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fas fa-map-marker-alt"></i> Delivery Address</span>
+        <span class="btn-change" onclick="toggleModal(true)" style="color: #d4a76a; font-weight: bold; cursor: pointer;">Change</span>
+    </div>
+    
+    <div class="address-box" style="display: flex; align-items: flex-start; gap: 15px; margin-top: 10px;">
+        <i class="fas fa-location-dot" style="color: #c5a073; font-size: 18px; margin-top: 4px;"></i>
+        
+        <div class="address-details">
+            <div class="user-meta" style="font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px;">
+                <span id="displayUserName"><?php echo strtoupper(htmlspecialchars($userData['name'])); ?></span> 
+                <span id="displayUserPhone" style="margin-left: 20px;"><?php echo htmlspecialchars($userData['phone'] ?? ''); ?></span>
+            </div>
+            
+            <div class="address-text" id="addressLabel" style="color: #666; font-size: 14px; line-height: 1.5;">
+                Loading address...
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="fullName" value="<?php echo htmlspecialchars($userData['name']); ?>">
+    <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
+    <input type="hidden" name="phone" value="<?php echo htmlspecialchars($userData['phone'] ?? ''); ?>">
+    <input type="hidden" name="address" id="hiddenAddress">
+    <input type="hidden" name="city" id="hiddenCity">
+    <input type="hidden" name="postcode" id="hiddenPostcode">
+    <input type="hidden" name="cart_data" id="cartDataInput">
+</div>
 
                     <div class="card">
                         <div class="card-title">Payment Method</div>
@@ -447,14 +454,25 @@ function parseAddr($raw) {
         function toggleModal(show) { document.getElementById('addrModal').classList.toggle('active', show); }
 
         function selectAddr(el, street, area, postcode) {
-            document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
-            el.classList.add('selected');
-            document.getElementById('addressLabel').innerText = `${street}, ${area}, Melaka, ${postcode}`;
-            document.getElementById('hiddenAddress').value = street;
-            document.getElementById('hiddenCity').value = area;
-            document.getElementById('hiddenPostcode').value = postcode;
-            toggleModal(false);
-        }
+    // 1. 切换弹窗里的选中样式
+    document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
+    el.classList.add('selected');
+
+    // 2. 🚀 核心：按照图片 1 的格式拼接字符串
+    // 格式：街道, 地区, Melaka, 邮编
+    const formattedAddress = `${street}, ${area}, Melaka, ${postcode}`;
+    
+    // 3. 更新界面显示
+    document.getElementById('addressLabel').innerText = formattedAddress;
+
+    // 4. 更新隐藏域的值以便提交表单
+    document.getElementById('hiddenAddress').value = street;
+    document.getElementById('hiddenCity').value = area;
+    document.getElementById('hiddenPostcode').value = postcode;
+
+    // 5. 关闭弹窗
+    toggleModal(false);
+}
 
         function renderSummary() {
             const container = document.getElementById('summaryItems');
