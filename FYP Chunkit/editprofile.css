@@ -257,23 +257,9 @@ body {
     margin-bottom: 20px;
 }
 
-/* ============================================================
-   8. FOOTER (页脚)
-   ============================================================ */
-footer {
-    padding: 40px 0;
-    background-color: var(--bakery-brown);
-    color: white;
-    text-align: center;
-    margin-top: 50px;
-}
-
-.footer-logo img { height: 60px; margin-bottom: 15px; }
-.footer-links a { margin: 0 10px; color: white; text-decoration: none; transition: 0.3s; }
-.footer-links a:hover { color: var(--bakery-gold); }
 
 /* ============================================================
-   9. BACK NAVIGATION (返回按钮)
+   8. BACK NAVIGATION (返回按钮)
    ============================================================ */
 .back-navigation {
     margin-bottom: 20px;

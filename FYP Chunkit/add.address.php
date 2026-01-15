@@ -1,10 +1,11 @@
 <?php
 /**
- * add.address.php - 添加新地址页面
+ * add.address.php - 完整功能版：包含邮编验证与自定义存储顺序
  */
 session_start();
 require_once 'config.php';
 
+// 1. 验证登录
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
@@ -13,29 +14,55 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 $errors = [];
 
+// 2. 处理表单提交
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address_area = trim($_POST['address_area'] ?? '');
     $address_postcode = trim($_POST['address_postcode'] ?? '');
     $address_line = trim($_POST['address_line'] ?? '');
     $other_area = trim($_POST['other_area'] ?? '');
 
-    if (empty($address_area)) { $errors[] = "Please select an area."; }
-    if (empty($address_postcode)) { $errors[] = "Postcode is required."; }
-    if (empty($address_line)) { $errors[] = "Street address is required."; }
+    $postcode_map = [
+        "Bandar Melaka" => ["75000", "75100", "75200", "75300"],
+        "Ayer Keroh"    => ["75450"],
+        "Bukit Beruang" => ["75450"]
+    ];
+
+    if (empty($address_area)) { 
+        $errors[] = "Please select an area."; 
+    }
+    
+    if (!preg_match("/^[0-9]{5}$/", $address_postcode)) {
+        $errors[] = "Postcode must be exactly 5 digits.";
+    } 
+    elseif ($address_area !== 'other' && isset($postcode_map[$address_area])) {
+        if (!in_array($address_postcode, $postcode_map[$address_area])) {
+            $errors[] = "The postcode $address_postcode does not match the selected area ($address_area).";
+        }
+    }
+
+    if (empty($address_line)) { 
+        $errors[] = "Street address is required."; 
+    }
+    
+    if ($address_area === 'other' && empty($other_area)) {
+        $errors[] = "Please specify your area name.";
+    }
 
     if (empty($errors)) {
         try {
-            // 拼接格式：area|postcode|line[|other_area]
-            $fullAddress = $address_area . '|' . $address_postcode . '|' . $address_line;
-            if ($address_area === 'other' && !empty($other_area)) {
-                $fullAddress .= '|' . $other_area;
-            }
+            $display_area = ($address_area === 'other') ? $other_area : $address_area;
+            $fullAddress = $address_line . "|" . $display_area . "|" . $address_postcode . "|" . $other_area;
 
-            $sql = "INSERT INTO user_addresses (user_id, address_text, is_default) VALUES (?, ?, 0)";
+            $countQuery = "SELECT COUNT(*) FROM user_addresses WHERE user_id = ?";
+            $countStmt = $pdo->prepare($countQuery);
+            $countStmt->execute([$userId]);
+            $addressCount = $countStmt->fetchColumn();
+            $final_is_default = ($addressCount == 0) ? 1 : 0;
+
+            $sql = "INSERT INTO user_addresses (user_id, address_text, is_default, updated_at) VALUES (?, ?, ?, NOW())";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([$userId, $fullAddress]);
+            $stmt->execute([$userId, $fullAddress, $final_is_default]);
 
-            // --- 关键修正：跳转回 manageaddress.php ---
             header("Location: manageaddress.php");
             exit();
         } catch (PDOException $e) {
@@ -52,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add New Address - Bakery House</title>
     <link rel="stylesheet" href="add.address.css"> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="footer.css">
 </head>
 <body>
     
@@ -97,15 +125,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <option value="other">Other</option>
                             </select>
                         </div>
-                        <div class="form-group-half required-field">
+
+                        <div class="form-group-half required-field postcode-wrapper">
                             <label class="form-label">Postcode</label>
-                            <input type="text" name="address_postcode" class="form-input" required placeholder="e.g., 75000">
+                            
+                            <div id="postcode-hint">
+                                <i class="fas fa-info-circle"></i> Valid: <span id="hint-text"></span>
+                            </div>
+
+                            <input type="text" name="address_postcode" id="address_postcode" class="form-input" 
+                                   required placeholder="e.g., 75000" maxlength="5">
+    
+                            <span id="postcode-error"></span>
                         </div>
                     </div>
                     
                     <div class="form-group required-field">
                         <label class="form-label">Street Address</label>
-                        <textarea name="address_line" class="form-textarea" required rows="3" placeholder="House No, Street Name, etc."></textarea>
+                        <textarea name="address_line" class="form-textarea" required rows="3" placeholder="No 1, Jalan Bakery..."></textarea>
                     </div>
 
                     <div class="form-group" id="other_area_group" style="display: none;">
@@ -118,41 +155,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Save Address
                     </button>
-                    <a href="manageaddress.php" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancel
-                    </a>
+                    <a href="manageaddress.php" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="Bakery House Logo.png" alt="BakeryHouse">
-                </div>
-                <p>Sweet & Delicious</p>
-                <div class="footer-links">
-                    <a href="mainpage.php">Home</a>
-                    <a href="menu.php">Menu</a>
-                    <a href="about_us.php">About</a>
-                    <a href="contact_us.php">Contact</a>
-                    <a href="privacypolicy.php">Privacy Policy</a>
-                    <a href="termservice.php">Terms of Service</a>
-                </div>
-                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
-
-    <script>
-    function toggleOtherArea() {
-        const areaSelect = document.getElementById('address_area');
-        const otherGroup = document.getElementById('other_area_group');
-        otherGroup.style.display = (areaSelect.value === 'other') ? 'block' : 'none';
-    }
-    </script>
+    <script src="add.address.js"></script>
 </body>
 </html>

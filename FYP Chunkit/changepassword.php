@@ -129,6 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </main>
 
+    <?php include 'footer.php'; ?>
+    
     <script>
         function togglePassword(id) {
             const input = document.getElementById(id);

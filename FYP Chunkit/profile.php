@@ -1,6 +1,6 @@
 <?php
 /**
- * profile.php - 用户资料展示页 (已移除 user_db 地址冗余)
+ * profile.php - 用户资料展示页 (已移除 user_db 地址冗余，适配新拼接逻辑)
  */
 session_start();
 
@@ -28,7 +28,7 @@ try {
         $phone = htmlspecialchars($user['phone'] ?? 'Not provided');
         $memberSince = date("F j, Y", strtotime($user['created_at']));
         
-        // --- 核心修改：仅从 user_addresses 表读取默认地址 ---
+        // --- 核心修改：仅从 user_addresses 表读取默认地址 (is_default = 1) ---
         $addrQuery = "SELECT address_text FROM user_addresses WHERE user_id = ? AND is_default = 1 LIMIT 1";
         $addrStmt = $pdo->prepare($addrQuery);
         $addrStmt->execute([$userId]);
@@ -39,22 +39,21 @@ try {
         if ($defaultAddr) {
             $raw_address = $defaultAddr['address_text'];
 
-            // --- 解析地址显示逻辑 ---
-            // 兼容旧的竖线分隔符格式
+            // --- 核心解析逻辑：适配 街道|地区|邮编|其他 ---
             if (strpos($raw_address, '|') !== false) {
                 $parts = explode('|', $raw_address);
-                if (count($parts) >= 3) {
-                    $addrLine = htmlspecialchars($parts[2]);
-                    $addrArea = ($parts[0] === 'other' && isset($parts[3])) ? htmlspecialchars($parts[3]) : htmlspecialchars($parts[0]);
-                    $addrPost = htmlspecialchars($parts[1]);
-                    $address_display = "$addrLine<br>$addrArea, $addrPost Melaka<br>Malaysia";
-                }
+                // 索引对应：0=街道, 1=地区, 2=邮编
+                $addrLine = htmlspecialchars($parts[0] ?? '');
+                $addrArea = htmlspecialchars($parts[1] ?? '');
+                $addrPost = htmlspecialchars($parts[2] ?? '');
+                
+                // 格式化输出：街道在前，地区和邮编在后
+                $address_display = "$addrLine<br>$addrArea, $addrPost<br>Malacca, Malaysia";
             } 
-            // 兼容新的逗号分隔符格式 (Street, Area, Postcode)
+            // 兼容之前可能残留的逗号格式
             elseif (strpos($raw_address, ', ') !== false) {
                 $address_display = nl2br(htmlspecialchars($raw_address));
             } 
-            // 其他纯文本情况
             else {
                 $address_display = htmlspecialchars($raw_address);
             }
@@ -79,6 +78,7 @@ try {
     <title>My Profile - Bakery House</title>
     <link rel="stylesheet" href="profile.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="footer.css">
 </head>
 <body>
     
@@ -151,25 +151,7 @@ try {
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="Bakery House Logo.png" alt="BakeryHouse">
-                </div>
-                <p>Sweet & Delicious</p>
-                <div class="footer-links">
-                    <a href="mainpage.php">Home</a>
-                    <a href="menu.php">Menu</a>
-                    <a href="about_us.php">About</a>
-                    <a href="contact_us.php">Contact</a>
-                    <a href="privacypolicy.php">Privacy Policy</a>
-                    <a href="termservice.php">Terms of Service</a>
-                </div>
-                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="profile.js"></script>
 </body>
