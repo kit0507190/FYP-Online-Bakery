@@ -1,8 +1,7 @@
 /* purchase_history.css */
 :root {
     --primary: #5a3921;
-    --accent: #d4a76a;
-    --shopee-orange: #ee4d2d; /* 典型的 Shopee 橙色 */
+    --accent: #d4a76a; /* 🟢 统一金色 */
     --light-bg: #fff7ec;
     --white: #ffffff;
     --grey-text: #999999;
@@ -11,29 +10,46 @@
 body {
     background-color: var(--light-bg);
     margin: 0;
-    padding-top: 100px; /* 为固定 header 留空 */
+    padding-top: 100px; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* 🟢 容器保持 1200px 宽度，与 cart.php 对齐 */
 .purchase-container {
-    max-width: 750px;
+    max-width: 1200px; 
+    width: 100%;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 20px 20px;
+}
+
+/* 🟢 新增：标题白色框容器，模拟 cart.php 样式 */
+.header-card {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 20px 35px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08);
 }
 
 .page-title {
     color: var(--primary);
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 26px;
+    margin: 0;
+    font-size: 26px; /* 🟢 调小：从 36px 调至 26px */
+    font-weight: 700;
 }
 
-/* 仿 Shopee 的订单卡片 */
+/* 订单卡片样式 */
 .shopee-card {
     background: var(--white);
-    border-radius: 4px;
-    padding: 18px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 1px 0 rgba(0,0,0,.05);
+    border-radius: 15px; 
+    padding: 30px;      /* 🟢 稍微调小内边距 */
+    margin-bottom: 25px;
+    box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08); 
+    transition: transform 0.3s ease;
+}
+
+.shopee-card:hover {
+    transform: translateY(-3px);
 }
 
 .card-header {
@@ -41,37 +57,59 @@ body {
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid #f2f2f2;
-    padding-bottom: 12px;
-    margin-bottom: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.shop-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
 .shop-brand {
-    font-weight: 600;
+    font-weight: 700;
     color: #333;
-    font-size: 15px;
+    font-size: 18px; /* 🟢 调小：从 20px 调至 18px */
 }
 
-.status-tag {
-    color: var(--shopee-orange);
+.order-id-tag {
+    font-size: 13px;
+    color: #888;
+    background: #f8f8f8;
+    padding: 3px 12px;
+    border-radius: 6px;
+}
+
+.order-meta {
+    display: flex;
+    align-items: center;
+}
+
+.order-date {
+    font-size: 14px; /* 🟢 调小：从 16px 调至 14px */
+    color: #666;
     font-weight: 500;
-    font-size: 14px;
-    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-/* 商品布局 */
+/* 商品项布局 */
 .product-item {
     display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-    align-items: flex-start;
+    gap: 25px;
+    margin-bottom: 20px;
+    align-items: center;
+    padding: 5px 0;
 }
 
 .product-img {
-    width: 80px;
-    height: 80px;
+    width: 90px; /* 🟢 调小图片：从 120px 调至 90px */
+    height: 90px;
     object-fit: cover;
-    border-radius: 2px;
-    border: 1px solid #f2f2f2;
+    border-radius: 8px;
+    border: 1px solid #f0f0f0;
 }
 
 .product-details {
@@ -79,80 +117,65 @@ body {
 }
 
 .product-details .name {
-    font-size: 16px;
+    font-size: 17px; /* 🟢 调小：从 22px 调至 17px */
     color: #333;
     margin-bottom: 5px;
-    line-height: 1.4;
+    font-weight: 600;
 }
 
 .product-details .qty {
     color: var(--grey-text);
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .product-item .price {
-    font-size: 15px;
-    color: #333;
+    font-size: 16px; /* 🟢 调小：从 20px 调至 16px */
+    color: #444;
+    font-weight: 600;
 }
 
-/* 底部区域 */
+/* 底部操作区 */
 .card-footer {
     border-top: 1px dotted #e8e8e8;
     padding-top: 20px;
-    text-align: right;
-}
-
-.total-row {
-    margin-bottom: 15px;
+    margin-top: 10px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-end; 
     align-items: center;
-    gap: 10px;
+    gap: 30px; 
 }
 
 .total-row .label {
-    font-size: 14px;
+    font-size: 16px;
     color: #555;
 }
 
 .total-row .amount {
-    font-size: 22px;
-    color: var(--shopee-orange);
-    font-weight: bold;
+    font-size: 26px; /* 🟢 调小：从 34px 调至 26px */
+    color: var(--accent) !important; 
+    font-weight: 800;
 }
 
 .buy-again-btn {
-    background-color: var(--shopee-orange);
+    background-color: var(--accent) !important; 
     color: white;
     border: none;
-    padding: 10px 35px;
-    border-radius: 2px;
+    padding: 10px 40px; /* 🟢 调小按钮尺寸 */
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: background 0.2s;
+    font-weight: 700;
+    font-size: 15px; /* 🟢 调小：从 18px 调至 15px */
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(212, 167, 106, 0.2); 
 }
 
 .buy-again-btn:hover {
-    background-color: #d73d1f;
+    background-color: #c2955a; 
+    transform: scale(1.05);
 }
 
-/* 空状态 */
 .empty-state {
     text-align: center;
-    padding: 60px 0;
+    padding: 100px 0;
     color: var(--grey-text);
-}
-
-.empty-state i {
-    font-size: 50px;
-    margin-bottom: 20px;
-}
-
-.go-menu-btn {
-    display: inline-block;
-    margin-top: 15px;
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: bold;
 }

@@ -12,7 +12,6 @@
                 <a href="menu.php">Menu</a>
                 <a href="about_us.php">About</a>
                 <a href="contact_us.php">Contact</a>
-                <a href="cart.php">Cart</a>
                 <a href="privacypolicy.php">Privacy Policy</a>
                 <a href="termservice.php">Terms of Service</a>
             </div>

@@ -187,5 +187,35 @@
 	<!-- ⚠️ JS 一定在这里，和 menu.html 一模一样 -->
 	<script src="menu.js"></script>
 	
+    <script>
+        async function forceSyncCart() {
+            // 只有登录了才执行同步
+            if (!window.isLoggedIn) return; 
+            
+            // 获取最新的本地购物车数据
+            const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+            
+            try {
+                // 发送给同步接口
+                await fetch('sync_cart.php?action=update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cart: currentCart })
+                });
+                console.log("同步成功：数据库已更新");
+            } catch (e) {
+                console.error("同步失败:", e);
+            }
+        }
+
+        // 监听页面点击：只要点了“Add to Cart”按钮，就触发同步
+        document.addEventListener('click', (e) => {
+            if (e.target.innerText && e.target.innerText.includes('Add to Cart')) {
+                // 延迟 0.8 秒，确保 menu.js 已经先把数据存进了 localStorage
+                setTimeout(forceSyncCart, 800); 
+            }
+        });
+    </script>
+
 </body>
 </html>
