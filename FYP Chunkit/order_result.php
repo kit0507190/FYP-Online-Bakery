@@ -1,5 +1,8 @@
 <?php
 include 'config.php';
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $orderId = $_GET['order_id'] ?? null;
 if (!$orderId) {
@@ -7,87 +10,269 @@ if (!$orderId) {
     exit;
 }
 
+// 获取订单主表信息
 $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
 $stmt->execute([$orderId]);
 $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if (!$order) {
     echo "Order not found.";
     exit;
 }
 
-// Fetch order items for display
+// 获取订单详情
 $stmtItems = $pdo->prepare("SELECT product_name, price, quantity, subtotal FROM orders_detail WHERE order_id = ?");
 $stmtItems->execute([$orderId]);
 $orderItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
+
 <?php include 'header.php'; ?>
 
-    <style>
-        /* Full-page thank-you layout */
-        .order-wrapper { min-height: calc(100vh - 220px); display:flex; align-items:center; padding:3rem 1rem; background: linear-gradient(180deg,#fffdfa, #fff7f1); }
-        .order-card { width:100%; max-width:1200px; margin:0 auto; background: white; border-radius:14px; padding:2.5rem; box-shadow: 0 20px 60px rgba(21,21,21,0.06); border:1px solid rgba(0,0,0,0.04); }
-        .hero { display:flex; gap:1.25rem; align-items:center; padding:1.25rem; border-radius:12px; background: linear-gradient(90deg, rgba(212,167,106,0.08), rgba(255,250,245,0.04)); }
-        .hero .check { width:88px; height:88px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; border:2px solid rgba(212,167,106,0.18); box-shadow:0 10px 30px rgba(111,45,45,0.06); }
-        .hero h2 { margin:0; font-size:1.6rem; color:#2a2a2a; }
-        .hero p { margin:0.3rem 0 0; color:#4c4c4c; }
-        .meta { display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap; }
-        .meta .item { padding:0.8rem 1rem; background:#fff; border-radius:10px; box-shadow: 0 6px 18px rgba(18,18,18,0.03); min-width:160px; }
-        .meta .label { color:#7a7a7a; font-size:0.85rem; }
-        .meta .value { font-weight:800; font-size:1.05rem; }
-        .order-summary { margin-top:1.25rem; background:#fbfbfb; padding:1rem; border-radius:10px; }
-        .order-summary h3 { margin:0 0 0.6rem 0; }
-        .order-summary ul { list-style:none; padding:0; margin:0; }
-        .order-summary li { display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px dashed rgba(0,0,0,0.03); }
-        .actions { margin-top:1.25rem; }
-        .btn { padding:0.8rem 1.2rem; border-radius:10px; background:#6f2d2d; color:#fff; text-decoration:none; font-weight:700; margin-right:0.75rem; }
-        .btn.secondary { background:transparent; border:2px solid #d4a76a; color:#6f2d2d; }
-        @media (max-width:720px) { .hero { flex-direction:column; align-items:flex-start; } .meta .item { min-width:120px; } }
-    </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-    <div class="order-wrapper">
-        <div class="order-card">
-            <div class="hero">
-                <div class="check" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="44" height="44" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 12.5l2.5 2.5L17 8" stroke="#1f8b45" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="120" stroke-dashoffset="120" style="animation:draw 0.6s ease forwards 0.1s"></path></svg>
-                </div>
-                <div>
-                    <h2>Thank you! Your payment is complete.</h2>
-                    <p>Order <strong>#<?php echo $order['id']; ?></strong> has been received. We'll prepare it and notify you when it's out for delivery.</p>
-                </div>
+<style>
+    :root {
+        --primary: #5a3921; /* 巧克力棕 */
+        --accent: #d4a76a;  /* 烘焙金 */
+        --bg: #fffcf9;      /* 奶油色背景 */
+        --success: #1f8b45; /* 成功绿 */
+    }
+
+    body {
+        background-color: var(--bg);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .result-wrapper {
+        min-height: calc(100vh - 250px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .result-card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 900px;
+        border-radius: 30px;
+        box-shadow: 0 20px 60px rgba(90, 57, 33, 0.1);
+        overflow: hidden;
+        animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-section {
+        padding: 60px 40px 40px;
+        text-align: center;
+        background: linear-gradient(180deg, #fffaf5 0%, #ffffff 100%);
+    }
+
+    .status-icon {
+        width: 80px;
+        height: 80px;
+        background-color: rgba(31, 139, 69, 0.1);
+        color: var(--success);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin: 0 auto 25px;
+    }
+
+    .hero-section h1 {
+        color: var(--primary);
+        font-size: 32px;
+        font-weight: 800;
+        margin-bottom: 10px;
+    }
+
+    .hero-section p {
+        color: #777;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+    .order-id-highlight {
+        color: var(--accent);
+        font-weight: 700;
+        border-bottom: 2px dashed var(--accent);
+    }
+
+    /* 修改：栅格改为 2 列以平衡布局 */
+    .info-bar {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+        padding: 0 40px;
+        margin-bottom: 40px;
+    }
+
+    .info-item {
+        background: #fdfaf7;
+        padding: 20px;
+        border-radius: 20px;
+        text-align: center;
+        border: 1px solid #f1ece6;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .info-value {
+        font-weight: 700;
+        color: var(--primary);
+        font-size: 18px;
+    }
+
+    .summary-section {
+        margin: 0 40px 40px;
+        background: #fafafa;
+        border-radius: 24px;
+        padding: 30px;
+    }
+
+    .summary-header {
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 20px;
+        font-size: 18px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+    }
+
+    .product-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .product-row:last-child { border-bottom: none; }
+
+    .product-name { color: #444; font-weight: 500; }
+    .product-qty { color: #999; font-size: 14px; margin-left: 10px; }
+    .product-price { font-weight: 700; color: var(--primary); }
+
+    .total-row {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 2px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .total-label { font-size: 18px; font-weight: 700; color: var(--primary); }
+    .total-amount { font-size: 26px; font-weight: 800; color: var(--accent); }
+
+    .action-group {
+        padding: 0 40px 60px;
+        display: flex;
+        gap: 20px;
+    }
+
+    .btn-result {
+        flex: 1;
+        padding: 18px;
+        border-radius: 15px;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: var(--primary);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background-color: #3e2717;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(90, 57, 33, 0.2);
+    }
+
+    .btn-secondary {
+        border: 2px solid var(--accent);
+        color: var(--primary);
+    }
+
+    .btn-secondary:hover {
+        background-color: var(--accent);
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+    @media (max-width: 600px) {
+        .info-bar { grid-template-columns: 1fr; }
+        .action-group { flex-direction: column; }
+    }
+</style>
+
+<div class="result-wrapper">
+    <div class="result-card">
+        <div class="hero-section">
+            <div class="status-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1>Thank you! Your payment is complete.</h1>
+            <p>Order <span class="order-id-highlight">#<?php echo $order['id']; ?></span> has been received. <br>
+               We'll prepare it and notify you when it's out for delivery.</p>
+        </div>
+
+        <div class="info-bar">
+            <div class="info-item">
+                <span class="info-label">Total Amount</span>
+                <span class="info-value">RM <?php echo number_format($order['total'], 2); ?></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Payment Status</span>
+                <span class="info-value" style="color: var(--success);">PAID</span>
+            </div>
             </div>
 
-            <div class="meta">
-                <div class="item"><div class="label">Amount</div><div class="value">RM <?php echo number_format($order['total'],2); ?></div></div>
-                <div class="item"><div class="label">Payment Status</div><div class="value"><?php echo strtoupper($order['payment_status']); ?></div></div>
-                <div class="item"><div class="label">Order Status</div><div class="value"><?php echo strtoupper($order['status']); ?></div></div>
-            </div>
-
-            <?php if (!empty($orderItems)): ?>
-                <div class="order-summary">
-                    <h3>Order Summary</h3>
-                    <ul>
-                        <?php foreach ($orderItems as $it): ?>
-                            <li><span><?php echo htmlspecialchars($it['product_name']); ?> x <?php echo (int)$it['quantity']; ?></span><span><strong>RM <?php echo number_format($it['subtotal'],2); ?></strong></span></li>
-                        <?php endforeach; ?>
-                    </ul>
+        <div class="summary-section">
+            <div class="summary-header">Order Summary</div>
+            <?php foreach ($orderItems as $it): ?>
+                <div class="product-row">
+                    <div>
+                        <span class="product-name"><?php echo htmlspecialchars($it['product_name']); ?></span>
+                        <span class="product-qty">x <?php echo (int)$it['quantity']; ?></span>
+                    </div>
+                    <span class="product-price">RM <?php echo number_format($it['subtotal'], 2); ?></span>
                 </div>
-            <?php endif; ?>
+            <?php endforeach; ?>
 
-            <div class="actions">
-                <?php if ($order['payment_status'] === 'paid'): ?>
-                    <a href="mainpage.php" class="btn">Return to Home</a>
-                    <a href="menu.html" class="btn secondary">Browse More</a>
-                    <script>try { localStorage.removeItem('bakeryCart'); } catch(e) {}</script>
-                <?php elseif ($order['payment_status'] === 'pending'): ?>
-                    <a href="payment.php?order_id=<?php echo $order['id']; ?>" class="btn">Complete Payment</a>
-                    <a href="mainpage.php" class="btn secondary">Return to Home</a>
-                <?php else: ?>
-                    <a href="payment.php?order_id=<?php echo $order['id']; ?>" class="btn">Try Payment Again</a>
-                    <a href="mainpage.php" class="btn secondary">Return to Home</a>
-                <?php endif; ?>
+            <div class="total-row">
+                <span class="total-label">Grand Total</span>
+                <span class="total-amount">RM <?php echo number_format($order['total'], 2); ?></span>
             </div>
         </div>
+
+        <div class="action-group">
+            <a href="mainpage.php" class="btn-result btn-primary">Return to Home</a>
+            <a href="menu.php" class="btn-result btn-secondary">Browse More</a>
+        </div>
     </div>
+</div>
+
+<?php if ($order['payment_status'] === 'paid'): ?>
+    <script>
+        try { localStorage.removeItem('bakeryCart'); } catch(e) {}
+    </script>
+<?php endif; ?>
 
 <?php include 'footer.php'; ?>

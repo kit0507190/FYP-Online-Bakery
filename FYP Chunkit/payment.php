@@ -21,6 +21,9 @@ $addrStmt = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = ? ORDER 
 $addrStmt->execute([$userId]);
 $allAddresses = $addrStmt->fetchAll(PDO::FETCH_ASSOC);
 
+// 统计地址数量
+$addressCount = count($allAddresses);
+
 // 4. 处理下单请求
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = $_POST['fullName'] ?? '';
@@ -74,7 +77,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function parseAddr($raw) {
     if (strpos($raw, '|') !== false) {
         $p = explode('|', $raw);
-        // 索引 0 是街道，1 是地区，2 是邮编
         return ['street' => $p[0], 'area' => $p[1], 'postcode' => $p[2]];
     }
     return ['street' => $raw, 'area' => '', 'postcode' => ''];
@@ -152,7 +154,6 @@ function parseAddr($raw) {
             font-weight: 600;
         }
 
-        /* --- Order Summary 滚动区域 --- */
         #summaryItems {
             max-height: 380px; 
             overflow-y: auto; 
@@ -200,7 +201,6 @@ function parseAddr($raw) {
             line-height: 1.4;
         }
 
-        /* 重点：图片中要求的 Qty 浅色样式 */
         .summary-item-qty {
             font-size: 12px;
             color: #999; 
@@ -214,7 +214,6 @@ function parseAddr($raw) {
             font-size: 14px;
         }
 
-        /* --- Payment Method 新增样式 --- */
         .method-item {
             border: 1px solid var(--border);
             padding: 15px;
@@ -258,7 +257,6 @@ function parseAddr($raw) {
         .form-input:focus { border-color: var(--accent); outline: none; }
         .form-row { display: flex; gap: 15px; }
 
-        /* --- 原有通用样式 --- */
         .address-box { display: flex; gap: 15px; align-items: flex-start; }
         .address-box i { color: var(--accent); font-size: 20px; margin-top: 4px; }
         .user-meta { font-weight: bold; font-size: 16px; margin-bottom: 6px; }
@@ -275,6 +273,39 @@ function parseAddr($raw) {
         .addr-option { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
         .addr-option.selected { border: 2px solid var(--accent); background: #fffcf9; }
 
+        /* 强制弹窗遮罩层 */
+        .force-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(3px);
+        }
+
+        .force-modal-content {
+            background: white;
+            width: 90%; max-width: 400px;
+            padding: 40px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal-icon { font-size: 50px; margin-bottom: 20px; }
+        .force-modal-content h2 { color: #5a3921; font-size: 24px; margin-bottom: 15px; }
+        .force-modal-content p { color: #777; font-size: 15px; line-height: 1.6; margin-bottom: 30px; }
+        .btn-go-address {
+            display: block; background: #d4a76a;
+            color: white; text-decoration: none;
+            padding: 15px; border-radius: 10px;
+            font-weight: bold; font-size: 16px;
+            margin-bottom: 15px;
+        }
+        .btn-maybe-later { color: #aaa; text-decoration: underline; font-size: 14px; cursor: pointer; }
+
         @media (max-width: 992px) {
             .flex-layout { flex-direction: column; }
             .left-column, .right-column { width: 100%; flex: none; }
@@ -289,7 +320,6 @@ function parseAddr($raw) {
     <div class="container">
         <form id="paymentForm" method="post" onsubmit="return validateCheckout()">
             <div class="flex-layout">
-                
                 <div class="left-column">
                     <div class="card">
                         <div class="card-title">Order Summary</div>
@@ -309,38 +339,35 @@ function parseAddr($raw) {
 
                 <div class="right-column">
                     <div class="card">
-    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-        <span><i class="fas fa-map-marker-alt"></i> Delivery Address</span>
-        <span class="btn-change" onclick="toggleModal(true)" style="color: #d4a76a; font-weight: bold; cursor: pointer;">Change</span>
-    </div>
-    
-    <div class="address-box" style="display: flex; align-items: flex-start; gap: 15px; margin-top: 10px;">
-        <i class="fas fa-location-dot" style="color: #c5a073; font-size: 18px; margin-top: 4px;"></i>
-        
-        <div class="address-details">
-            <div class="user-meta" style="font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px;">
-                <span id="displayUserName"><?php echo strtoupper(htmlspecialchars($userData['name'])); ?></span> 
-                <span id="displayUserPhone" style="margin-left: 20px;"><?php echo htmlspecialchars($userData['phone'] ?? ''); ?></span>
-            </div>
-            
-            <div class="address-text" id="addressLabel" style="color: #666; font-size: 14px; line-height: 1.5;">
-                Loading address...
-            </div>
-        </div>
-    </div>
+                        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span><i class="fas fa-map-marker-alt"></i> Delivery Address</span>
+                            <span class="btn-change" onclick="toggleModal(true)" style="color: #d4a76a; font-weight: bold; cursor: pointer;">Change</span>
+                        </div>
+                        
+                        <div class="address-box" style="display: flex; align-items: flex-start; gap: 15px; margin-top: 10px;">
+                            <i class="fas fa-location-dot" style="color: #c5a073; font-size: 18px; margin-top: 4px;"></i>
+                            <div class="address-details">
+                                <div class="user-meta" style="font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px;">
+                                    <span id="displayUserName"><?php echo strtoupper(htmlspecialchars($userData['name'])); ?></span> 
+                                    <span id="displayUserPhone" style="margin-left: 20px;"><?php echo htmlspecialchars($userData['phone'] ?? ''); ?></span>
+                                </div>
+                                <div class="address-text" id="addressLabel" style="color: #666; font-size: 14px; line-height: 1.5;">
+                                    Loading address...
+                                </div>
+                            </div>
+                        </div>
 
-    <input type="hidden" name="fullName" value="<?php echo htmlspecialchars($userData['name']); ?>">
-    <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
-    <input type="hidden" name="phone" value="<?php echo htmlspecialchars($userData['phone'] ?? ''); ?>">
-    <input type="hidden" name="address" id="hiddenAddress">
-    <input type="hidden" name="city" id="hiddenCity">
-    <input type="hidden" name="postcode" id="hiddenPostcode">
-    <input type="hidden" name="cart_data" id="cartDataInput">
-</div>
+                        <input type="hidden" name="fullName" value="<?php echo htmlspecialchars($userData['name']); ?>">
+                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
+                        <input type="hidden" name="phone" value="<?php echo htmlspecialchars($userData['phone'] ?? ''); ?>">
+                        <input type="hidden" name="address" id="hiddenAddress">
+                        <input type="hidden" name="city" id="hiddenCity">
+                        <input type="hidden" name="postcode" id="hiddenPostcode">
+                        <input type="hidden" name="cart_data" id="cartDataInput">
+                    </div>
 
                     <div class="card">
                         <div class="card-title">Payment Method</div>
-                        
                         <label class="method-item" id="label-debit">
                             <input type="radio" name="paymentMethod" value="debitCard" required onclick="toggleCardFields(true)">
                             <i class="far fa-credit-card"></i>
@@ -350,16 +377,16 @@ function parseAddr($raw) {
                         <div id="cardDetailsSection">
                             <div class="form-group">
                                 <label>Card Number (16 Digits)</label>
-                                <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19" autocomplete="cc-number">
+                                <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
                             </div>
                             <div class="form-row">
                                 <div class="form-group" style="flex:2;">
                                     <label>Expiry Date</label>
-                                    <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5" autocomplete="off">
+                                    <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5">
                                 </div>
                                 <div class="form-group" style="flex:1;">
                                     <label>CVV</label>
-                                    <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3" autocomplete="new-password">
+                                    <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3">
                                 </div>
                             </div>
                         </div>
@@ -401,7 +428,20 @@ function parseAddr($raw) {
         </div>
     </div>
 
+    <div id="addressRequiredModal" class="force-modal-overlay">
+        <div class="force-modal-content">
+            <div class="modal-icon">📍</div> 
+            <h2>Please Add Address</h2>
+            <p>You need to add a delivery address to your account before you can proceed with your payment.</p>
+            <div class="modal-actions">
+                <a href="add.address.php" class="btn-go-address">Go to Add Address</a>
+                <div class="btn-maybe-later" onclick="closeAddressModal()">Maybe Later</div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const userAddressCount = <?php echo $addressCount; ?>;
         let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
         document.getElementById('cartDataInput').value = JSON.stringify(cart);
 
@@ -410,7 +450,6 @@ function parseAddr($raw) {
             if (def) def.click();
             renderSummary();
 
-            // 关键：强制清空可能存在的浏览器填充
             setTimeout(() => {
                 document.getElementById('cardNumberInput').value = '';
                 document.getElementById('expiryInput').value = '';
@@ -418,26 +457,28 @@ function parseAddr($raw) {
             }, 100);
         };
 
-        // 切换支付详情显示
+        // --- 核心优化：卡号自动空格逻辑 ---
+        document.getElementById('cardNumberInput').addEventListener('input', function (e) {
+            // 1. 获取纯数字（去掉非数字字符）
+            let value = e.target.value.replace(/\D/g, '');
+            // 2. 每四个数字添加一个空格
+            let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            // 3. 将结果写回输入框
+            e.target.value = formattedValue;
+        });
+
         function toggleCardFields(show) {
             document.getElementById('cardDetailsSection').style.display = show ? 'block' : 'none';
             document.querySelectorAll('.method-item').forEach(el => el.classList.remove('active'));
             if(show) document.getElementById('label-debit').classList.add('active');
         }
 
-        // 卡号格式化
-        document.getElementById('cardNumberInput').addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-            let formattedValue = "";
-            for (let i = 0; i < value.length; i++) {
-                if (i > 0 && i % 4 === 0) formattedValue += " ";
-                formattedValue += value[i];
-            }
-            e.target.value = formattedValue;
-        });
-
-        // 下单校验
         function validateCheckout() {
+            if (userAddressCount === 0) {
+                document.getElementById('addressRequiredModal').style.display = 'flex';
+                return false; 
+            }
+
             const checked = document.querySelector('input[name="paymentMethod"]:checked');
             if (!checked) { alert("Please select a payment method."); return false; }
             
@@ -451,28 +492,22 @@ function parseAddr($raw) {
             return true;
         }
 
+        function closeAddressModal() {
+            document.getElementById('addressRequiredModal').style.display = 'none';
+        }
+
         function toggleModal(show) { document.getElementById('addrModal').classList.toggle('active', show); }
 
         function selectAddr(el, street, area, postcode) {
-    // 1. 切换弹窗里的选中样式
-    document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
-    el.classList.add('selected');
-
-    // 2. 🚀 核心：按照图片 1 的格式拼接字符串
-    // 格式：街道, 地区, Melaka, 邮编
-    const formattedAddress = `${street}, ${area}, Melaka, ${postcode}`;
-    
-    // 3. 更新界面显示
-    document.getElementById('addressLabel').innerText = formattedAddress;
-
-    // 4. 更新隐藏域的值以便提交表单
-    document.getElementById('hiddenAddress').value = street;
-    document.getElementById('hiddenCity').value = area;
-    document.getElementById('hiddenPostcode').value = postcode;
-
-    // 5. 关闭弹窗
-    toggleModal(false);
-}
+            document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
+            el.classList.add('selected');
+            const formattedAddress = `${street}, ${area}, Melaka, ${postcode}`;
+            document.getElementById('addressLabel').innerText = formattedAddress;
+            document.getElementById('hiddenAddress').value = street;
+            document.getElementById('hiddenCity').value = area;
+            document.getElementById('hiddenPostcode').value = postcode;
+            toggleModal(false);
+        }
 
         function renderSummary() {
             const container = document.getElementById('summaryItems');
@@ -487,8 +522,6 @@ function parseAddr($raw) {
             cart.forEach(item => {
                 const linePrice = parseFloat(item.price) * parseInt(item.quantity);
                 subtotal += linePrice;
-                
-                // 优化后的 HTML 结构，支持 Qty 浅色显示
                 html += `
                     <div class="summary-item-row">
                         <img src="${item.image}" alt="${item.name}" class="summary-item-img">
@@ -506,5 +539,6 @@ function parseAddr($raw) {
             document.getElementById('totalPriceDisplay').innerText = `RM ${(subtotal + 5.00).toFixed(2)}`;
         }
     </script>
+    <link rel="stylesheet" href="footer.css">
 </body>
 </html>
