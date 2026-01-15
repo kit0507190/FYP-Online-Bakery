@@ -45,26 +45,25 @@
     box-sizing: border-box;
 }
 
+/* 1. 增加 body 的顶部预留空间 - 这里的 padding 决定了内容从哪里开始显示 */
 body {
     font-family: var(--main-font) !important;
     color: var(--main-color);
-    font-weight: normal;
-    margin: 0px;
     font-weight: 400;
     font-size: 16px;
+    margin: 0px;
     background: var(--white-color);
-    letter-spacing: 0px;
     line-height: 1.4;
     overflow-y: scroll;
     overflow-x: hidden;
-    padding-top: 80px; /* 为fixed header预留空间 */
+    padding-top: 100px !important; /* 🟢 从 100px 增加到 150px，这是避开 Header 的最强手段 */
     background-color: #fff7ec;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1200px; 
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 20px 20px !important; /* 同步 purchase-container 的 padding */
 }
 
 /* 面包屑导航样式 - 与menu.html保持一致 */
@@ -105,12 +104,16 @@ body {
 }
 
 /* Cart Content */
+/* 3. 统一白色卡片的上方间距 */
 .cart-content {
     background: white;
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08);
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    
+    /* 🟢 修改这里：同步 header-card 的 margin-top */
+    margin-top: 20px !important; 
 }
 
 .cart-title {
