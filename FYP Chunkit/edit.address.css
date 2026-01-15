@@ -6,6 +6,7 @@
     --bakery-gold: #d4a76a;
     --bakery-bg: #fff7ec;
     --white: #ffffff;
+    --error-red: #dc3545;
 }
 
 * {
@@ -83,12 +84,13 @@ body {
 }
 
 /* ============================================================
-   4. FORM ELEMENTS
+   4. FORM ELEMENTS (对齐修复)
    ============================================================ */
 .form-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
+    align-items: flex-start; /* 核心：确保左右标签顶部对齐 */
 }
 
 .form-group {
@@ -97,6 +99,11 @@ body {
 
 .form-group-half {
     flex: 1;
+}
+
+/* 邮编包装器设为相对定位 */
+.postcode-wrapper {
+    position: relative;
 }
 
 .form-label {
@@ -111,6 +118,22 @@ body {
     color: #e74c3c;
 }
 
+/* 黄色提示框：绝对定位，不影响 Area 标签对齐 */
+#postcode-hint {
+    display: none; 
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+    color: #856404;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    z-index: 10;
+    pointer-events: none;
+}
+
 .form-input, 
 .form-textarea {
     width: 100%;
@@ -120,6 +143,14 @@ body {
     font-size: 1rem;
     font-family: inherit;
     transition: 0.3s;
+}
+
+#postcode-error {
+    color: #e74c3c;
+    font-size: 13px;
+    margin-top: 5px;
+    display: none;
+    font-weight: bold;
 }
 
 .form-input:focus, 
@@ -186,7 +217,7 @@ body {
 }
 
 /* ============================================================
-   6. FOOTER (页脚)
+   6. FOOTER
    ============================================================ */
 footer {
     padding: 40px 0;
@@ -195,26 +226,10 @@ footer {
     text-align: center;
 }
 
-.footer-logo img {
-    height: 60px;
-    margin-bottom: 15px;
-}
-
-.footer-links a {
-    margin: 0 10px;
-    color: white;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.footer-links a:hover {
-    color: #d4a76a;
-}
-
-
 /* 响应式调整 */
 @media (max-width: 600px) {
     .form-row { flex-direction: column; gap: 0; }
+    #postcode-hint { position: static; margin-bottom: 5px; }
     .action-buttons { flex-direction: column; }
     .btn { width: 100%; justify-content: center; }
 }

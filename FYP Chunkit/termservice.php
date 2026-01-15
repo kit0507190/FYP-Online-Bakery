@@ -12,6 +12,7 @@ session_start();
     <title>Terms of Service - Bakery House</title>
     <link rel="stylesheet" href="termservice.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="footer.css">
 </head>
 <body>
 
@@ -86,25 +87,7 @@ session_start();
         </div>
     </main>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="Bakery House Logo.png" alt="BakeryHouse">
-                </div>
-                <p>Sweet & Delicious</p>
-                <div class="footer-links">
-                    <a href="mainpage.php">Home</a>
-                    <a href="menu.php">Menu</a>
-                    <a href="about_us.php">About</a>
-                    <a href="contact_us.php">Contact</a>
-                    <a href="privacypolicy.php">Privacy Policy</a>
-                    <a href="termservice.php" class="active">Terms of Service</a>
-                </div>
-                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="termservice.js"></script>
 </body>

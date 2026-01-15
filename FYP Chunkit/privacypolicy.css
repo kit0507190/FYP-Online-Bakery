@@ -156,21 +156,7 @@ body {
     font-weight: bold;
 }
 
-/* ============================================================
-   4. FOOTER (保持原本)
-   ============================================================ */
-footer {
-    background-color: var(--main-brown);
-    color: white;
-    text-align: center;
-    padding: 40px 0;
-}
 
-.footer-content { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-.footer-logo img { height: 60px; }
-.footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-.footer-links a { color: white; text-decoration: none; font-size: 14px; transition: color 0.3s; }
-.footer-links a:hover { color: var(--accent-gold); }
 
 /* Utility */
 .fade-in { opacity: 1 !important; transform: translateY(0) !important; }
