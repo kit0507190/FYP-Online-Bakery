@@ -74,9 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function parseAddr($raw) {
     if (strpos($raw, '|') !== false) {
         $p = explode('|', $raw);
-        return ['area' => $p[0], 'postcode' => $p[1], 'street' => $p[2]];
+       return ['street' => $p[0], 'area' => $p[1], 'postcode' => $p[2]];
     }
-    return ['area' => '', 'postcode' => '', 'street' => $raw];
+    return ['street' => $raw, 'area' => '', 'postcode' => ''];
 }
 ?>
 
