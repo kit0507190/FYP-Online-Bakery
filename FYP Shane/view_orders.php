@@ -23,6 +23,11 @@ require_once 'admin_config.php';  // Main database connection for orders/product
         .status.delivered  { background: #c3e6cb; color: #0f5132; }
         .status.cancelled  { background: #f8d7da; color: #721c24; }
         #ordersTable img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+        
+        .date-time-col {
+            white-space: nowrap;
+            line-height: 1.45;
+        }
     </style>
 </head>
 <body>
@@ -79,7 +84,7 @@ require_once 'admin_config.php';  // Main database connection for orders/product
                     <th>Items</th>
                     <th>Total</th>
                     <th>Status</th>
-                    <th>Date</th>
+                    <th>Date & Time</th>           <!-- Changed here -->
                     <th>Update Status</th>
                 </tr>
             </thead>
@@ -119,13 +124,16 @@ require_once 'admin_config.php';  // Main database connection for orders/product
                         $deliveryInfo .= "<small><strong>Deliver to:</strong><br>" . nl2br(htmlspecialchars($order['delivery_address'] ?? '')) . "<br>";
                         $deliveryInfo .= htmlspecialchars($order['city'] ?? '') . ", " . htmlspecialchars($order['postcode'] ?? '') . "</small>";
 
+                        // Updated date/time display with spacing
+                        $dateTimeDisplay = date('d M Y  H:i', strtotime($order['created_at']));
+
                         echo "<tr data-status='{$order['status']}'>
                             <td>#" . sprintf("%04d", $order['id']) . "</td>
                             <td style='font-size:0.9rem; line-height:1.6;'>$deliveryInfo</td>
                             <td style='font-size:0.95rem;'>$itemText</td>
                             <td><strong>RM " . number_format($order['total'], 2) . "</strong></td>
                             <td><span class='$statusClass'>" . ucfirst($order['status']) . "</span></td>
-                            <td>" . date('d M Y<br>H:i', strtotime($order['created_at'])) . "</td>
+                            <td class=\"date-time-col\">$dateTimeDisplay</td>
                             <td>
                                 <form method='POST' style='display:inline;'>
                                     <input type='hidden' name='order_id' value='{$order['id']}'>
@@ -159,8 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     }
 
     // Get old status first
-    $old_status = $pdo->prepare("SELECT status, items FROM orders WHERE id = ?")->execute([$order_id]);
-    $order_data = $pdo->prepare("SELECT status, items FROM orders WHERE id = ?")->fetch(PDO::FETCH_ASSOC);
+    $stmt = $pdo->prepare("SELECT status, items FROM orders WHERE id = ?");
+    $stmt->execute([$order_id]);
+    $order_data = $stmt->fetch(PDO::FETCH_ASSOC);
     $old_status = $order_data['status'] ?? '';
 
     // Update status
