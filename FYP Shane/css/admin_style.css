@@ -20,26 +20,59 @@ html, body {
 
 /* ============== HEADER ============== */
 .header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 70px;
-    background: linear-gradient(to right, #8B4513, #D2691E);
-    color: #fff;
-    padding: 0 2rem;
+    height: 90px;                    /* more vertical space */
+    padding: 0 2.5rem;
+    background: linear-gradient(to right, #8B4513, #c14a00);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    z-index: 1000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
-.header h1 { font-size: 1.9rem; font-weight: bold; }
-.header .logout {
-    background: #fff; color: #8B4513;
-    padding: .7rem 1.6rem; border-radius: 12px;
-    text-decoration: none; font-weight: bold;
-    transition: 0.3s;
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
 }
-.header .logout:hover { background: #f0f0f0; }
+
+.header-logo {
+    height: 64px;                    /* adjust this — try 56px / 64px / 72px */
+    width: auto;
+    object-fit: contain;
+    /* Helps with dark background */
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+}
+
+.title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 2.1rem;
+    font-weight: bold;
+    color: white;
+    line-height: 1;
+}
+
+.tagline {
+    color: rgba(255,255,255,0.85);
+    font-size: 0.95rem;
+    font-style: italic;
+    margin-top: 2px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    color: white;
+}
+
+.role-highlight {
+    font-weight: bold;
+    color: #ffe4c4;
+}
 
 /* ============== SIDEBAR ============== */
 .sidebar {

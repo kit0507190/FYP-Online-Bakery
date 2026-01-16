@@ -59,15 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
 </head>
 <body>
 
-<header class="header">
-    <h1>BakeryHouse Admin</h1>
-    <div style="display: flex; align-items: center; gap: 20px;">
-        <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
-            (<span class="role-highlight"><?= ucfirst(str_replace('_', ' ', $current_admin['role'])) ?></span>)
-        </span>
-        <a href="admin_logout.php" class="logout">Logout</a>
-    </div>
-</header>
+<?php include 'admin_header.php'; ?>
 
 <nav class="sidebar">
     <ul>
