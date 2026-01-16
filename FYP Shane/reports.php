@@ -10,7 +10,7 @@ if ($current_admin['role'] !== 'super_admin') {
     exit();
 }
 
-require_once 'config.php';
+require_once 'admin_config.php';
 
 // Set default date range: last 30 days to today
 $start = $_GET['startDate'] ?? date('Y-m-d', strtotime('-30 days'));

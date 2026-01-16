@@ -1,7 +1,7 @@
 <?php
 
 require_once 'admin_auth.php';  // Secure login + loads $current_admin
-require_once 'config.php';  // Main DB connection
+require_once 'admin_config.php';  // Main DB connection
 
 // Handle stock adjustment FIRST, before any HTML output
 $stock_updated = false;

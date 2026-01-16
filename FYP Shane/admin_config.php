@@ -51,7 +51,7 @@ function redirectToAdminLogin() {
 
 // Redirect to dashboard - THIS WAS MISSING OR BROKEN
 function redirectToAdminDashboard() {
-    header("Location: admin_profile.php");
+    header("Location: admin_dashboard.php");
     exit();
 }
 

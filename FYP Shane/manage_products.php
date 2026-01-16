@@ -1,7 +1,7 @@
 <?php
 
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
-require_once 'config.php';  // Main DB connection
+require_once 'admin_config.php';  // Main DB connection
 
 // Handle Add Product and Delete at the top - before any output
 $error_message = '';

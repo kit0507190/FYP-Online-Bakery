@@ -10,7 +10,7 @@ if ($current_admin['role'] !== 'super_admin') {
     exit();
 }
 
-require_once 'config.php';
+require_once 'admin_config.php';
 
 $error_message = '';
 $success_message = '';

@@ -1,6 +1,6 @@
 <?php
 require_once 'admin_auth.php';  // Secure login + loads $current_admin with role
-require_once 'config.php';  // Main database connection for orders/products
+require_once 'admin_config.php';  // Main database connection for orders/products
 ?>
 
 <!DOCTYPE html>
