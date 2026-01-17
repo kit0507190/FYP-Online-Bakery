@@ -263,34 +263,6 @@ body {
     cursor: pointer;
 }
 
-footer {
-    background-color: var(--main-color);
-    color: white;
-    text-align: center;
-    padding: 40px 0;
-}
-
-.footer-logo img {
-    height: 60px;
-    margin-bottom: 20px;
-}
-
-.footer-links {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.footer-links a {
-    color: white;
-    text-decoration: none;
-    transition: 0.3s;
-}
-
-.footer-links a:hover {
-    color: var(--accent-color);
-}
 
 /* Animation Helpers */
 .fade-in {

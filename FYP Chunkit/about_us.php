@@ -23,7 +23,7 @@ session_start();
         <div class="hero-content">
             <h1 id="heroTitle">Our Story</h1>
             <p id="heroSubtitle">Discover the passion behind BakeryHouse</p>
-            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.html'">Explore Our Menu</button>
+            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.php'">Explore Our Menu</button>
         </div>
     </section>
 
@@ -124,7 +124,7 @@ session_start();
             <div class="cta-content">
                 <h2>Ready to Taste the Difference?</h2>
                 <p>Visit us today and experience the quality of BakeryHouse for yourself.</p>
-                <button class="cta-btn" onclick="window.location.href='menu.html'">Order Now</button>
+                <button class="cta-btn" onclick="window.location.href='menu.php'">Order Now</button>
             </div>
         </div>
     </section>

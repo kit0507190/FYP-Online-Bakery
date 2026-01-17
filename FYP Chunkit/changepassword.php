@@ -26,9 +26,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     
-    if (empty($current_password)) { $errors[] = "Current password is required."; }
-    if (strlen($new_password) < 6) { $errors[] = "New password must be at least 6 characters long."; }
-    if ($new_password !== $confirm_password) { $errors[] = "New passwords do not match."; }
+    // --- 验证逻辑开始 ---
+    if (empty($current_password)) { 
+        $errors[] = "Current password is required."; 
+    }
+
+    // 【同步注册页面的验证标准】
+    if (strlen($new_password) < 8 || !preg_match("/[A-Za-z]/", $new_password) || !preg_match("/[0-9]/", $new_password)) {
+        $errors[] = "Password must be 8+ chars with letters & numbers.";
+    }
+
+    if ($new_password !== $confirm_password) { 
+        $errors[] = "New passwords do not match."; 
+    }
+    // --- 验证逻辑结束 ---
     
     if (empty($errors)) {
         try {
@@ -49,8 +60,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         exit();
                     }
                 }
-            } else { $errors[] = "Current password is incorrect."; }
-        } catch (PDOException $e) { $errors[] = "Update failed: " . $e->getMessage(); }
+            } else { 
+                $errors[] = "Current password is incorrect."; 
+            }
+        } catch (PDOException $e) { 
+            $errors[] = "Update failed: " . $e->getMessage(); 
+        }
     }
 }
 ?>
@@ -67,6 +82,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
     <?php include 'header.php'; ?>
+
+    <div class="message-container" style="max-width: 800px; margin: 20px auto 0; padding: 0 20px;">
+        <?php if (!empty($errors)): ?>
+            <div class="error-message" style="background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; border-left: 5px solid #dc3545;">
+                <ul style="margin: 0; list-style: none; padding: 0;">
+                    <?php foreach ($errors as $e): ?>
+                        <li><i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($e) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <?php if (isset($_GET['success'])): ?>
     <div class="toast-overlay">
@@ -96,18 +123,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="password" id="current_password" name="current_password" class="form-input" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('current_password')">
                                 <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
+                        </button>
                     </div>
+                    <div style="text-align: right; margin-top: 5px;">
+                        <a href="forgotpassword.php" style="font-size: 12px; color: var(--bakery-gold); text-decoration: none; font-weight: bold;">
+                            Forgot current password?
+                        </a>
+                    </div>
+                </div>
 
                     <div class="form-group required-field">
                         <label class="form-label">New Password</label>
                         <div class="password-wrapper">
-                            <input type="password" id="new_password" name="new_password" class="form-input" required>
+                            <input type="password" id="new_password" name="new_password" class="form-input" required placeholder="8+ chars (letters & numbers)">
                             <button type="button" class="toggle-password" onclick="togglePassword('new_password')">
                                 <i class="fas fa-eye"></i>
                             </button>
                         </div>
+                        <span id="password-error" style="color: #dc3545; font-size: 12px; display: none; margin-top: 5px; font-weight: bold;"></span>
                     </div>
 
                     <div class="form-group required-field">
@@ -143,6 +176,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 icon.className = 'fas fa-eye';
             }
         }
+
+        // --- 前端异步验证逻辑 ---
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            const newPwd = document.getElementById('new_password').value;
+            const confirmPwd = document.getElementById('confirm_password').value;
+            const errorSpan = document.getElementById('password-error');
+            
+            // 正则表达式：至少包含一个字母和一个数字
+            const hasLetter = /[A-Za-z]/.test(newPwd);
+            const hasNumber = /[0-9]/.test(newPwd);
+
+            if (newPwd.length < 8 || !hasLetter || !hasNumber) {
+                e.preventDefault(); // 拦截提交
+                errorSpan.textContent = "Password must be 8+ chars with letters & numbers.";
+                errorSpan.style.display = "block";
+                document.getElementById('new_password').style.borderColor = "#dc3545";
+                return;
+            }
+
+            if (newPwd !== confirmPwd) {
+                e.preventDefault();
+                errorSpan.textContent = "New passwords do not match.";
+                errorSpan.style.display = "block";
+                return;
+            }
+        });
     </script>
 </body>
 </html>

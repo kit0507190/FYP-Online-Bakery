@@ -438,22 +438,6 @@ header {
     line-height: 1.4;
 }
 
-.view-details-btn {
-    background-color: #d4a76a;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 5px;
-    width: 100%;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s;
-    font-size: 14px;
-}
-
-.view-details-btn:hover {
-    background-color: #c2955a;
-}
 
 /* Quick View Modal */
 .modal {
