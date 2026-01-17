@@ -4837,13 +4837,11 @@ function addToCart(productId, quantity = 1) {
         // Setup product event listeners (delegated attachments after render)
         function setupProductEventListeners() {
             // view-details
-            document.querySelectorAll('.view-details-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.getAttribute('data-id')); viewProductDetails(id); }));
-
             // favorites
             document.querySelectorAll('.favorite-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const id = parseInt(btn.getAttribute('data-id')); toggleFavorite(id); btn.innerHTML = favorites.includes(id) ? '❤️' : '🤍'; btn.classList.toggle('active'); }));
 
             // product-card click -> quick view
-            document.querySelectorAll('.product-card').forEach(card => card.addEventListener('click', function(e) { if (!e.target.closest('.favorite-btn') && !e.target.closest('.view-details-btn')) { const id = parseInt(this.getAttribute('data-id')); quickViewProduct(id); } }));
+            document.querySelectorAll('.product-card').forEach(card => card.addEventListener('click', function(e) { if (!e.target.closest('.favorite-btn')) { const id = parseInt(this.getAttribute('data-id')); quickViewProduct(id); } }));
         }
 
         // Setup event listeners for controls and categories

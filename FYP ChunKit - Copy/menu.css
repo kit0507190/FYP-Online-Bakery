@@ -439,10 +439,6 @@ header {
 }
 
 
-.view-details-btn:hover {
-    background-color: #c2955a;
-}
-
 /* Quick View Modal */
 .modal {
     display: none;
