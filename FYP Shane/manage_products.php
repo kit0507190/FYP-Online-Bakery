@@ -1,7 +1,7 @@
 <?php
 
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
-require_once 'config.php';  // Main DB connection
+require_once 'admin_config.php';  // Main DB connection
 
 // Handle Add Product and Delete at the top - before any output
 $error_message = '';
@@ -150,15 +150,7 @@ if (isset($_GET['delete'])) {
 </head>
 <body>
 
-<header class="header">
-    <h1>BakeryHouse Admin</h1>
-    <div style="display: flex; align-items: center; gap: 20px;">
-        <span>Welcome, <strong><?= htmlspecialchars($current_admin['username']) ?></strong> 
-            (<span class="role-highlight"><?= ucfirst(str_replace('_', ' ', $current_admin['role'])) ?></span>)
-        </span>
-        <a href="admin_logout.php" class="logout">Logout</a>
-    </div>
-</header>
+<?php include 'admin_header.php'; ?>
 
 <nav class="sidebar">
     <ul>

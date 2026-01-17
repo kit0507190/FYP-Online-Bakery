@@ -4675,7 +4675,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         <p class="product-size">${product.size || ''}</p>
                         <div class="product-rating"><span class="stars">${stars}</span><span>${product.rating || ''}</span><span class="rating-count">(${product.reviewCount || 0})</span></div>
                         <p class="product-description">${desc}</p>
-                        <button class="view-details-btn" data-id="${product.id}">View Details</button>
                     </div>
                 </div>
             `;
