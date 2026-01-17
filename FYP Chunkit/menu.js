@@ -4780,33 +4780,44 @@ function viewProductDetails(productId) {
         // Add to cart
         // --- 修改后的 addToCart 函数 ---
 function addToCart(productId, quantity = 1) {
-    // 🟢 核心修改点：统一使用 window.isLoggedIn 来判断
-    // 这样只要 header 识别到你登录了（不管换哪个号），这里都会是 true
+    // 1. 登录检查
     if (window.isLoggedIn !== true) { 
-        showLoginPrompt(); // 如果没登录，显示弹窗
-        return;            // 拦截！
+        showLoginPrompt(); 
+        return;            
     }
 
-    // 2. 如果已登录，继续执行原来的加购逻辑
-    const product = products.find(p => p.id === productId);
+    // 2. 找到产品信息 (使用 == 兼容字符串和数字对比)
+    const product = products.find(p => p.id == productId);
     if (!product) return;
     
-    const existing = cart.find(i => i.id === productId);
-    if (existing) {
-        existing.quantity += quantity;
-    } else {
-        cart.push({ 
-            id: product.id, 
-            name: product.name, 
-            price: product.price, 
-            image: product.image, 
-            quantity: quantity 
-        });
+    // 🟢 核心修改点：寻找这个产品在不在现有的购物车里
+    const existingIndex = cart.findIndex(i => i.id == productId);
+    let finalQuantity = quantity;
+
+    if (existingIndex > -1) {
+        // 🟢 如果已存在：取出旧的数量，并把该项从数组中“彻底删除”
+        finalQuantity += cart[existingIndex].quantity;
+        cart.splice(existingIndex, 1); 
     }
+
+    // 🟢 无论新旧，重新推入数组末尾 (这样它就是数组中“最新操作”的一项)
+    cart.push({ 
+        id: product.id, 
+        name: product.name, 
+        price: product.price, 
+        image: product.image, 
+        quantity: finalQuantity 
+    });
     
+    // 3. 保存到本地并更新 UI
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     updateCartCount();
     showToast(`${product.name} added to cart!`);
+
+    // 4. 同步给数据库
+    if (typeof syncCartToDB === 'function') {
+        syncCartToDB();
+    }
 }
 
 
