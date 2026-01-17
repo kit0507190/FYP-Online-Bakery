@@ -22,7 +22,7 @@ session_start();
         <div class="hero-content">
             <h1 id="heroTitle">Our Story</h1>
             <p id="heroSubtitle">Discover the passion behind BakeryHouse</p>
-            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.html'">Explore Our Menu</button>
+            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.php'">Explore Our Menu</button>
         </div>
     </section>
 
@@ -123,30 +123,12 @@ session_start();
             <div class="cta-content">
                 <h2>Ready to Taste the Difference?</h2>
                 <p>Visit us today and experience the quality of BakeryHouse for yourself.</p>
-                <button class="cta-btn" onclick="window.location.href='menu.html'">Order Now</button>
+                <button class="cta-btn" onclick="window.location.href='menu.php'">Order Now</button>
             </div>
         </div>
     </section>
 
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">
-                    <img src="Bakery House Logo.png" alt="BakeryHouse">
-                </div>
-                <p>Sweet & Delicious</p>
-                <div class="footer-links">
-                    <a href="index.php">Home</a>
-                    <a href="menu.php">Menu</a>
-                    <a href="about_us.php" class="active">About</a>
-                    <a href="contact_us.php">Contact</a>
-                    <a href="privacypolicy.php">Privacy Policy</a>
-                    <a href="termservice.php">Terms of Service</a>
-                </div>
-                <p>&copy; 2024 BakeryHouse. All rights reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <?php include 'footer.php'; ?>
 
     <script src="about_us.js"></script>
 </body>
