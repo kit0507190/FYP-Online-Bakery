@@ -63,10 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->commit();
 
         if ($paymentMethod === 'debitCard') {
-            header("Location: process_debit.php?order_id={$orderId}");
-        } else {
-            header("Location: simulate_gateway.php?order_id={$orderId}&method=" . urlencode($paymentMethod));
-        }
+    header("Location: process_debit.php?order_id={$orderId}");
+} elseif ($paymentMethod === 'tng') {
+    header("Location: process_tng.php?order_id={$orderId}"); // 新增
+} elseif ($paymentMethod === 'fpx') {
+    header("Location: process_fpx.php?order_id={$orderId}"); // 新增
+} else {
+    header("Location: simulate_gateway.php?order_id={$orderId}&method=" . urlencode($paymentMethod));
+}
         exit;
     } catch (PDOException $e) {
         $pdo->rollBack();
@@ -90,228 +94,7 @@ function parseAddr($raw) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Bakery House</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #5a3921;
-            --accent: #d4a76a;
-            --bg: #fff7ec;
-            --white: #ffffff;
-            --border: #eeeeee;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            padding-top: 100px; 
-            color: #333;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 25px;
-        }
-
-        .flex-layout {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-        }
-
-        .left-column, .right-column {
-            flex: 1; 
-        }
-
-        .left-column {
-            position: sticky;
-            top: 110px;
-            max-height: calc(100vh - 130px);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 15px rgba(90, 57, 33, 0.05);
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-title {
-            font-size: 18px;
-            color: var(--primary);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 12px;
-            font-weight: 600;
-        }
-
-        #summaryItems {
-            max-height: 380px; 
-            overflow-y: auto; 
-            overflow-x: hidden;
-            padding-right: 8px;
-        }
-
-        #summaryItems::-webkit-scrollbar { width: 5px; }
-        #summaryItems::-webkit-scrollbar-track { background: #fdf8f3; border-radius: 10px; }
-        #summaryItems::-webkit-scrollbar-thumb { background: #e0d5c1; border-radius: 10px; }
-
-        .summary-item-row {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #f9f9f9;
-        }
-
-        .summary-item-img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 8px;
-            margin-right: 15px;
-            border: 1px solid #eee;
-        }
-
-        .summary-item-info {
-            flex: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .summary-item-detail {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .summary-item-name {
-            font-size: 13px;
-            color: #444;
-            font-weight: 600;
-            max-width: 180px;
-            line-height: 1.4;
-        }
-
-        .summary-item-qty {
-            font-size: 12px;
-            color: #999; 
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        .summary-item-price {
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 14px;
-        }
-
-        .method-item {
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        .method-item:hover { border-color: var(--accent); }
-        .method-item.active { border-color: var(--accent); background: #fffcf9; }
-
-        #cardDetailsSection {
-            display: none;
-            padding: 20px;
-            background: #fdfdfd;
-            border: 1px solid #eee;
-            border-radius: 10px;
-            margin-top: -5px;
-            margin-bottom: 15px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        .form-input:focus { border-color: var(--accent); outline: none; }
-        .form-row { display: flex; gap: 15px; }
-
-        .address-box { display: flex; gap: 15px; align-items: flex-start; }
-        .address-box i { color: var(--accent); font-size: 20px; margin-top: 4px; }
-        .user-meta { font-weight: bold; font-size: 16px; margin-bottom: 6px; }
-        .address-text { color: #666; font-size: 14px; line-height: 1.6; }
-        .btn-change { margin-left: auto; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 14px; }
-
-        .total-row { margin-top: 10px; padding-top: 15px; border-top: 2px solid #fdf8f3; font-weight: bold; font-size: 18px; color: var(--primary); }
-        .place-order-btn { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .place-order-btn:hover { background: #452c1a; }
-
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: var(--white); width: 450px; border-radius: 15px; padding: 25px; }
-        .addr-option { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
-        .addr-option.selected { border: 2px solid var(--accent); background: #fffcf9; }
-
-        /* 强制弹窗遮罩层 */
-        .force-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            display: none; 
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            backdrop-filter: blur(3px);
-        }
-
-        .force-modal-content {
-            background: white;
-            width: 90%; max-width: 400px;
-            padding: 40px 30px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .modal-icon { font-size: 50px; margin-bottom: 20px; }
-        .force-modal-content h2 { color: #5a3921; font-size: 24px; margin-bottom: 15px; }
-        .force-modal-content p { color: #777; font-size: 15px; line-height: 1.6; margin-bottom: 30px; }
-        .btn-go-address {
-            display: block; background: #d4a76a;
-            color: white; text-decoration: none;
-            padding: 15px; border-radius: 10px;
-            font-weight: bold; font-size: 16px;
-            margin-bottom: 15px;
-        }
-        .btn-maybe-later { color: #aaa; text-decoration: underline; font-size: 14px; cursor: pointer; }
-
-        @media (max-width: 992px) {
-            .flex-layout { flex-direction: column; }
-            .left-column, .right-column { width: 100%; flex: none; }
-            .left-column { position: static; max-height: none; }
-        }
-    </style>
+    <link rel="stylesheet" href="payment.css?v=<?php echo time(); ?>">
 </head>
 <body>
 
@@ -367,42 +150,40 @@ function parseAddr($raw) {
                     </div>
 
                     <div class="card">
-                        <div class="card-title">Payment Method</div>
-                        <label class="method-item" id="label-debit">
-                            <input type="radio" name="paymentMethod" value="debitCard" required onclick="toggleCardFields(true)">
-                            <i class="far fa-credit-card"></i>
-                            <span style="flex:1; font-weight:500;">Debit Card</span>
-                        </label>
+    <div class="card-title">Payment Method</div>
+    
+    <label class="method-item" id="label-debit">
+        <input type="radio" name="paymentMethod" value="debitCard" required onclick="toggleCardFields(true)">
+        <img src="payment logo/Visa.jpg" alt="Visa" class="method-logo"> <span style="flex:1; font-weight:500;">Debit Card</span>
+    </label>
 
-                        <div id="cardDetailsSection">
-                            <div class="form-group">
-                                <label>Card Number (16 Digits)</label>
-                                <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group" style="flex:2;">
-                                    <label>Expiry Date</label>
-                                    <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5">
-                                </div>
-                                <div class="form-group" style="flex:1;">
-                                    <label>CVV</label>
-                                    <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3">
-                                </div>
-                            </div>
-                        </div>
+    <div id="cardDetailsSection">
+        <div class="form-group">
+            <label>Card Number (16 Digits)</label>
+            <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="flex:2;">
+                <label>Expiry Date</label>
+                <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5">
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label>CVV</label>
+                <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3">
+            </div>
+        </div>
+    </div>
 
-                        <label class="method-item" id="label-tng">
-                            <input type="radio" name="paymentMethod" value="tng" onclick="toggleCardFields(false)">
-                            <i class="fas fa-wallet"></i>
-                            <span style="flex:1; font-weight:500;">TNG eWallet</span>
-                        </label>
+    <label class="method-item" id="label-tng">
+        <input type="radio" name="paymentMethod" value="tng" onclick="toggleCardFields(false)">
+        <img src="payment logo/Touch_'n_Go_eWallet.png" alt="TNG" class="method-logo"> <span style="flex:1; font-weight:500;">TNG eWallet</span>
+    </label>
 
-                        <label class="method-item" id="label-fpx">
-                            <input type="radio" name="paymentMethod" value="fpx" onclick="toggleCardFields(false)">
-                            <i class="fas fa-university"></i>
-                            <span style="flex:1; font-weight:500;">FPX Online Banking</span>
-                        </label>
-                    </div>
+    <label class="method-item" id="label-fpx">
+        <input type="radio" name="paymentMethod" value="fpx" onclick="toggleCardFields(false)">
+        <img src="payment logo/Logo-FPX.png" alt="FPX" class="method-logo"> <span style="flex:1; font-weight:500;">FPX Online Banking</span>
+    </label>
+</div>
 
                     <button type="submit" class="place-order-btn">Place Order Now</button>
                 </div>
@@ -440,22 +221,41 @@ function parseAddr($raw) {
         </div>
     </div>
 
+    <div id="paymentCancelModal" class="force-modal-overlay">
+    <div class="force-modal-content">
+        <div class="modal-icon" style="color: #e74c3c;">❌</div> 
+        <h2>Payment Cancelled</h2>
+        <p>You have cancelled the payment process. Your items are still in the cart, and you can try again whenever you're ready.</p>
+        <div class="modal-actions">
+            <button class="btn-go-address" onclick="closeCancelModal()" style="background: #5a3921; cursor: pointer; border: none; width: 100%;">Got it</button>
+        </div>
+    </div>
+</div>
+
     <script>
         const userAddressCount = <?php echo $addressCount; ?>;
         let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
         document.getElementById('cartDataInput').value = JSON.stringify(cart);
 
         window.onload = function() {
-            const def = document.querySelector('.addr-option.selected');
-            if (def) def.click();
-            renderSummary();
+    // 删除了检查 msg=payment_cancelled 的逻辑
 
-            setTimeout(() => {
-                document.getElementById('cardNumberInput').value = '';
-                document.getElementById('expiryInput').value = '';
-                document.getElementById('cvvInput').value = '';
-            }, 100);
-        };
+    // 1. 原有逻辑：自动选择默认地址
+    const def = document.querySelector('.addr-option.selected');
+    if (def) def.click();
+
+    // 2. 原有逻辑：渲染订单摘要
+    renderSummary();
+
+    // 3. 原有逻辑：延迟清空输入框
+    setTimeout(() => {
+        if(document.getElementById('cardNumberInput')) document.getElementById('cardNumberInput').value = '';
+        if(document.getElementById('expiryInput')) document.getElementById('expiryInput').value = '';
+        if(document.getElementById('cvvInput')) document.getElementById('cvvInput').value = '';
+    }, 100);
+};
+
+// 删除了 closeCancelModal 函数
 
         // --- 核心优化：卡号自动空格逻辑 ---
         document.getElementById('cardNumberInput').addEventListener('input', function (e) {

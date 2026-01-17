@@ -24,10 +24,11 @@ try {
         $payment_status = 'paid';
         $order_status = 'preparing';
 
-        // 🚀 核心修复：这里必须改成 cart_items，因为 sync_cart.php 用的是这个名字
+        // 核心修复：支付成功才清空数据库购物车
         $clearCartStmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
         $clearCartStmt->execute([$userId]);
     } else {
+        // 如果用户点击取消或支付失败
         $payment_status = 'failed';
         $order_status = 'cancelled';
     }
@@ -38,8 +39,14 @@ try {
 
     $pdo->commit();
 
-    // 跳转到结果页
-    header("Location: order_result.php?order_id={$orderId}&result={$payment_status}");
+    // --- 核心修改：分流跳转逻辑 ---
+    if ($action === 'paid') {
+        // 只有支付成功，才去结果展示页
+        header("Location: order_result.php?order_id={$orderId}");
+    } else {
+        // 如果支付取消或失败，退回到支付页面，并带上错误提示参数
+        header("Location: payment.php?msg=payment_cancelled");
+    }
     exit;
 
 } catch (PDOException $e) {
