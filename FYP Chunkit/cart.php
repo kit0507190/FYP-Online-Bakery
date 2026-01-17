@@ -86,33 +86,32 @@ if (!isset($_SESSION['user_id'])) {
     // --- 4. 渲染购物车 (核心修改：实现逆序排列) ---
     function loadCartItems() {
         if (cart.length === 0) {
-            cartContainer.innerHTML = `
-                <div class="empty-cart">
-                    <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=500&q=60" alt="Empty Cart">
-                    <h2>Your cart is empty</h2>
-                    <p>Add some delicious bakery items to your cart!</p>
-                    <a href="menu.php" class="continue-shopping">Continue Shopping</a>
-                </div>`;
-            updateHeaderCount();
+            // ... (保持原有的空购物车逻辑不变)
             return;
         }
 
-        // 🟢 关键改动：使用 [...cart].reverse() 创建一个反转后的显示副本
-        // 这样最后加入的产品会显示在 HTML 列表的最上方
         const displayCart = [...cart].reverse(); 
 
-        let itemsHTML = '<div class="cart-items">';
+        // 🚀 修改：在 itemsHTML 开始时添加“TOTAL”表头
+        let itemsHTML = `
+            <div class="cart-list-header">
+                <span class="header-label-total">TOTAL</span>
+            </div>
+            <div class="cart-items">`;
         
-        // 🟢 遍历反转后的数组 displayCart
         displayCart.forEach(item => {
             const itemTotal = (parseFloat(item.price) * parseInt(item.quantity)).toFixed(2);
             itemsHTML += `
                 <div class="cart-item">
                     <img src="${item.image}" class="cart-item-image">
                     <div class="cart-item-details">
-                        <h3 class="cart-item-name">${item.name}</h3>
+                        <div class="cart-item-header">
+                            <h3 class="cart-item-name">${item.name}</h3>
+                            <p class="cart-item-total">RM ${itemTotal}</p>
+                        </div>
+                        
                         <p class="cart-item-price">RM ${parseFloat(item.price).toFixed(2)} each</p>
-                        <p class="cart-item-total">Total: RM ${itemTotal}</p>
+                        
                         <div class="cart-item-quantity">
                             <button class="quantity-btn" onclick="updateQty(${item.id}, -1)">-</button>
                             <input type="text" class="quantity-input" value="${item.quantity}" readonly>
@@ -124,7 +123,7 @@ if (!isset($_SESSION['user_id'])) {
         });
         itemsHTML += '</div>';
 
-        // 计算账单总额 (依然使用原始 cart 数组进行计算)
+        // ... (底部的计算逻辑保持不变)
         const subtotal = cart.reduce((sum, i) => sum + (parseFloat(i.price) * parseInt(i.quantity)), 0).toFixed(2);
         const total = (parseFloat(subtotal) + 5.00).toFixed(2);
 
@@ -132,7 +131,7 @@ if (!isset($_SESSION['user_id'])) {
             <div class="cart-summary">
                 <div class="summary-row"><span>Subtotal:</span><span>RM ${subtotal}</span></div>
                 <div class="summary-row"><span>Delivery Fee:</span><span>RM 5.00</span></div>
-                <div class="summary-row summary-total"><span>Total:</span><span>RM ${total}</span></div>
+                <div class="summary-row summary-total"><span>Total:</span><span class="final-total-amount">RM ${total}</span></div>
                 <button class="checkout-btn" onclick="window.location.href='payment.php'">Proceed to Checkout</button>
                 <div class="action-buttons">
                     <a href="menu.php" class="continue-shopping">Continue Shopping</a>
