@@ -123,9 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <input type="password" id="current_password" name="current_password" class="form-input" required>
                             <button type="button" class="toggle-password" onclick="togglePassword('current_password')">
                                 <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
+                        </button>
                     </div>
+                    <div style="text-align: right; margin-top: 5px;">
+                        <a href="forgotpassword.php" style="font-size: 12px; color: var(--bakery-gold); text-decoration: none; font-weight: bold;">
+                            Forgot current password?
+                        </a>
+                    </div>
+                </div>
 
                     <div class="form-group required-field">
                         <label class="form-label">New Password</label>
