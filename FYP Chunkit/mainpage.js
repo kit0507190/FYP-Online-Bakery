@@ -81,10 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function loadFeaturedProducts() {
     // 虚拟产品数据库
     const products = [
-        { id: 1, name: "Artisan Sourdough Bread", price: 12.50, image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" },
-        { id: 2, name: "New York Cheesecake", price: 45.00, image: "https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=500" },
-        { id: 3, name: "Butter Croissant", price: 5.50, image: "https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=500" },
-        { id: 4, name: "Chocolate Chip Cookies", price: 8.00, image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500" }
+        { id: 1, name: "DOUBLE OREO TEMPTATION", price: 128.00, image: "cake/Festival/Red Velvet 3D Christmas Tree Cake.jpg" },
+        { id: 2, name: "Cherry Cream Cheese Danish", price: 13.20, image: "pastries/Danish Pastries/Cherry Cream Cheese Danish.jpg" },
+        { id: 3, name: "Crusty Artisan Bread", price: 12.50, image: "bread/Artisan Bread/Crusty Artisan Bread.webp" },
+        { id: 4, name: "Classic Lemon Glazed Loaf", price: 13.50, image: "bread/Sweet Bread/Starbucks Lemon Loaf.jpg" }
     ];
 
     const container = document.getElementById('featuredProducts');

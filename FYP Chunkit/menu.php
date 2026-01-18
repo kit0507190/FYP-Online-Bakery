@@ -105,19 +105,7 @@
                         </div>
                     </div>
                     
-                    <!-- Cookie Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="cookie">
-                            <span>Cookies</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Cookies</a>
-                            <a class="subcategory-item" data-subcategory="chocolatechip">Chocolate Chip</a>
-                            <a class="subcategory-item" data-subcategory="butter">Butter Cookies</a>
-                            <a class="subcategory-item" data-subcategory="oatmeal">Oatmeal Cookies</a>
-                        </div>
-                    </div>
+                    
                 </div>
                 
                 <!-- Products Section -->

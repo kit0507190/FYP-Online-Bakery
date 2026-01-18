@@ -15,7 +15,7 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BakeryHouse - Home</title>
@@ -40,19 +40,19 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
             <h2 class="section-title">Shop by Categories</h2>
             <div class="categories-grid">
                 <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
-                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" alt="Cakes" class="category-image">
+                    <img src="cake/Baby_Pandaa.jpg" alt="Cakes" class="category-image">
                     <div class="category-name">Cakes</div>
                 </div>
                 <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
-                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=500" alt="Bread" class="category-image">
+                    <img src="bread/Sweet Bread/Alsatian Kugelhopf Sweet Bread.webp" alt="Bread" class="category-image">
                     <div class="category-name">Bread</div>
                 </div>
                 <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
-                    <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?w=500" alt="Pastries" class="category-image">
+                    <img src="pastries/Puff Pastry/Mascarpone Puff Pastry.jpg" alt="Pastries" class="category-image">
                     <div class="category-name">Pastries</div>
                 </div>
                 <div class="category-card" onclick="window.location.href='menu.php?category=cookie'">
-                    <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=500" alt="Cookies" class="category-image">
+                    <img src="cookies/Butter Cookies/Chocolate Butter Swirl Cookies.jpg" alt="Cookies" class="category-image">
                     <div class="category-name">Cookies</div>
                 </div>
             </div>

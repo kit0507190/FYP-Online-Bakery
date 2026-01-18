@@ -31,20 +31,20 @@ session_start();
         <div class="container">
             <h2 class="section-title">Shop by Categories</h2>
             <div class="categories-grid">
-                <div class="category-card" onclick="window.location.href='menu.html?category=cake'">
-                    <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Cakes" class="category-image">
+                <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
+                    <img src="cake/Baby_Pandaa.jpg" alt="Cakes" class="category-image">
                     <div class="category-name">Cakes</div>
                 </div>
-                <div class="category-card" onclick="window.location.href='menu.html?category=bread'">
-                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Bread" class="category-image">
+                <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
+                    <img src="bread/Sweet Bread/Alsatian Kugelhopf Sweet Bread.webp" alt="Bread" class="category-image">
                     <div class="category-name">Bread</div>
                 </div>
-                <div class="category-card" onclick="window.location.href='menu.html?category=pastry'">
-                    <img src="https://images.unsplash.com/photo-1559620192-032c4bc4674e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Pastries" class="category-image">
+                <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
+                    <img src="pastries/Puff Pastry/Mascarpone Puff Pastry.jpg" alt="Pastries" class="category-image">
                     <div class="category-name">Pastries</div>
                 </div>
-                <div class="category-card" onclick="window.location.href='menu.html?category=cookie'">
-                    <img src="https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="Cookies" class="category-image">
+                <div class="category-card" onclick="window.location.href='menu.php?category=cookie'">
+                    <img src="cookies/Butter Cookies/Chocolate Butter Swirl Cookies.jpg" alt="Cookies" class="category-image">
                     <div class="category-name">Cookies</div>
                 </div>
             </div>
