@@ -100,14 +100,84 @@ body {
 }
 .close-toast:hover { background: var(--main-color); }
 
-/* 成功提示背景 */
+
+/* --- 消息发送成功的 Toast 弹窗升级 --- */
+
 .toast-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;
-}
-.toast-card {
-    background: white; padding: 40px; border-radius: 20px; text-align: center;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2); max-width: 400px; width: 90%;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* 稍微加深背景，突出中间的卡片 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px); /* 背景稍微模糊，更有高级感 */
 }
 
-.fade-in { opacity: 1 !important; transform: translateY(0) !important; }
+.toast-card {
+    background: white;
+    padding: 40px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    max-width: 400px;
+    width: 90%;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 弹出动画 */
+}
+
+/* 关键修改：绿色圆圈对勾 */
+.toast-icon {
+    width: 80px;
+    height: 80px;
+    background-color: #4CAF50; /* 绿色成功色 */
+    color: white;
+    font-size: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 20px rgba(76, 175, 80, 0.3);
+    animation: scaleCheck 0.5s ease-out 0.2s both; /* 对勾缩放效果 */
+}
+
+.toast-card h3 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.toast-card p {
+    color: #666;
+    margin-bottom: 25px;
+}
+
+/* 按钮样式保持与 Bakery House 风格一致 */
+.close-toast {
+    background: var(--main-color);
+    color: var(--white);
+    border: none;
+    padding: 12px 40px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-toast:hover {
+    background: var(--accent-color);
+    transform: scale(1.05);
+}
+
+/* 动画定义 */
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scaleCheck {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
