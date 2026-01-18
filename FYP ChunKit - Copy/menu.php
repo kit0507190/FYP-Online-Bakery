@@ -83,7 +83,6 @@ if ($conn->connect_error) {
     }
 </script>
 
-
 <!-- Breadcrumb -->
 <div class="container">
     <div class="breadcrumb">
@@ -119,14 +118,25 @@ if ($conn->connect_error) {
             <div class="categories-sidebar">
                 <h3 class="category-header">Categories</h3>
                 
-                <!-- Cake Category -->
+                <!-- All Products (default active) -->
                 <div class="category-item">
-                    <div class="category-main active" data-category="cake">
-                        <span>Cakes</span>
+                    <div class="category-main active" data-category="all">
+                        <span>All Products</span>
                         <span class="category-arrow active">▼</span>
                     </div>
                     <div class="subcategories active">
-                        <a class="subcategory-item active" data-subcategory="all">All Cakes</a>
+                        <a class="subcategory-item active" data-subcategory="all">All Products</a>
+                    </div>
+                </div>
+                
+                <!-- Cake Category -->
+                <div class="category-item">
+                    <div class="category-main" data-category="cake">
+                        <span>Cakes</span>
+                        <span class="category-arrow">▼</span>
+                    </div>
+                    <div class="subcategories">
+                        <a class="subcategory-item" data-subcategory="all">All Cakes</a>
                         <a class="subcategory-item" data-subcategory="5 inch">5 inch Cake</a>
                         <a class="subcategory-item" data-subcategory="cheese">Cheese Flavour</a>
                         <a class="subcategory-item" data-subcategory="chocolate">Chocolate & Coffee</a>
@@ -141,7 +151,7 @@ if ($conn->connect_error) {
                         <a class="subcategory-item" data-subcategory="mini">Cute Mini Cake</a>
                     </div>
                 </div>
-
+                
                 <!-- Bread Category -->
                 <div class="category-item">
                     <div class="category-main" data-category="bread">
@@ -149,14 +159,14 @@ if ($conn->connect_error) {
                         <span class="category-arrow">▼</span>
                     </div>
                     <div class="subcategories">
-                        <a class="subcategory-item active" data-subcategory="all">All Bread</a>
+                        <a class="subcategory-item" data-subcategory="all">All Bread</a>
                         <a class="subcategory-item" data-subcategory="sourdough">Sourdough Bread</a>
                         <a class="subcategory-item" data-subcategory="wholegrain">Whole Grain Bread</a>
                         <a class="subcategory-item" data-subcategory="artisan">Artisan Bread</a>
                         <a class="subcategory-item" data-subcategory="sweet">Sweet Bread</a>
                     </div>
                 </div>
-
+                
                 <!-- Pastry Category -->
                 <div class="category-item">
                     <div class="category-main" data-category="pastry">
@@ -164,7 +174,7 @@ if ($conn->connect_error) {
                         <span class="category-arrow">▼</span>
                     </div>
                     <div class="subcategories">
-                        <a class="subcategory-item active" data-subcategory="all">All Pastries</a>
+                        <a class="subcategory-item" data-subcategory="all">All Pastries</a>
                         <a class="subcategory-item" data-subcategory="croissant">Croissants</a>
                         <a class="subcategory-item" data-subcategory="danish">Danish Pastries</a>
                         <a class="subcategory-item" data-subcategory="tart">Tarts</a>
@@ -175,31 +185,40 @@ if ($conn->connect_error) {
             
             <!-- Products Section -->
             <div class="products-section">
-                <div class="active-category" id="activeCategory">All Cakes</div>
-                <div class="results-info" id="resultsInfo">Showing all cakes</div>
+                <!-- Active Category Display -->
+                <div class="active-category" id="activeCategory">
+                    All Products
+                </div>
                 
+                <!-- Results Info -->
+                <div class="results-info" id="resultsInfo">
+                    Showing all products
+                </div>
+                
+                <!-- Loading Spinner -->
                 <div class="loading-spinner" id="loadingSpinner" style="display:none;">
                     <div class="spinner"></div>
                     <p>Loading delicious products...</p>
                 </div>
                 
+                <!-- Products Grid -->
                 <div class="products-grid" id="productsGrid">
                     <!-- Products will be dynamically generated -->
                 </div>
                 
+                <!-- Pagination Controls -->
                 <div class="pagination" id="paginationControls" style="margin-top:18px; display:flex; gap:12px; align-items:center; justify-content:center;">
                     <button id="prevPageBtn">Prev</button>
                     <div class="page-indicator" id="pageIndicator">Page 1</div>
                     <button id="nextPageBtn">Next</button>
                 </div>
                 
-                <div class="load-more-container" style="display:none;">
-                    <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More Products</button>
-                </div>
-                
+                <!-- Recently Viewed -->
                 <div class="recently-viewed" id="recentlyViewed" style="display: none; margin-top:30px;">
                     <h2 class="section-title">Recently Viewed</h2>
-                    <div class="recent-products" id="recentProducts"></div>
+                    <div class="recent-products" id="recentProducts">
+                        <!-- Recently viewed products will be dynamically loaded -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -208,10 +227,15 @@ if ($conn->connect_error) {
 
 <!-- Quick View Modal -->
 <div class="modal" id="quickViewModal">
-    <div class="modal-content" id="quickViewContent"></div>
+    <div class="modal-content" id="quickViewContent">
+        <!-- Quick view content will be dynamically loaded -->
+    </div>
 </div>
 
+<!-- Back to Top Button -->
 <button class="back-to-top" id="backToTop" style="display:none;">↑</button>
+
+<!-- Toast Notification -->
 <div class="toast" id="toast" style="display:none;"></div>
 
 <?php include 'footer.php'; ?>
