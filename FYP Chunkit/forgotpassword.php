@@ -48,7 +48,7 @@ if (isset($_SESSION['user_email'])) {
                     <input type="email" name="email" id="email" 
                            value="<?= $prefilled_email ?>" 
                            <?= $prefilled_email ? 'readonly' : '' ?>
-                           required placeholder="name@example.com">
+                           required placeholder="name@gmail.com">
                 </div>
 
                 <button type="submit" class="btn">Send Verification Code</button>
