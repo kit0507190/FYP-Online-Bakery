@@ -9,10 +9,13 @@ if (!$isLoggedIn) {
 }
 
 $user_id = $_SESSION['user_id'];
-// 获取收藏商品详细资料
+
+// ✨ 核心修改：加入 ORDER BY f.id DESC，确保最新收藏的排在最前
 $sql = "SELECT p.* FROM products p 
         JOIN user_favorites f ON p.id = f.product_id 
-        WHERE f.user_id = ?";
+        WHERE f.user_id = ? 
+        ORDER BY f.id DESC"; 
+
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
