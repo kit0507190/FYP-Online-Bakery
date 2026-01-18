@@ -137,7 +137,6 @@ if ($conn->connect_error) {
                     </div>
                     <div class="subcategories">
                         <a class="subcategory-item" data-subcategory="all">All Cakes</a>
-                        <a class="subcategory-item" data-subcategory="5 inch">5 inch Cake</a>
                         <a class="subcategory-item" data-subcategory="cheese">Cheese Flavour</a>
                         <a class="subcategory-item" data-subcategory="chocolate">Chocolate & Coffee</a>
                         <a class="subcategory-item" data-subcategory="strawberry">Strawberry Flavour</a>

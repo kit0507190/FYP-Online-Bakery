@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updateCartCount();
         loadRecentlyViewed();
         setupEventListeners();
+        setupProductEventListeners();
     }
 
     // Render products
@@ -163,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                     <p style="margin-bottom: 20px; line-height: 1.6;">${product.fullDescription || product.description || ''}</p>
                     <div style="margin-bottom: 20px;"><strong>Ingredients:</strong> ${product.ingredients || 'N/A'}</div>
-                    <div style="margin-bottom: 20px;"><strong>Weight:</strong> ${product.weight || 'N/A'}</div>
+                    <div style="margin-bottom: 20px;"><strong>Size:</strong> ${product.weight || 'N/A'}</div>
                     <div style="margin-bottom: 20px;"><strong>Allergens:</strong> ${product.allergens || 'N/A'}</div>
                     <div style="display: flex; gap: 10px; margin-top: 25px;">
                         <button class="add-to-cart-btn" data-id="${product.id}" 
@@ -333,6 +334,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (p) recentProductsContainer.appendChild(createProductCard(p));
         });
         recentlyViewedSection.style.display = 'block';
+
+        setupProductEventListeners();
     }
 
     function toggleFavorite(productId) {
