@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_message'])) {
         <div class="toast-card">
             <div class="toast-icon"><i class="fas fa-check"></i></div>
             <h3>Message Sent!</h3>
-            <p>Your message has been baked to perfection. We'll get back to you soon!</p>
+            <p>Your Message sent successfully!!</p>
             <button class="close-toast" onclick="closeToast()">Done</button>
         </div>
     </div>
