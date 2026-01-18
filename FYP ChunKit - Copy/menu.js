@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 style="background: #d4a76a; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; flex: 2;">
                             Add to Cart
                         </button>
-                        <button class="favorite-btn ${isFavorite ? 'active' : ''}" data-id="${product.id}"
+                        <button class="favorite-btn modal-favorite ${isFavorite ? 'active' : ''}" data-id="${product.id}"
                                 style="background: #f5f5f5; border: 1px solid #ddd; padding: 12px; border-radius: 5px; cursor: pointer;">
                             ${isFavorite ? '❤️' : '🤍'}
                         </button>

@@ -371,6 +371,24 @@ header {
     background: white;
 }
 
+.modal-favorite {
+    position: absolute;
+    top: 35px;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s;
+    z-index: 2;
+}
+
 .product-image {
     width: 100%;
     height: 200px;
@@ -472,8 +490,8 @@ header {
 
 .close-modal {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 5px;
+    right: 20px;
     background: none;
     border: none;
     font-size: 24px;
