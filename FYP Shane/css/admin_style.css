@@ -20,12 +20,18 @@ html, body {
 
 /* ============== HEADER ============== */
 .header {
-    height: 90px;                    /* more vertical space */
+    position: fixed;                 /* ← This is the key change */
+    top: 0;
+    left: 0;
+    right: 0;                        /* full width */
+    height: 90px;
     padding: 0 2.5rem;
     background: linear-gradient(to right, #8B4513, #c14a00);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    z-index: 1000;                   /* higher than sidebar */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);  /* optional: nice shadow when scrolling */
 }
 
 .header-left {
@@ -69,6 +75,36 @@ html, body {
     color: white;
 }
 
+/* Logout Button - Modern & Premium Look */
+.logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.6rem;
+    background: rgba(255, 255, 255, 0.18);
+    color: white;
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-decoration: none;
+    border-radius: 50px;
+    border: 2px solid rgba(255,255,255,0.35);
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.28);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    border-color: rgba(255,255,255,0.6);
+}
+
+.logout-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
 .role-highlight {
     font-weight: bold;
     color: #ffe4c4;
@@ -77,13 +113,15 @@ html, body {
 /* ============== SIDEBAR ============== */
 .sidebar {
     position: fixed;
-    left: 0; top: 70px;
+    left: 0;
+    top: 90px;                    /* ← Match header height exactly */
     width: 200px;
-    height: calc(100vh - 70px);
+    height: calc(100vh - 90px);   /* ← Use same value as top */
     background: #D2691E;
     padding: 2rem 1rem;
     z-index: 999;
     box-shadow: 3px 0 15px rgba(0,0,0,0.1);
+    overflow-y: auto;             /* ← nice bonus: scroll inside sidebar if too many items */
 }
 .sidebar ul { list-style: none; margin-top: 1.5rem; }
 .sidebar a {
@@ -100,9 +138,9 @@ html, body {
 /* ============== MAIN LAYOUT ============== */
 .main {
     margin-left: 200px;
-    margin-top: 70px;
+    margin-top: 90px;             /* ← Must match header + sidebar top */
     padding: 3rem;
-    min-height: calc(100vh - 70px);
+    min-height: calc(100vh - 90px);
     background: #F5F5DC;
 }
 
