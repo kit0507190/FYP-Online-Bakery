@@ -104,9 +104,9 @@ try {
                             <span class="label">Total Amount:</span>
                             <span class="amount">RM <?php echo number_format($order['total'], 2); ?></span>
                         </div>
-                        <button class="buy-again-btn" onclick='handleBuyAgain(<?php echo json_encode($order['items']); ?>)'>
-                            <i class="fas fa-redo"></i> Buy Again
-                        </button>
+                        <button class="buy-again-btn" onclick='handleBuyAgain(<?php echo htmlspecialchars(json_encode($order['items']), ENT_QUOTES, 'UTF-8'); ?>)'>
+    <i class="fas fa-redo"></i> Buy Again
+</button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -114,27 +114,50 @@ try {
     </div>
 
     <script>
-        function handleBuyAgain(items) {
-            let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
+    // 🟢 改为 async 函数，因为我们要等待数据库同步完成
+    async function handleBuyAgain(items) {
+    let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
 
-            items.forEach(item => {
-                let existing = cart.find(c => c.id == item.product_id);
-                if (existing) {
-                    existing.quantity += parseInt(item.quantity);
-                } else {
-                    cart.push({
-                        id: item.product_id,
-                        name: item.product_name,
-                        price: parseFloat(item.item_price),
-                        image: item.product_image || "cake/A_Little_Sweet.jpg",
-                        quantity: parseInt(item.quantity)
-                    });
-                }
-            });
+    items.forEach(item => {
+        let pid = item.product_id;
+        
+        // 🟢 核心逻辑：先寻找这个产品在不在现有的购物车里
+        let existingIndex = cart.findIndex(c => c.id == pid);
+        let currentQty = 0;
 
-            localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
-            window.location.href = 'cart.php'; 
+        if (existingIndex > -1) {
+            // 如果已经在车里了，先把旧的数量存起来，然后把这个旧项从数组里删除
+            currentQty = cart[existingIndex].quantity;
+            cart.splice(existingIndex, 1); 
         }
-    </script>
+
+        // 🟢 不管它是新是旧，统一 push 到数组的最后一位
+        // 这样在 cart.php reverse 之后，它就会排在最上面
+        cart.push({
+            id: pid,
+            name: item.product_name,
+            price: parseFloat(item.item_price),
+            image: item.product_image || "cake/A_Little_Sweet.jpg",
+            quantity: currentQty + parseInt(item.quantity) // 旧量 + 新量
+        });
+    });
+
+    // 1. 存入本地
+    localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
+
+    // 2. 同步数据库并跳转
+    try {
+        const response = await fetch('sync_cart.php?action=update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart: cart })
+        });
+        window.location.href = 'cart.php'; 
+    } catch (e) {
+        console.error("Sync error:", e);
+        window.location.href = 'cart.php';
+    }
+}
+</script>
 </body>
 </html>

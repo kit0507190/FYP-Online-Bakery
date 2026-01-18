@@ -158,21 +158,21 @@ function parseAddr($raw) {
     </label>
 
     <div id="cardDetailsSection">
-        <div class="form-group">
-            <label>Card Number (16 Digits)</label>
-            <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
-        </div>
-        <div class="form-row">
-            <div class="form-group" style="flex:2;">
-                <label>Expiry Date</label>
-                <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5">
-            </div>
-            <div class="form-group" style="flex:1;">
-                <label>CVV</label>
-                <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3">
-            </div>
-        </div>
+    <div class="form-group">
+        <label>Card Number (16 Digits)</label>
+        <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+        <div id="cardError" class="error-msg"></div> </div>
+    <div class="form-row">
+        <div class="form-group" style="flex:2;">
+            <label>Expiry Date</label>
+            <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5">
+            <div id="expiryError" class="error-msg"></div> </div>
+        <div class="form-group" style="flex:1;">
+            <label>CVV</label>
+            <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3">
+            <div id="cvvError" class="error-msg"></div> </div>
     </div>
+</div>
 
     <label class="method-item" id="label-tng">
         <input type="radio" name="paymentMethod" value="tng" onclick="toggleCardFields(false)">
@@ -233,112 +233,181 @@ function parseAddr($raw) {
 </div>
 
     <script>
-        const userAddressCount = <?php echo $addressCount; ?>;
-        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-        document.getElementById('cartDataInput').value = JSON.stringify(cart);
+    // --- 1. 基础数据初始化 ---
+    const userAddressCount = <?php echo $addressCount; ?>;
+    let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+    document.getElementById('cartDataInput').value = JSON.stringify(cart);
 
-        window.onload = function() {
-    // 删除了检查 msg=payment_cancelled 的逻辑
+    window.onload = function() {
+        // 自动选择默认地址
+        const def = document.querySelector('.addr-option.selected');
+        if (def) def.click();
 
-    // 1. 原有逻辑：自动选择默认地址
-    const def = document.querySelector('.addr-option.selected');
-    if (def) def.click();
+        // 渲染订单摘要
+        renderSummary();
 
-    // 2. 原有逻辑：渲染订单摘要
-    renderSummary();
+        // 延迟清空输入框防止浏览器自动填充干扰
+        setTimeout(() => {
+            if(document.getElementById('cardNumberInput')) document.getElementById('cardNumberInput').value = '';
+            if(document.getElementById('expiryInput')) document.getElementById('expiryInput').value = '';
+            if(document.getElementById('cvvInput')) document.getElementById('cvvInput').value = '';
+        }, 100);
+    };
 
-    // 3. 原有逻辑：延迟清空输入框
-    setTimeout(() => {
-        if(document.getElementById('cardNumberInput')) document.getElementById('cardNumberInput').value = '';
-        if(document.getElementById('expiryInput')) document.getElementById('expiryInput').value = '';
-        if(document.getElementById('cvvInput')) document.getElementById('cvvInput').value = '';
-    }, 100);
-};
+    // --- 2. 核心校验逻辑 (Place Order 点击时触发) ---
+    function validateCheckout() {
+        // 每次点击前先清除之前的红色错误状态
+        clearErrors();
 
-// 删除了 closeCancelModal 函数
-
-        // --- 核心优化：卡号自动空格逻辑 ---
-        document.getElementById('cardNumberInput').addEventListener('input', function (e) {
-            // 1. 获取纯数字（去掉非数字字符）
-            let value = e.target.value.replace(/\D/g, '');
-            // 2. 每四个数字添加一个空格
-            let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-            // 3. 将结果写回输入框
-            e.target.value = formattedValue;
-        });
-
-        function toggleCardFields(show) {
-            document.getElementById('cardDetailsSection').style.display = show ? 'block' : 'none';
-            document.querySelectorAll('.method-item').forEach(el => el.classList.remove('active'));
-            if(show) document.getElementById('label-debit').classList.add('active');
+        // A. 检查地址是否存在
+        if (userAddressCount === 0) {
+            document.getElementById('addressRequiredModal').style.display = 'flex';
+            return false; 
         }
 
-        function validateCheckout() {
-            if (userAddressCount === 0) {
-                document.getElementById('addressRequiredModal').style.display = 'flex';
-                return false; 
+        // B. 检查支付方式是否选择
+        const checked = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!checked) { 
+            alert("Please select a payment method."); 
+            return false; 
+        }
+        
+        // C. 如果选的是 Debit Card，执行详细红字校验
+        if (checked.value === 'debitCard') {
+            let isValid = true;
+
+            const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
+            const expiry = document.getElementById('expiryInput').value;
+            const cvv = document.getElementById('cvvInput').value;
+
+            // 校验卡号 (必须 16 位)
+            if (cardNum.length !== 16 || isNaN(cardNum)) {
+                showError('cardNumberInput', 'cardError', 'Please enter a valid 16-digit card number.');
+                isValid = false;
             }
 
-            const checked = document.querySelector('input[name="paymentMethod"]:checked');
-            if (!checked) { alert("Please select a payment method."); return false; }
-            
-            if (checked.value === 'debitCard') {
-                const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
-                if (cardNum.length !== 16) {
-                    alert("Please enter a valid 16-digit card number.");
-                    return false;
+            // 校验有效期 (MM/YY 格式且需大于等于 2026年1月)
+            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+                showError('expiryInput', 'expiryError', 'Use MM/YY format.');
+                isValid = false;
+            } else {
+                const [m, y] = expiry.split('/').map(num => parseInt(num));
+                const currentYear = 26; // 2026年
+                const currentMonth = 1;
+
+                if (m < 1 || m > 12) {
+                    showError('expiryInput', 'expiryError', 'Invalid month (01-12).');
+                    isValid = false;
+                } else if (y < currentYear || (y === currentYear && m < currentMonth)) {
+                    showError('expiryInput', 'expiryError', 'Card has expired.');
+                    isValid = false;
                 }
             }
-            return true;
-        }
 
-        function closeAddressModal() {
-            document.getElementById('addressRequiredModal').style.display = 'none';
-        }
-
-        function toggleModal(show) { document.getElementById('addrModal').classList.toggle('active', show); }
-
-        function selectAddr(el, street, area, postcode) {
-            document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
-            el.classList.add('selected');
-            const formattedAddress = `${street}, ${area}, Melaka, ${postcode}`;
-            document.getElementById('addressLabel').innerText = formattedAddress;
-            document.getElementById('hiddenAddress').value = street;
-            document.getElementById('hiddenCity').value = area;
-            document.getElementById('hiddenPostcode').value = postcode;
-            toggleModal(false);
-        }
-
-        function renderSummary() {
-            const container = document.getElementById('summaryItems');
-            let subtotal = 0;
-            let html = '';
-
-            if (cart.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">Your cart is empty.</p>';
-                return;
+            // 校验 CVV (必须 3 位)
+            if (cvv.length !== 3 || isNaN(cvv)) {
+                showError('cvvInput', 'cvvError', 'Enter 3-digit CVV.');
+                isValid = false;
             }
 
-            cart.forEach(item => {
-                const linePrice = parseFloat(item.price) * parseInt(item.quantity);
-                subtotal += linePrice;
-                html += `
-                    <div class="summary-item-row">
-                        <img src="${item.image}" alt="${item.name}" class="summary-item-img">
-                        <div class="summary-item-info">
-                            <div class="summary-item-detail">
-                                <span class="summary-item-name">${item.name}</span>
-                                <span class="summary-item-qty">Qty: ${item.quantity}</span>
-                            </div>
-                            <div class="summary-item-price">RM ${linePrice.toFixed(2)}</div>
-                        </div>
-                    </div>`;
-            });
-
-            container.innerHTML = html;
-            document.getElementById('totalPriceDisplay').innerText = `RM ${(subtotal + 5.00).toFixed(2)}`;
+            return isValid; // 只有全部校验通过才跳转
         }
-    </script>
+
+        return true;
+    }
+
+    // --- 3. UI 辅助函数 ---
+
+    // 显示错误：输入框加红框，下方显红字
+    function showError(inputId, errorId, message) {
+        const inputField = document.getElementById(inputId);
+        const errorDiv = document.getElementById(errorId);
+        if (inputField) inputField.classList.add('input-error');
+        if (errorDiv) {
+            errorDiv.innerText = message;
+            errorDiv.style.display = 'block';
+        }
+    }
+
+    // 清除错误状态
+    function clearErrors() {
+        document.querySelectorAll('.form-input').forEach(i => i.classList.remove('input-error'));
+        document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+    }
+
+    function closeAddressModal() {
+        document.getElementById('addressRequiredModal').style.display = 'none';
+    }
+
+    function toggleModal(show) { 
+        document.getElementById('addrModal').classList.toggle('active', show); 
+    }
+
+    // --- 4. 输入格式化监听 ---
+
+    // 卡号：每4位加空格
+    document.getElementById('cardNumberInput').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, '');
+        let formattedValue = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        e.target.value = formattedValue;
+    });
+
+    // 有效期：自动加斜杠 /
+    document.getElementById('expiryInput').addEventListener('input', function (e) {
+        let v = e.target.value.replace(/\D/g, '');
+        if (v.length >= 2) {
+            e.target.value = v.substring(0, 2) + '/' + v.substring(2, 4);
+        }
+    });
+
+    function toggleCardFields(show) {
+        document.getElementById('cardDetailsSection').style.display = show ? 'block' : 'none';
+        document.querySelectorAll('.method-item').forEach(el => el.classList.remove('active'));
+        if(show) document.getElementById('label-debit').classList.add('active');
+    }
+
+    function selectAddr(el, street, area, postcode) {
+        document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
+        el.classList.add('selected');
+        const formattedAddress = `${street}, ${area}, Melaka, ${postcode}`;
+        document.getElementById('addressLabel').innerText = formattedAddress;
+        document.getElementById('hiddenAddress').value = street;
+        document.getElementById('hiddenCity').value = area;
+        document.getElementById('hiddenPostcode').value = postcode;
+        toggleModal(false);
+    }
+
+    // --- 5. 订单摘要渲染 ---
+    function renderSummary() {
+        const container = document.getElementById('summaryItems');
+        let subtotal = 0;
+        let html = '';
+
+        if (cart.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">Your cart is empty.</p>';
+            return;
+        }
+
+        cart.forEach(item => {
+            const linePrice = parseFloat(item.price) * parseInt(item.quantity);
+            subtotal += linePrice;
+            html += `
+                <div class="summary-item-row">
+                    <img src="${item.image}" alt="${item.name}" class="summary-item-img">
+                    <div class="summary-item-info">
+                        <div class="summary-item-detail">
+                            <span class="summary-item-name">${item.name}</span>
+                            <span class="summary-item-qty">Qty: ${item.quantity}</span>
+                        </div>
+                        <div class="summary-item-price">RM ${linePrice.toFixed(2)}</div>
+                    </div>
+                </div>`;
+        });
+
+        container.innerHTML = html;
+        document.getElementById('totalPriceDisplay').innerText = `RM ${(subtotal + 5.00).toFixed(2)}`;
+    }
+</script>
     <link rel="stylesheet" href="footer.css">
 </body>
 </html>

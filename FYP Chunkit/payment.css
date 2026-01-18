@@ -1,233 +1,322 @@
-    :root {
-        --primary: #5a3921;
-        --accent: #d4a76a;
-        --bg: #fff7ec;
-        --white: #ffffff;
-        --border: #eeeeee;
+/* --- 基础变量与重置 --- */
+:root {
+    --primary: #5a3921;
+    --accent: #d4a76a;
+    --bg: #fff7ec;
+    --white: #ffffff;
+    --border: #eeeeee;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    padding-top: 80px; 
+    color: #333;
+    overflow-y: auto;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 25px;
+    box-sizing: border-box;
+}
+
+/* --- 核心布局：防止左侧跳动 --- */
+.flex-layout {
+    display: flex;
+    gap: 30px;
+    /* 关键：取消 stretch，改为顶部对齐，允许左右两列高度不同 */
+    align-items: flex-start; 
+}
+
+.left-column {
+    flex: 1;
+    /* 关键：开启粘性定位，随滚动吸顶 */
+    position: sticky;
+    top: 100px; 
+    display: flex;
+    flex-direction: column;
+}
+
+.right-column {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 卡片样式 --- */
+.card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 25px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 15px rgba(90, 57, 33, 0.05);
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 18px;
+    color: var(--primary);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    font-weight: 600;
+}
+
+/* --- 商品列表：数量在名字下方 --- */
+#summaryItems {
+    max-height: 400px; /* 限制高度，超出时内部滚动 */
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 15px;
+}
+
+/* 滚动条美化 */
+#summaryItems::-webkit-scrollbar { width: 5px; }
+#summaryItems::-webkit-scrollbar-track { background: #fdf8f3; border-radius: 10px; }
+#summaryItems::-webkit-scrollbar-thumb { background: #e0d5c1; border-radius: 10px; }
+
+.summary-item-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.summary-item-img {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 15px;
+    border: 1px solid #eee;
+}
+
+.summary-item-info {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 核心修改：让名字和数量上下排列 */
+.summary-item-detail {
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    gap: 4px; /* 名字和数量之间的间距 */
+}
+
+.summary-item-name {
+    font-size: 14px;
+    color: #444;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.summary-item-qty {
+    font-size: 12px;
+    color: #999; /* 数量颜色淡化 */
+}
+
+.summary-item-price {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 14px;
+}
+
+/* --- 支付方式选项 --- */
+.method-item {
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.method-item:hover { border-color: var(--accent); }
+.method-item.active { border-color: var(--accent); background: #fffcf9; }
+.method-logo { width: 40px; height: 30px; object-fit: contain; }
+
+/* Debit Card 展开表单 */
+#cardDetailsSection {
+    display: none;
+    padding: 20px;
+    background: #fdfdfd;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-top: -5px;
+    margin-bottom: 15px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 表单组件 */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
+.form-input {
+    width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box;
+}
+.form-input:focus { border-color: var(--accent); outline: none; }
+.form-row { display: flex; gap: 15px; }
+
+/* --- 结算总计区域 --- */
+.total-row { 
+    /* 关键：取消 margin-top: auto，防止跟随容器拉伸而沉底 */
+    margin-top: 0; 
+    padding-top: 15px; 
+    border-top: 2px solid #fdf8f3; 
+    font-weight: bold; 
+    font-size: 18px; 
+    color: var(--primary); 
+}
+
+/* --- 按钮与地址 --- */
+.address-text { color: #666; font-size: 14px; line-height: 1.5; }
+.user-meta { font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px; }
+
+.place-order-btn { 
+    width: 100%; 
+    padding: 18px; 
+    background: var(--primary); 
+    color: white; 
+    border: none; 
+    border-radius: 10px; 
+    font-size: 18px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    transition: 0.3s;
+    margin-top: 10px;
+}
+.place-order-btn:hover { background: #452c1a; }
+
+/* --- 模态框与响应式 --- */
+.force-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.6); display: none; 
+    justify-content: center; align-items: center;
+    z-index: 9999; backdrop-filter: blur(3px);
+}
+.force-modal-content {
+    background: white; width: 90%; max-width: 400px;
+    padding: 40px 30px; border-radius: 20px;
+    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 992px) {
+    .flex-layout { flex-direction: column; align-items: stretch; }
+    .left-column { position: static; width: 100%; }
+    .right-column { width: 100%; }
+}
+/* --- 弹窗内部详细样式 --- */
+
+/* 顶部图标（大头针/蛋糕） */
+.modal-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    display: block;
+}
+
+/* 弹窗标题 */
+.force-modal-content h2 {
+    color: #5a3921; /* 使用你的 primary 棕色 */
+    margin-bottom: 15px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* 弹窗文字描述 */
+.force-modal-content p {
+    color: #777;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+/* 按钮容器 */
+.modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+/* “去添加地址” 大按钮 */
+.btn-go-address {
+    background-color: #d4a76a; /* 你的 accent 金色/棕色 */
+    color: white !important;
+    text-decoration: none;
+    width: 100%;
+    padding: 14px 0;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    transition: 0.3s;
+    display: block;
+    box-shadow: 0 4px 10px rgba(212, 167, 106, 0.3);
+}
+
+.btn-go-address:hover {
+    background-color: #c5a073;
+    transform: translateY(-2px);
+}
+
+/* “稍后再说” 链接 */
+.btn-maybe-later {
+    color: #aaa;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: 0.3s;
+}
+
+.btn-maybe-later:hover {
+    color: #777;
+}
+
+/* --- 跳出来的动画效果 --- */
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
     }
-
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: var(--bg);
-        margin: 0;
-        padding-top: 100px; 
-        color: #333;
+    70% {
+        transform: scale(1.05);
     }
-
-    .container {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 25px;
+    100% {
+        opacity: 1;
+        transform: scale(1);
     }
+}
 
-    .flex-layout {
-        display: flex;
-        gap: 30px;
-        align-items: flex-start;
-    }
+/* 将动画应用到弹窗内容 */
+.force-modal-overlay[style*="display: flex"] .force-modal-content {
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+/* 红色报错文字样式 */
+.error-msg {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-top: 5px;
+    font-weight: 500;
+    display: none; /* 默认隐藏 */
+}
 
-    .left-column, .right-column {
-        flex: 1; 
-    }
-
-    .left-column {
-        position: sticky;
-        top: 110px;
-        max-height: calc(100vh - 130px);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .card {
-        background: var(--white);
-        border-radius: 12px;
-        padding: 25px;
-        border: 1px solid var(--border);
-        box-shadow: 0 4px 15px rgba(90, 57, 33, 0.05);
-        margin-bottom: 25px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .card-title {
-        font-size: 18px;
-        color: var(--primary);
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        border-bottom: 1px solid var(--border);
-        padding-bottom: 12px;
-        font-weight: 600;
-    }
-
-    #summaryItems {
-        max-height: 380px; 
-        overflow-y: auto; 
-        overflow-x: hidden;
-        padding-right: 8px;
-    }
-
-    #summaryItems::-webkit-scrollbar { width: 5px; }
-    #summaryItems::-webkit-scrollbar-track { background: #fdf8f3; border-radius: 10px; }
-    #summaryItems::-webkit-scrollbar-thumb { background: #e0d5c1; border-radius: 10px; }
-
-    .summary-item-row {
-        display: flex;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #f9f9f9;
-    }
-
-    .summary-item-img {
-        width: 60px;
-        height: 60px;
-        object-fit: cover;
-        border-radius: 8px;
-        margin-right: 15px;
-        border: 1px solid #eee;
-    }
-
-    .summary-item-info {
-        flex: 1;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .summary-item-detail {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .summary-item-name {
-        font-size: 13px;
-        color: #444;
-        font-weight: 600;
-        max-width: 180px;
-        line-height: 1.4;
-    }
-
-    .summary-item-qty {
-        font-size: 12px;
-        color: #999; 
-        font-weight: 400;
-        margin-top: 2px;
-    }
-
-    .summary-item-price {
-        font-weight: 600;
-        color: var(--primary);
-        font-size: 14px;
-    }
-
-    .method-item {
-        border: 1px solid var(--border);
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-    .method-item:hover { border-color: var(--accent); }
-    .method-item.active { border-color: var(--accent); background: #fffcf9; }
-
-    #cardDetailsSection {
-        display: none;
-        padding: 20px;
-        background: #fdfdfd;
-        border: 1px solid #eee;
-        border-radius: 10px;
-        margin-top: -5px;
-        margin-bottom: 15px;
-        animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-5px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
-    .form-input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        font-size: 14px;
-        box-sizing: border-box;
-    }
-    .form-input:focus { border-color: var(--accent); outline: none; }
-    .form-row { display: flex; gap: 15px; }
-
-    .address-box { display: flex; gap: 15px; align-items: flex-start; }
-    .address-box i { color: var(--accent); font-size: 20px; margin-top: 4px; }
-    .user-meta { font-weight: bold; font-size: 16px; margin-bottom: 6px; }
-    .address-text { color: #666; font-size: 14px; line-height: 1.6; }
-    .btn-change { margin-left: auto; color: var(--accent); font-weight: bold; cursor: pointer; font-size: 14px; }
-
-    .total-row { margin-top: 10px; padding-top: 15px; border-top: 2px solid #fdf8f3; font-weight: bold; font-size: 18px; color: var(--primary); }
-    .place-order-btn { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .place-order-btn:hover { background: #452c1a; }
-
-    .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-    .modal.active { display: flex; }
-    .modal-content { background: var(--white); width: 450px; border-radius: 15px; padding: 25px; }
-    .addr-option { border: 1px solid #eee; padding: 15px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; }
-    .addr-option.selected { border: 2px solid var(--accent); background: #fffcf9; }
-
-    .force-modal-overlay {
-        position: fixed;
-        top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0, 0, 0, 0.6);
-        display: none; 
-        justify-content: center;
-        align-items: center;
-        z-index: 9999;
-        backdrop-filter: blur(3px);
-    }
-
-    .force-modal-content {
-        background: white;
-        width: 90%; max-width: 400px;
-        padding: 40px 30px;
-        border-radius: 20px;
-        text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    .modal-icon { font-size: 50px; margin-bottom: 20px; }
-    .force-modal-content h2 { color: #5a3921; font-size: 24px; margin-bottom: 15px; }
-    .force-modal-content p { color: #777; font-size: 15px; line-height: 1.6; margin-bottom: 30px; }
-    .btn-go-address {
-        display: block; background: #d4a76a;
-        color: white; text-decoration: none;
-        padding: 15px; border-radius: 10px;
-        font-weight: bold; font-size: 16px;
-        margin-bottom: 15px;
-    }
-    .btn-maybe-later { color: #aaa; text-decoration: underline; font-size: 14px; cursor: pointer; }
-
-    @media (max-width: 992px) {
-        .flex-layout { flex-direction: column; }
-        .left-column, .right-column { width: 100%; flex: none; }
-        .left-column { position: static; max-height: none; }
-    }
-    /* 新增：支付方式图标样式控制 */
-    .method-logo {
-        width: 40px;          /* 设定统一宽度 */
-        height: 30px;         /* 设定统一高度 */
-        object-fit: contain;  /* 核心：确保图片在容器内按比例缩放，不被拉伸变形 */
-        display: block;
-    }
-
-    /* 确保文字和图片垂直居中 */
-    .method-item {
-        display: flex;
-        align-items: center;
-        gap: 15px;            /* 增加一点图片和文字之间的距离 */
-    }
+/* 当输入框有错时，给输入框加个红边框 */
+.form-input.input-error {
+    border-color: #e74c3c;
+    background-color: #fff8f8;
+}

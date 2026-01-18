@@ -567,3 +567,56 @@ footer p {
         height: 40px;
     }
 }
+/* 1. 顶部 "TOTAL" 标签 - 匹配 Subtotal 的字体风格 */
+.header-label-total {
+    font-family: var(--main-font); /* 使用项目主字体 */
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 1px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+/* 2. 产品右侧金额 - 完全匹配 Subtotal 的字体和颜色 */
+.cart-item-total {
+    font-family: var(--main-font); /* 🚀 切换回主字体 */
+    color: #5a3921 !important;    /* 🚀 使用 Subtotal 相同的深褐色 */
+    font-weight: 400;             /* 🚀 Subtotal 通常是常规粗细 */
+    font-size: 18px;              /* 保持与 Subtotal 接近的大小 */
+    margin-bottom: 0;
+}
+
+/* 3. 底部最终总金额 - 保持醒目的金色和加粗 */
+.final-total-amount {
+    color: #d4a76a; 
+    font-size: 24px;
+    font-weight: bold;
+    font-family: var(--main-font);
+}
+
+/* 4. 调整容器对齐，确保看起来整齐 */
+.cart-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 垂直居中对齐 */
+    width: 100%;
+    margin-bottom: 8px;
+}
+/* 1. 顶部 TOTAL 的容器 - 负责把文字推向右边 */
+.cart-list-header {
+    display: flex;
+    justify-content: flex-end; /* 🚀 这一行是核心：把内容推向最右侧 */
+    padding: 0 20px 10px 20px;  /* 左右 padding 要和下面的商品卡片对齐 */
+    border-bottom: 1px solid #eee; /* 加一条淡淡的分隔线 */
+    margin-bottom: 15px;
+}
+
+/* 2. 顶部 "TOTAL" 标签的文字样式 */
+.header-label-total {
+    font-family: var(--main-font); 
+    font-size: 14px;
+    color: #888;
+    letter-spacing: 2px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
