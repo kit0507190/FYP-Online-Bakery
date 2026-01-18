@@ -35,21 +35,29 @@ body {
 }
 
 /* ============================================================
-   2. HERO SECTION (首屏大图区域)
+   2. HERO SECTION (首屏大图区域) - 已修改为全屏衔接效果
    ============================================================ */
 .hero {
-    /* 渐变层配合背景图，增强文字可读性 */
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), 
-                url('https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    /* 渐变层配合背景图 */
+    /* 注意：根据你上传的文件，后缀名建议检查是 .jpg 还是 .png */
+    background: linear-gradient(rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.4)), 
+                url('mainpage\ background/mainpage cake pic.png');
     background-size: cover;
     background-position: center;
     color: white;
     text-align: center;
-    padding: 180px 0 100px;
-    margin-bottom: 50px;
+
+    /* --- 核心修改点 --- */
+    height: calc(100vh - 85px); /* 100vh 是屏幕全高，减去 header 的高度 */
+    display: flex;              /* 启用弹性布局 */
+    flex-direction: column;     /* 内容纵向排列 */
+    align-items: center;        /* 水平居中 */
+    justify-content: center;    /* 垂直居中 */
+    padding: 0;                 /* 移除原有的固定 padding */
+    margin-bottom: 0;           /* 移除底部边距，让背景图直接接触下一个板块 */
 }
 
-/* 初始透明度为 0，由 JS 触发渐入动画 */
+/* 初始透明度为 0，由 JS 触发渐入动画 (保持不变) */
 .hero h1 { 
     font-size: 48px; 
     margin-bottom: 20px; 
@@ -78,10 +86,6 @@ body {
     opacity: 0; 
     transform: translateY(30px); 
     transition: all 0.8s ease 0.4s; 
-}
-
-.hero-btn:hover {
-    background-color: #c2955a;
 }
 
 /* ============================================================
@@ -163,30 +167,44 @@ body {
 }
 
 /* ============================================================
-   5. ABOUT & TESTIMONIALS (特定板块样式)
+   5. ABOUT & TESTIMONIALS (已优化：加大字号与排版)
    ============================================================ */
 .about-content { 
     display: flex; 
-    align-items: center; 
-    gap: 40px; 
+    align-items: center; /* 确保图片和文字在水平线上居中对齐 */
+    gap: 60px;           /* 增加图片和文字之间的间距，让页面更“透气” */
 }
 
-.about-image { 
-    flex: 1; 
-    border-radius: 10px; 
-    overflow: hidden; 
-    opacity: 0; 
-    transform: translateX(-50px); 
-    transition: 0.8s; 
+.about-text h3 {
+    font-size: 36px;      /* 加大标题字号 */
+    color: var(--main-color);
+    margin-bottom: 25px;  /* 增加标题下方的间距 */
+    position: relative;
+    display: inline-block;
 }
 
-.about-image img { width: 100%; display: block; }
+/* 在 Our Story 下方加一个小金色横线，增加设计感 */
+.about-text h3::after {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 3px;
+    background: var(--accent-color);
+    bottom: -8px;
+    left: 0;
+}
 
-.about-text { 
-    flex: 1; 
-    opacity: 0; 
-    transform: translateX(50px); 
-    transition: all 0.8s ease 0.2s; 
+.about-text p { 
+    font-size: 18px;       /* 将正文字号从默认的 16px 提升到 18px */
+    line-height: 1.8;      /* 增加行高，让文字不那么拥挤 */
+    margin-bottom: 20px;   /* 段落之间的间距 */
+    color: #666;           /* 稍微调淡一点颜色，增加高级感 */
+    text-align: justify;   /* 两端对齐，让排版更整齐 */
+}
+
+/* 最后一个段落不需要底部间距 */
+.about-text p:last-child {
+    margin-bottom: 0;
 }
 
 .testimonials { background-color: var(--bg-light); }

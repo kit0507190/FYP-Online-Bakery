@@ -83,16 +83,24 @@ if (!isset($_SESSION['user_id'])) {
         loadCartItems();
     }
 
-    // --- 4. 渲染购物车 (核心修改：实现逆序排列) ---
+    // --- 4. 渲染购物车 (已修复空购物车显示问题) ---
     function loadCartItems() {
         if (cart.length === 0) {
-            // ... (保持原有的空购物车逻辑不变)
+            // 🚀 这里就是之前丢失的代码：当购物车为空时显示的 HTML
+            cartContainer.innerHTML = `
+                <div class="empty-cart">
+                    <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=500" alt="Empty Cart">
+                    <h2>Your cart is empty</h2>
+                    <p>Add some delicious bakery items to your cart!</p>
+                    <a href="menu.php" class="continue-shopping">Continue Shopping</a>
+                </div>`;
+            updateHeaderCount(); // 同时也更新一下导航栏的数量显示
             return;
         }
 
+        // --- 以下是原本有的逻辑：显示购物车商品 ---
         const displayCart = [...cart].reverse(); 
-
-        // 🚀 修改：在 itemsHTML 开始时添加“TOTAL”表头
+        
         let itemsHTML = `
             <div class="cart-list-header">
                 <span class="header-label-total">TOTAL</span>

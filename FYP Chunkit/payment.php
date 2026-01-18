@@ -378,6 +378,7 @@ function parseAddr($raw) {
     }
 
     // --- 5. 订单摘要渲染 ---
+    // --- 5. 订单摘要渲染 (同步 Cart 的排序逻辑) ---
     function renderSummary() {
         const container = document.getElementById('summaryItems');
         let subtotal = 0;
@@ -388,7 +389,10 @@ function parseAddr($raw) {
             return;
         }
 
-        cart.forEach(item => {
+        // 🚀 核心修改：使用与 cart.php 一样的反转逻辑，让最新添加的在最上面
+        const displayCart = [...cart].reverse();
+
+        displayCart.forEach(item => {
             const linePrice = parseFloat(item.price) * parseInt(item.quantity);
             subtotal += linePrice;
             html += `

@@ -20,3 +20,4 @@
         </div>
     </div>
 </footer>
+<link rel="stylesheet" href="footer.css">
