@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,16 +45,26 @@
                 <!-- Categories Sidebar -->
                 <div class="categories-sidebar">
                     <h3 class="category-header">Categories</h3>
-                    
-                    <!-- Cake Category -->
+
+                    <!-- All Products (default active) -->
                     <div class="category-item">
-                        <div class="category-main active" data-category="cake">
-                            <span>Cakes</span>
+                        <div class="category-main active" data-category="all">
+                            <span>All Products</span>
                             <span class="category-arrow active">▼</span>
                         </div>
                         <div class="subcategories active">
+                            <a class="subcategory-item active" data-subcategory="all">All Products</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Cake Category -->
+                    <div class="category-item">
+                        <div class="category-main" data-category="cake">
+                            <span>Cakes</span>
+                            <span class="category-arrow">▼</span>
+                        </div>
+                        <div class="subcategories">
                             <a class="subcategory-item active" data-subcategory="all">All Cakes</a>
-                            <a class="subcategory-item" data-subcategory="5 inch">5 inch Cake</a>
                             <a class="subcategory-item" data-subcategory="cheese">Cheese Flavour</a>
                             <a class="subcategory-item" data-subcategory="chocolate">Chocolate & Coffee</a>
                             <a class="subcategory-item" data-subcategory="strawberry">Strawberry Flavour</a>
@@ -107,12 +116,12 @@
                 <div class="products-section">
                     <!-- Active Category Display -->
                     <div class="active-category" id="activeCategory">
-                        All Cakes
+                        All Products
                     </div>
                     
                     <!-- Results Info -->
                     <div class="results-info" id="resultsInfo">
-                        Showing all cakes
+                        Showing all products
                     </div>
                     
                     <!-- Loading Spinner -->

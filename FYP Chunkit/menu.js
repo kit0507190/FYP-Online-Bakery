@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const nextPageBtn = document.getElementById('nextPageBtn');
     const pageIndicator = document.getElementById('pageIndicator');
 
-    let currentCategory = 'cake'; 
+    let currentCategory = 'all'; 
     let currentSubCategory = 'all';
     let currentSearch = '';
     let currentSort = 'name';
@@ -93,25 +93,47 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.category-main').forEach(btn => {
             btn.addEventListener('click', function() {
                 const category = this.getAttribute('data-category');
-                document.querySelectorAll('.category-main').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                const arrow = this.querySelector('.category-arrow');
-                if (arrow) arrow.classList.toggle('active');
-                const sub = this.nextElementSibling;
-                if (sub) sub.classList.toggle('active'); 
-
-                if (category !== currentCategory) {
-                    currentCategory = category;
-                    currentSubCategory = 'all';
-                    document.querySelectorAll('.subcategory-item').forEach(i => i.classList.remove('active'));
-                    const allSub = this.nextElementSibling?.querySelector('.subcategory-item[data-subcategory="all"]');
-                    if (allSub) allSub.classList.add('active');
-                    currentPage = 1;
-                    updateActiveCategory();
-                    renderProducts();
+                document.querySelectorAll('.category-main').forEach(other => {
+            if (other !== this) {
+                other.classList.remove('active');
+                const otherArrow = other.querySelector('.category-arrow');
+                if (otherArrow) otherArrow.classList.remove('active');
+                const otherSub = other.nextElementSibling;
+                if (otherSub && otherSub.classList.contains('subcategories')) {
+                    otherSub.classList.remove('active');
                 }
-            });
-        });
+            }
+        }); 
+
+                this.classList.toggle('active');
+        
+        const arrow = this.querySelector('.category-arrow');
+        if (arrow) arrow.classList.toggle('active');
+
+        const sub = this.nextElementSibling;
+        if (sub && sub.classList.contains('subcategories')) {
+            sub.classList.toggle('active');
+        }
+
+        // ── 3. If we actually opened a new category → reset subcategory to 'all' ──
+        if (this.classList.contains('active') && category !== currentCategory) {
+            currentCategory = category;
+            currentSubCategory = 'all';
+
+            // Reset all subcategory active states
+            document.querySelectorAll('.subcategory-item').forEach(i => i.classList.remove('active'));
+
+            // Activate the "All XXX" item
+            const allSub = sub?.querySelector('.subcategory-item[data-subcategory="all"]');
+            if (allSub) allSub.classList.add('active');
+
+            currentPage = 1;
+            updateActiveCategory();
+            renderProducts();
+        }
+        // If we just closed it by clicking again → do nothing extra
+    });
+});
 
         document.querySelectorAll('.subcategory-item').forEach(item => {
             item.addEventListener('click', function(e) {
@@ -261,19 +283,7 @@ function quickViewProduct(productId) {
                     <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
                     <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #888;">${product.reviewCount || 0} Reviews</span>
-                    <span style="color: #ddd;">|</span>
-                    <span style="color: #d4a76a; font-weight: 600;">${product.soldCount || 0} Sold</span>
-                </div>
-
-                <p style="font-size: 28px; color: #d4a76a; font-weight: 700; margin-bottom: 25px;">RM ${parseFloat(product.price).toFixed(2)}</p>
-                
-                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
-                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">${product.fullDescription || product.description || ''}</p>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
-                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                    <sp...(truncated 863 characters)...bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
                     </div>
@@ -324,7 +334,7 @@ function quickViewProduct(productId) {
     function filterProducts() {
         const searchTerm = currentSearch.trim().toLowerCase();
 
-        // 🚀 逻辑 A：智能搜索模式 (当搜索框有内容时)
+        // ── A. Search mode (when user typed something) ──
         if (searchTerm) {
             // 完整子分类名字映射表
             const subNameMapping = {
@@ -375,12 +385,26 @@ function quickViewProduct(productId) {
             });
         }
 
-        // 🚀 逻辑 B：侧边栏浏览模式 (搜索框为空时)
+        // ── B. Category browsing mode (no search term) ──
         return products.filter(product => {
-            if (product.category !== currentCategory) return false;
-            const cleanSub = product.subcategory ? product.subcategory.replace(/['"]+/g, '') : '';
-            if (currentSubCategory !== 'all' && cleanSub !== currentSubCategory) return false;
-            return true;
+            // Special case: show ALL products when top-level "all" is selected
+            if (currentCategory === 'all') {
+                return true;
+            }
+
+            // Normal case: must match main category
+            if (product.category !== currentCategory) {
+                return false;
+            }
+
+            // When subcategory is 'all' → show all products in this category
+            if (currentSubCategory === 'all') {
+                return true;
+            }
+
+            // Specific subcategory
+            const cleanSub = product.subcategory ? product.subcategory.replace(/['"]+/g, '').toLowerCase() : '';
+            return cleanSub === currentSubCategory.toLowerCase();
         });
     }
 
@@ -401,10 +425,16 @@ function quickViewProduct(productId) {
             return;
         }
 
-        const categoryNames = {'bread':'Bread','cake':'Cakes','pastry':'Pastries','cookie':'Cookies'};
+        const categoryNames = {
+        'all': 'All Products',
+        'cake': 'Cakes',
+        'bread': 'Bread',
+        'pastry': 'Pastries',
+        'cookie': 'Cookies'
+    };
         const subNames = {
             'all': `All ${categoryNames[currentCategory] || 'Products'}`,
-            '5 inch':'5 inch Cake','cheese':'Cheese Flavour','chocolate':'Chocolate & Coffee',
+            'cheese':'Cheese Flavour','chocolate':'Chocolate & Coffee',
             'mini':'Cute Mini Cake','durian':'Durian Series','festival':'Festival',
             'fondant':'Fondant Cake Design','fresh-cream':'Fresh Cream Cake',
             'full-moon':'Full Moon Gift Packages','little':'Little Series',
@@ -416,9 +446,9 @@ function quickViewProduct(productId) {
         };
 
         if (activeCategory) {
-            activeCategory.textContent = currentSubCategory !== 'all' 
-                ? (subNames[currentSubCategory] || 'Products') 
-                : (subNames['all'] || 'Products');
+            activeCategory.textContent = 
+                subNames[currentSubCategory] || 
+                (categoryNames[currentCategory] || 'Products');
         }
     }
 
