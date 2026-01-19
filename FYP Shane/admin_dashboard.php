@@ -52,23 +52,26 @@ require_once 'admin_auth.php';  // Secure auth + loads $current_admin
     ?>
 
     <div class="stats-grid">
-        <div class="stat-card">
-            <h3>Today's Sales</h3>
-            <div class="stat-number">RM <?= number_format($todaySales, 2) ?></div>
-        </div>
-        <div class="stat-card">
-            <h3>Orders Today</h3>
-            <div class="stat-number"><?= $todayOrders ?></div>
-        </div>
-        <div class="stat-card">
-            <h3>Pending Orders</h3>
-            <div class="stat-number"><?= $pendingOrders ?></div>
-        </div>
-        <div class="stat-card <?= $lowStock > 0 ? 'low-stock' : '' ?>">
-            <h3>Low Stock Items</h3>
-            <div class="stat-number"><?= $lowStock ?></div>
-        </div>
+    <div class="stat-card">
+        <p>Today's Sales</p>
+        <h3>RM <?= number_format($todaySales, 2) ?></h3>
     </div>
+
+    <div class="stat-card">
+        <p>Orders Today</p>
+        <h3><?= number_format($todayOrders) ?></h3>
+    </div>
+
+    <div class="stat-card">
+        <p>Pending Orders</p>
+        <h3><?= number_format($pendingOrders) ?></h3>
+    </div>
+
+    <div class="stat-card <?= $lowStock > 0 ? 'low-stock' : '' ?>">
+        <p>Low Stock Items</p>
+        <h3><?= number_format($lowStock) ?></h3>
+    </div>
+</div>
 
     <div style="height: 400px; margin: 3rem 0;">
         <canvas id="salesChart"></canvas>

@@ -1,6 +1,57 @@
 <?php
 require_once 'admin_auth.php';  // Secure login + loads $current_admin with role
-require_once 'admin_config.php';  // Main database connection for orders/products
+require_once 'admin_config.php';  // Main database connection
+
+// =============================================
+// HANDLE STATUS UPDATE (POST) → then REDIRECT
+// =============================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
+    $order_id   = (int)$_POST['order_id'];
+    $new_status = trim($_POST['new_status']);
+
+    $valid_statuses = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
+    if (!in_array($new_status, $valid_statuses)) {
+        // In real production you might want better error handling
+        header("Location: view_orders.php?error=invalid_status");
+        exit();
+    }
+
+    // Get current (old) status
+    $stmt = $pdo->prepare("SELECT status FROM orders WHERE id = ?");
+    $stmt->execute([$order_id]);
+    $old_status = $stmt->fetchColumn() ?: '';
+
+    // Update status
+    $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+    $stmt->execute([$new_status, $order_id]);
+
+    $stock_deducted = false;
+
+    // Deduct stock only when going TO delivered (and wasn't already delivered)
+    if ($new_status === 'delivered' && $old_status !== 'delivered') {
+        $items_stmt = $pdo->prepare("SELECT product_id, quantity FROM orders_detail WHERE order_id = ?");
+        $items_stmt->execute([$order_id]);
+        $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($items as $item) {
+            $qty = (int)($item['quantity'] ?? 0);
+            $product_id = (int)($item['product_id'] ?? 0);
+            if ($qty > 0 && $product_id > 0) {
+                $pdo->prepare("UPDATE products SET stock = GREATEST(stock - ?, 0) WHERE id = ?")
+                    ->execute([$qty, $product_id]);
+                $stock_deducted = true;
+            }
+        }
+    }
+
+    // Redirect with success message (prevents resubmit warning)
+    $redirect = "view_orders.php?status_updated=1";
+    if ($stock_deducted) {
+        $redirect .= "&stock_deducted=1";
+    }
+    header("Location: $redirect");
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -23,11 +74,7 @@ require_once 'admin_config.php';  // Main database connection for orders/product
         .status.delivered  { background: #c3e6cb; color: #0f5132; }
         .status.cancelled  { background: #f8d7da; color: #721c24; }
         #ordersTable img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
-        
-        .date-time-col {
-            white-space: nowrap;
-            line-height: 1.45;
-        }
+        .date-time-col { white-space: nowrap; line-height: 1.45; }
     </style>
 </head>
 <body>
@@ -40,12 +87,10 @@ require_once 'admin_config.php';  // Main database connection for orders/product
         <li><a href="manage_products.php">Manage Products</a></li>
         <li><a href="view_orders.php" class="active">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
-
         <?php if ($current_admin['role'] === 'super_admin'): ?>
             <li><a href="user_accounts.php">User Accounts</a></li>
             <li><a href="manage_admins.php">Manage Admins</a></li>
         <?php endif; ?>
-
         <li><a href="reports.php">Reports</a></li>
     </ul>
 </nav>
@@ -84,7 +129,7 @@ require_once 'admin_config.php';  // Main database connection for orders/product
                     <th>Items</th>
                     <th>Total</th>
                     <th>Status</th>
-                    <th>Date & Time</th>           <!-- Changed here -->
+                    <th>Date & Time</th>
                     <th>Update Status</th>
                 </tr>
             </thead>
@@ -101,21 +146,27 @@ require_once 'admin_config.php';  // Main database connection for orders/product
                     </tr>
                 <?php else:
                     while ($order = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                        $items = json_decode($order['items'], true) ?: [];
+                        $items_stmt = $pdo->prepare("SELECT * FROM orders_detail WHERE order_id = ?");
+                        $items_stmt->execute([$order['id']]);
+                        $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+
                         $itemText = '';
                         foreach ($items as $item) {
-                            $qty = $item['quantity'] ?? $item['qty'] ?? 1;
-                            $name = htmlspecialchars($item['name'] ?? 'Unknown Item');
+                            $qty = $item['quantity'] ?? 1;
+                            $name = htmlspecialchars($item['product_name'] ?? 'Unknown Item');
                             $itemText .= "<strong>{$qty}×</strong> {$name}<br>";
                         }
 
-                        $statusClass = match($order['status']) {
-                            'pending'     => 'status pending',
-                            'preparing'   => 'status preparing',
-                            'ready'       => 'status ready',
-                            'delivered'   => 'status delivered',
-                            'cancelled'   => 'status cancelled',
-                            default       => 'status'
+                        // === IMPORTANT: Normalize status to lowercase ===
+                        $status = strtolower($order['status'] ?? 'pending');
+
+                        $statusClass = match($status) {
+                            'pending'    => 'status pending',
+                            'preparing'  => 'status preparing',
+                            'ready'      => 'status ready',
+                            'delivered'  => 'status delivered',
+                            'cancelled'  => 'status cancelled',
+                            default      => 'status'
                         };
 
                         $deliveryInfo = "<strong>" . htmlspecialchars($order['customer_name']) . "</strong><br>";
@@ -124,77 +175,36 @@ require_once 'admin_config.php';  // Main database connection for orders/product
                         $deliveryInfo .= "<small><strong>Deliver to:</strong><br>" . nl2br(htmlspecialchars($order['delivery_address'] ?? '')) . "<br>";
                         $deliveryInfo .= htmlspecialchars($order['city'] ?? '') . ", " . htmlspecialchars($order['postcode'] ?? '') . "</small>";
 
-                        // Updated date/time display with spacing
                         $dateTimeDisplay = date('d M Y  H:i', strtotime($order['created_at']));
 
-                        echo "<tr data-status='{$order['status']}'>
-                            <td>#" . sprintf("%04d", $order['id']) . "</td>
-                            <td style='font-size:0.9rem; line-height:1.6;'>$deliveryInfo</td>
-                            <td style='font-size:0.95rem;'>$itemText</td>
-                            <td><strong>RM " . number_format($order['total'], 2) . "</strong></td>
-                            <td><span class='$statusClass'>" . ucfirst($order['status']) . "</span></td>
-                            <td class=\"date-time-col\">$dateTimeDisplay</td>
+                        ?>
+                        <tr data-status="<?= $status ?>">
+                            <td>#<?= sprintf("%04d", $order['id']) ?></td>
+                            <td style="font-size:0.9rem; line-height:1.6;"><?= $deliveryInfo ?></td>
+                            <td style="font-size:0.95rem;"><?= $itemText ?></td>
+                            <td><strong>RM <?= number_format($order['total'], 2) ?></strong></td>
+                            <td><span class="<?= $statusClass ?>"><?= ucfirst($status) ?></span></td>
+                            <td class="date-time-col"><?= $dateTimeDisplay ?></td>
                             <td>
-                                <form method='POST' style='display:inline;'>
-                                    <input type='hidden' name='order_id' value='{$order['id']}'>
-                                    <select name='new_status' onchange='this.form.submit()' class='filter-select' style='padding:0.5rem; font-size:0.9rem; width:130px;'>
-                                        <option value='pending'    " . ($order['status']=='pending' ? 'selected':'') . ">Pending</option>
-                                        <option value='preparing'  " . ($order['status']=='preparing' ? 'selected':'') . ">Preparing</option>
-                                        <option value='ready'      " . ($order['status']=='ready' ? 'selected':'') . ">Ready</option>
-                                        <option value='delivered'  " . ($order['status']=='delivered' ? 'selected':'') . ">Delivered</option>
-                                        <option value='cancelled'  " . ($order['status']=='cancelled' ? 'selected':'') . ">Cancelled</option>
+                                <form method="POST" style="display:inline;">
+                                    <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
+                                    <select name="new_status" onchange="this.form.submit()" class="filter-select" style="padding:0.5rem; font-size:0.9rem; width:130px;">
+                                        <option value="pending"    <?= $status === 'pending'    ? 'selected' : '' ?>>Pending</option>
+                                        <option value="preparing"  <?= $status === 'preparing'  ? 'selected' : '' ?>>Preparing</option>
+                                        <option value="ready"      <?= $status === 'ready'      ? 'selected' : '' ?>>Ready</option>
+                                        <option value="delivered"  <?= $status === 'delivered'  ? 'selected' : '' ?>>Delivered</option>
+                                        <option value="cancelled"  <?= $status === 'cancelled'  ? 'selected' : '' ?>>Cancelled</option>
                                     </select>
                                 </form>
                             </td>
-                        </tr>";
+                        </tr>
+                        <?php
                     }
                 endif; ?>
             </tbody>
         </table>
     </div>
 </main>
-
-<?php
-// Handle Status Update
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
-    $order_id = (int)$_POST['order_id'];
-    $new_status = trim($_POST['new_status']);
-
-    // Validate status
-    $valid_statuses = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
-    if (!in_array($new_status, $valid_statuses)) {
-        die("Invalid status.");
-    }
-
-    // Get old status first
-    $stmt = $pdo->prepare("SELECT status, items FROM orders WHERE id = ?");
-    $stmt->execute([$order_id]);
-    $order_data = $stmt->fetch(PDO::FETCH_ASSOC);
-    $old_status = $order_data['status'] ?? '';
-
-    // Update status
-    $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?")->execute([$new_status, $order_id]);
-
-    $stock_deducted = false;
-
-    // Auto deduct stock ONLY when changing TO "delivered" (and not already delivered)
-    if ($new_status === 'delivered' && $old_status !== 'delivered') {
-        $items = json_decode($order_data['items'], true) ?: [];
-        foreach ($items as $item) {
-            $qty = (int)($item['quantity'] ?? $item['qty'] ?? 0);
-            $product_id = (int)($item['id'] ?? 0);
-            if ($qty > 0 && $product_id > 0) {
-                $pdo->prepare("UPDATE products SET stock = GREATEST(stock - ?, 0) WHERE id = ?")
-                    ->execute([$qty, $product_id]);
-                $stock_deducted = true;
-            }
-        }
-    }
-
-    header("Location: view_orders.php?status_updated=1" . ($stock_deducted ? "&stock_deducted=1" : ""));
-    exit();
-}
-?>
 
 <script>
 function searchTable() {
@@ -209,7 +219,7 @@ function searchTable() {
 function filterStatus(status) {
     const rows = document.querySelectorAll('#ordersTable tbody tr');
     rows.forEach(row => {
-        const rowStatus = row.dataset.status;
+        const rowStatus = row.dataset.status || ''; // safeguard
         row.style.display = (status === '' || rowStatus === status) ? '' : 'none';
     });
 }

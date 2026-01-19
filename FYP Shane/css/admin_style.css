@@ -212,14 +212,14 @@ html, body {
 .input-with-btns input { padding-right: 130px !important; }
 .btn-group {
     position: absolute;
-    right: 10px; top: 50%;
+    right: 8px; top: 50%;
     transform: translateY(-50%);
     display: flex; gap: 10px;
 }
 .step-btn {
-    width: 44px; height: 44px;
+    width: 4px; height: 44px;
     border: none; border-radius: 50%;
-    font-weight: bold; font-size: 1.1rem;
+    font-weight: bold; font-size: 1rem;
     color: white; cursor: pointer;
     transition: all 0.25s;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
@@ -338,7 +338,7 @@ tr:hover { background: #fdfaf5; }
 .stat-card p {
     color: #795548;
     font-size: 1.3rem;
-    font-weight: 600;
+    font-weight: 1000;
 }
 
 /* ============== CONTROLS (Search + Filter) ============== */
@@ -476,5 +476,46 @@ canvas {
 .role-highlight {
     font-weight: bold;
     color: #8B4513;
+}
+
+/* Better aligned date + buttons control bar */
+.controls {
+    max-width: 1100px;
+    margin: 0 auto 2.5rem;
+}
+
+.date-range-group {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+}
+
+.date-input {
+    width: 180px;           /* fixed comfortable width */
+    height: 48px;           /* same height as buttons */
+    padding: 0.9rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 50px;    /* match button radius */
+}
+
+/* Make Filter button same height/style as Export */
+.filter-btn {
+    padding: 0.9rem 2rem !important;
+    font-size: 1.05rem;
+    min-width: 120px;
+}
+
+.export-btn {
+    padding: 0.9rem 1.8rem !important;
+    font-size: 1.05rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Optional: make buttons feel more connected */
+.date-range-group .add-btn {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.18);
 }
 }
