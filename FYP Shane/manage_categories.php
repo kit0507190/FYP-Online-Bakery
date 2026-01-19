@@ -2,21 +2,22 @@
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin
 require_once 'admin_config.php';  // For PDO connection
 
+// Messages
+$success = $error = '';
+
 // Handle adding new category
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
     $name = cleanAdminInput($_POST['name']);
     if (!empty($name)) {
         $stmt = $pdo->prepare("INSERT INTO categories (name) VALUES (?)");
         if ($stmt->execute([$name])) {
-            $_SESSION['success'] = "Category added successfully!";
+            $success = "Category added successfully!";
         } else {
-            $_SESSION['error'] = "Failed to add category.";
+            $error = "Failed to add category.";
         }
     } else {
-        $_SESSION['error'] = "Category name is required.";
+        $error = "Category name is required.";
     }
-    header("Location: manage_categories.php");
-    exit();
 }
 
 // Handle adding new subcategory
@@ -26,15 +27,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_subcategory'])) {
     if ($category_id > 0 && !empty($name)) {
         $stmt = $pdo->prepare("INSERT INTO subcategories (category_id, name) VALUES (?, ?)");
         if ($stmt->execute([$category_id, $name])) {
-            $_SESSION['success'] = "Subcategory added successfully!";
+            $success = "Subcategory added successfully!";
         } else {
-            $_SESSION['error'] = "Failed to add subcategory.";
+            $error = "Failed to add subcategory.";
         }
     } else {
-        $_SESSION['error'] = "Please select a category and enter a name.";
+        $error = "Please select a category and enter a name.";
     }
-    header("Location: manage_categories.php");
-    exit();
+}
+
+// Handle EDIT category
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_category'])) {
+    $id = (int)$_POST['id'];
+    $name = cleanAdminInput($_POST['name']);
+    if ($id > 0 && !empty($name)) {
+        $stmt = $pdo->prepare("UPDATE categories SET name = ? WHERE id = ?");
+        if ($stmt->execute([$name, $id])) {
+            $success = "Category updated successfully!";
+        } else {
+            $error = "Failed to update category.";
+        }
+    } else {
+        $error = "Invalid category name.";
+    }
+}
+
+// Handle EDIT subcategory
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_subcategory'])) {
+    $id = (int)$_POST['id'];
+    $name = cleanAdminInput($_POST['name']);
+    if ($id > 0 && !empty($name)) {
+        $stmt = $pdo->prepare("UPDATE subcategories SET name = ? WHERE id = ?");
+        if ($stmt->execute([$name, $id])) {
+            $success = "Subcategory updated successfully!";
+        } else {
+            $error = "Failed to update subcategory.";
+        }
+    } else {
+        $error = "Invalid subcategory name.";
+    }
+}
+
+// Handle DELETE category (only if no subcategories)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category'])) {
+    $id = (int)$_POST['id'];
+    if ($id > 0) {
+        // Check if it has subcategories
+        $check = $pdo->prepare("SELECT COUNT(*) FROM subcategories WHERE category_id = ?");
+        $check->execute([$id]);
+        if ($check->fetchColumn() > 0) {
+            $error = "Cannot delete category: It still has subcategories.";
+        } else {
+            $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ?");
+            if ($stmt->execute([$id])) {
+                $success = "Category deleted successfully!";
+            } else {
+                $error = "Failed to delete category.";
+            }
+        }
+    }
+}
+
+// Handle DELETE subcategory
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_subcategory'])) {
+    $id = (int)$_POST['id'];
+    if ($id > 0) {
+        $stmt = $pdo->prepare("DELETE FROM subcategories WHERE id = ?");
+        if ($stmt->execute([$id])) {
+            $success = "Subcategory deleted successfully!";
+        } else {
+            $error = "Failed to delete subcategory.";
+        }
+    }
 }
 
 // Fetch all categories and subcategories
@@ -52,6 +116,7 @@ foreach ($pdo->query("SELECT * FROM subcategories ORDER BY name ASC") as $sub) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Categories - BakeryHouse</title>
     <link rel="stylesheet" href="css/admin_style.css">
+    <link rel="stylesheet" href="css/manage_categories.css">
 </head>
 <body>
 
@@ -73,23 +138,19 @@ foreach ($pdo->query("SELECT * FROM subcategories ORDER BY name ASC") as $sub) {
     </ul>
 </nav>
 
-<main class="main">
-    
+<main class="main manage-categories">
+    <h1 class="page-title">Manage Categories & Subcategories</h1>
 
-    <h1 style="margin-bottom: 2rem;">Manage Categories & Subcategories</h1>
-
-    <?php if (isset($_SESSION['success'])): ?>
-        <div style="background: #DFF0D8; color: #3C763D; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
-            <?= $_SESSION['success'] ?>
+    <?php if ($success): ?>
+        <div class="alert success" style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+            <?= htmlspecialchars($success) ?>
         </div>
-        <?php unset($_SESSION['success']); ?>
     <?php endif; ?>
 
-    <?php if (isset($_SESSION['error'])): ?>
-        <div style="background: #F2DEDE; color: #A94442; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
-            <?= $_SESSION['error'] ?>
+    <?php if ($error): ?>
+        <div class="alert error" style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+            <?= htmlspecialchars($error) ?>
         </div>
-        <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
     <!-- Add Category Form -->
@@ -98,8 +159,8 @@ foreach ($pdo->query("SELECT * FROM subcategories ORDER BY name ASC") as $sub) {
         <form method="POST">
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="name">Category Name</label>
-                    <input type="text" id="name" name="name" required>
+                    <label for="cat_name">Category Name</label>
+                    <input type="text" id="cat_name" name="name" required placeholder="e.g. Cake, Bread, Pastry">
                 </div>
             </div>
             <button type="submit" name="add_category" class="add-btn">Add Category</button>
@@ -121,8 +182,8 @@ foreach ($pdo->query("SELECT * FROM subcategories ORDER BY name ASC") as $sub) {
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="name">Subcategory Name</label>
-                    <input type="text" id="name" name="name" required>
+                    <label for="sub_name">Subcategory Name</label>
+                    <input type="text" id="sub_name" name="name" required placeholder="e.g. Cheese Flavour, Croissants">
                 </div>
             </div>
             <button type="submit" name="add_subcategory" class="add-btn">Add Subcategory</button>
@@ -132,40 +193,110 @@ foreach ($pdo->query("SELECT * FROM subcategories ORDER BY name ASC") as $sub) {
     <!-- List Categories and Subcategories -->
     <div class="table-card">
         <h2>Existing Categories & Subcategories</h2>
-        <table style="width:100%;">
+        <table>
             <thead>
                 <tr>
-                    <th>Category</th>
-                    <th>Subcategories</th>
+                    <th>Name</th>
+                    <th>Type</th>
                     <th>Created At</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php if (empty($categories)): ?>
-                    <tr><td colspan="3" style="text-align:center; padding:2rem; color:#999;">No categories yet.</td></tr>
+                    <tr>
+                        <td colspan="4" style="text-align:center; padding:3rem; color:#999;">
+                            No categories yet. Add one above!
+                        </td>
+                    </tr>
                 <?php else: ?>
                     <?php foreach ($categories as $cat): ?>
+                        <!-- Category Row -->
                         <tr>
                             <td><?= htmlspecialchars($cat['name']) ?></td>
-                            <td>
-                                <?php if (isset($subcategories[$cat['id']])): ?>
-                                    <ul style="list-style-type: disc; padding-left: 20px;">
-                                        <?php foreach ($subcategories[$cat['id']] as $sub): ?>
-                                            <li><?= htmlspecialchars($sub['name']) ?></li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                <?php else: ?>
-                                    No subcategories
-                                <?php endif; ?>
-                            </td>
+                            <td><strong>Category</strong></td>
                             <td><?= date('d M Y H:i', strtotime($cat['created_at'])) ?></td>
+                            <td class="actions">
+                                <button class="edit-btn" onclick="showEditForm('cat-<?= $cat['id'] ?>')">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this category?\n\n(Only possible if it has no subcategories)');">
+                                    <input type="hidden" name="id" value="<?= $cat['id'] ?>">
+                                    <button type="submit" name="delete_category" class="delete-btn">
+                                        <i class="fas fa-trash-alt"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
+
+                        <!-- Edit Form Row -->
+                        <tr id="cat-<?= $cat['id'] ?>" class="edit-row" style="display:none;">
+                            <td colspan="4">
+                                <form method="POST" class="edit-form">
+                                    <input type="hidden" name="id" value="<?= $cat['id'] ?>">
+                                    <input type="text" name="name" value="<?= htmlspecialchars($cat['name']) ?>" required>
+                                    <button type="submit" name="edit_category" class="save-btn">
+                                        <i class="fas fa-save"></i> Save
+                                    </button>
+                                    <button type="button" onclick="hideEditForm('cat-<?= $cat['id'] ?>')" class="cancel-btn">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- Subcategories -->
+                        <?php if (isset($subcategories[$cat['id']])): ?>
+                            <?php foreach ($subcategories[$cat['id']] as $sub): ?>
+                                <tr>
+                                    <td class="subcategory">↳ <?= htmlspecialchars($sub['name']) ?></td>
+                                    <td>Subcategory</td>
+                                    <td><?= date('d M Y H:i', strtotime($sub['created_at'])) ?></td>
+                                    <td class="actions">
+                                        <button class="edit-btn" onclick="showEditForm('sub-<?= $sub['id'] ?>')">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this subcategory?');">
+                                            <input type="hidden" name="id" value="<?= $sub['id'] ?>">
+                                            <button type="submit" name="delete_subcategory" class="delete-btn">
+                                                <i class="fas fa-trash-alt"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                                <!-- Edit Form Row for Subcategory -->
+                                <tr id="sub-<?= $sub['id'] ?>" class="edit-row" style="display:none;">
+                                    <td colspan="4">
+                                        <form method="POST" class="edit-form">
+                                            <input type="hidden" name="id" value="<?= $sub['id'] ?>">
+                                            <input type="text" name="name" value="<?= htmlspecialchars($sub['name']) ?>" required>
+                                            <button type="submit" name="edit_subcategory" class="save-btn">
+                                                <i class="fas fa-save"></i> Save
+                                            </button>
+                                            <button type="button" onclick="hideEditForm('sub-<?= $sub['id'] ?>')" class="cancel-btn">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </tbody>
         </table>
     </div>
 </main>
+
+<script>
+function showEditForm(id) {
+    document.getElementById(id).style.display = 'table-row';
+}
+function hideEditForm(id) {
+    document.getElementById(id).style.display = 'none';
+}
+</script>
 
 </body>
 </html>

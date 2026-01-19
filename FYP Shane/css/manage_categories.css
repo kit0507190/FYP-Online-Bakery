@@ -1,0 +1,202 @@
+/* css/manage_categories.css */
+/* Page-specific styles for manage_categories.php */
+
+/* === Forms === */
+.manage-categories .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.manage-categories .form-group label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    color: #5a3921;
+    font-size: 1.05rem;
+}
+
+.manage-categories .form-group input[type="text"],
+.manage-categories .form-group select {
+    width: 100%;                    /* Full width */
+    padding: 0.9rem 1.2rem;
+    border: 2px solid #d2b48c;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #fffdf7;
+    transition: border-color 0.3s ease;
+}
+
+.manage-categories .form-group input[type="text"]:focus,
+.manage-categories .form-group select:focus {
+    outline: none;
+    border-color: #8B4513;
+    box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.15);
+}
+
+.manage-categories .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+/* Add buttons */
+.manage-categories .add-btn {
+    background: #8B4513;
+    color: white;
+    border: none;
+    padding: 0.9rem 2rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+    width: 100%;
+    max-width: 300px;
+    margin: 1rem auto 0;
+    display: block;
+}
+
+.manage-categories .add-btn:hover {
+    background: #A0522D;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139, 69, 19, 0.4);
+}
+
+/* === Table Styling === */
+.table-card table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.table-card thead th {
+    background: #8B4513;
+    color: white;
+    padding: 1rem 1.2rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1.05rem;
+    border-bottom: 3px solid #A0522D;
+}
+
+.table-card tbody tr {
+    transition: background 0.2s ease;
+}
+
+.table-card tbody tr:nth-child(even) {
+    background-color: #fffdf7;
+}
+
+.table-card tbody tr:hover {
+    background-color: #f5e8d3;
+}
+
+.table-card td {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #e8d5b7;
+    vertical-align: middle;
+}
+
+.table-card tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Actions column */
+.table-card .actions {
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Buttons in table */
+.table-card .edit-btn,
+.table-card .delete-btn,
+.table-card .save-btn,
+.table-card .cancel-btn {
+    padding: 0.55rem 1.1rem;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 4px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* space between icon and text */
+}
+
+.table-card .edit-btn {
+    background: #ffc107;
+    color: #333;
+}
+
+.table-card .edit-btn:hover {
+    background: #e0a800;
+}
+
+.table-card .delete-btn {
+    background: #dc3545 !important;   /* Force red */
+    color: white !important;
+}
+
+.table-card .delete-btn:hover {
+    background: #c82333 !important;
+    transform: translateY(-1px);
+}
+
+.table-card .save-btn {
+    background: #28a745;
+    color: white;
+}
+
+.table-card .save-btn:hover {
+    background: #218838;
+}
+
+.table-card .cancel-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.table-card .cancel-btn:hover {
+    background: #5a6268;
+}
+
+/* Edit form row */
+.table-card tr.edit-row td {
+    background: #fffdf7;
+    padding: 1.2rem;
+}
+
+.table-card .edit-form {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.table-card .edit-form input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.6rem 1rem;
+    border: 2px solid #d2b48c;
+    border-radius: 8px;
+}
+
+/* Subcategory styling */
+.table-card td.subcategory {
+    padding-left: 50px !important;
+    font-style: italic;
+    color: #5a3921;
+}
+
+/* No data message */
+.table-card td[colspan="4"] {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #777;
+    font-size: 1.1rem;
+}
