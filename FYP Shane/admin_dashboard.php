@@ -51,23 +51,23 @@ require_once 'admin_auth.php';  // Secure auth + loads $current_admin
     $lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10 AND stock > 0")->fetchColumn();
     ?>
 
-    <div class="stats-grid">
-    <div class="stat-card">
+    <div class="dashboard-stats-grid">
+    <div class="dashboard-stat-card <?= $lowStock > 0 ? 'low-stock' : '' ?>">
         <p>Today's Sales</p>
         <h3>RM <?= number_format($todaySales, 2) ?></h3>
     </div>
 
-    <div class="stat-card">
+    <div class="dashboard-stat-card">
         <p>Orders Today</p>
         <h3><?= number_format($todayOrders) ?></h3>
     </div>
 
-    <div class="stat-card">
+    <div class="dashboard-stat-card">
         <p>Pending Orders</p>
         <h3><?= number_format($pendingOrders) ?></h3>
     </div>
 
-    <div class="stat-card <?= $lowStock > 0 ? 'low-stock' : '' ?>">
+    <div class="dashboard-stat-card <?= $lowStock > 0 ? 'low-stock' : '' ?>">
         <p>Low Stock Items</p>
         <h3><?= number_format($lowStock) ?></h3>
     </div>

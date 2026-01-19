@@ -157,6 +157,7 @@ html, body {
 .form-card, .table-card, .stat-card, .orders-card {
     width: 100%;
     max-width: 1100px;
+    
     margin: 0 auto 3rem;
     background: #fff;
     padding: 3rem;
@@ -170,6 +171,20 @@ html, body {
     margin-bottom: 2rem;
     font-weight: bold;
 }
+
+.stat-card h3 {
+    word-break: normal !important;          /* ← Key fix: prevent breaking inside words */
+    overflow-wrap: normal !important;       /* or use: normal / anywhere / break-word */
+    hyphens: none !important;               /* disables automatic hyphenation */
+    white-space: normal;                    /* allow normal wrapping between words */
+}
+
+/* Optional: Make sure very long words still don't overflow the card */
+.stat-card {
+    word-wrap: break-word;                  /* fallback for extremely long unbreakable words */
+    overflow-wrap: break-word;
+}
+
 
 /* ============== FORMS ============== */
 .form-grid {
@@ -298,7 +313,75 @@ tr:hover { background: #fdfaf5; }
 }
 .view-btn:hover { background: #A0522D; }
 
-/* ============== DASHBOARD STATS ============== */
+/* =============================================
+   DASHBOARD-SPECIFIC STAT CARDS
+   ============================================= */
+
+.dashboard-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    gap: 2.2rem;
+    max-width: 1100px;
+    margin: 0 auto 4rem;
+}
+
+.dashboard-stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.2rem 1.8rem;
+    text-align: center;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-stat-card:hover {
+    transform: translateY(-14px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.22);
+}
+
+/* Optional: subtle gradient background on hover */
+.dashboard-stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, rgba(139,69,19,0.06), rgba(210,105,30,0.04));
+    opacity: 0;
+    transition: opacity 0.4s;
+    z-index: -1;
+}
+
+.dashboard-stat-card:hover::before {
+    opacity: 1;
+}
+
+.dashboard-stat-card p {
+    color: #795548;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.dashboard-stat-card h3 {
+    font-size: 3.2rem;
+    font-weight: 900;
+    color: #5D4037;
+    margin: 0;
+    line-height: 1;
+}
+
+/* Low stock highlight */
+.dashboard-stat-card.low-stock {
+    background: linear-gradient(135deg, #fff5f5, #ffebee);
+    border: 2px solid #ff6b6b;
+}
+
+.dashboard-stat-card.low-stock h3 {
+    color: #c0392b;
+}
+
+/* ============== report STATS ============== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
@@ -330,7 +413,7 @@ tr:hover { background: #fdfaf5; }
 .stat-card:nth-child(3) .stat-icon { color: #27AE60; }
 .stat-card:nth-child(4) .stat-icon { color: #8B4513; }
 .stat-card h3 {
-    font-size: 3.4rem;
+    font-size: 3rem;
     color: #5D4037;
     margin: 0.8rem 0;
     font-weight: 900;
@@ -339,6 +422,68 @@ tr:hover { background: #fdfaf5; }
     color: #795548;
     font-size: 1.3rem;
     font-weight: 1000;
+}
+
+/* =============================================
+   Reports-specific Stat Cards - Auto-adjust for large numbers
+   ============================================= */
+
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.2rem 1.8rem;
+    text-align: center;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 220px;           /* Prevent squashing when number is long */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Make the number area flexible */
+.stat-card h3 {
+    font-size: clamp(2.2rem, 6vw, 2.8rem);   /* Auto-scales between 2.2rem and 3.2rem */
+    font-weight: 900;
+    color: #5D4037;
+    margin: 0.6rem 0 0.4rem;
+    line-height: 1.1;
+    word-break: break-all;                   /* Break very long numbers */
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Optional: Fallback for extremely large numbers */
+.stat-card h3.big-number {
+    font-size: clamp(1.8rem, 5vw, 2.6rem);   /* Smaller if really huge */
+}
+
+/* Make sure the icon doesn't get pushed out */
+.stat-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.2rem;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* Extra safety for mobile */
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 1.8rem 1.4rem;
+        min-height: 200px;
+    }
+    
+    .stat-card h3 {
+        font-size: clamp(2rem, 7vw, 2.8rem);
+    }
 }
 
 /* ============== CONTROLS (Search + Filter) ============== */
@@ -479,7 +624,7 @@ canvas {
 }
 
 /* Better aligned date + buttons control bar */
-.controls {
+.controls.date-range-controls {
     max-width: 1100px;
     margin: 0 auto 2.5rem;
 }
@@ -488,30 +633,43 @@ canvas {
     display: flex;
     align-items: center;
     gap: 1.2rem;
-    flex-wrap: wrap;
+    flex-wrap: wrap;          /* allows wrapping on very narrow screens */
 }
 
 .date-input {
-    width: 180px;           /* fixed comfortable width */
-    height: 48px;           /* same height as buttons */
+    width: 180px;
+    height: 48px;
     padding: 0.9rem 1.2rem;
     font-size: 1rem;
-    border-radius: 50px;    /* match button radius */
+    border: 2px solid #e8e8e8;
+    border-radius: 50px;
+    background: white;
 }
 
-/* Make Filter button same height/style as Export */
-.filter-btn {
-    padding: 0.9rem 2rem !important;
-    font-size: 1.05rem;
-    min-width: 120px;
+.date-separator {
+    color: #8B4513;
+    font-weight: 600;
+    font-size: 1.1rem;
+    white-space: nowrap;
 }
 
-.export-btn {
-    padding: 0.9rem 1.8rem !important;
+.filter-btn, .export-btn {
+    height: 48px;
+    padding: 0 1.8rem;
     font-size: 1.05rem;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.6rem;
+    border-radius: 50px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.18);
+    text-decoration: none;
+    color: white;
+}
+
+/* Optional: hover effect for better UX */
+.filter-btn:hover, .export-btn:hover {
+    opacity: 0.9;
 }
 
 /* Optional: make buttons feel more connected */
