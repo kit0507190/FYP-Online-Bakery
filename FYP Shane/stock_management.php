@@ -71,9 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
         <?php if ($current_admin['role'] === 'super_admin'): ?>
             <li><a href="user_accounts.php">User Accounts</a></li>
             <li><a href="manage_admins.php">Manage Admins</a></li>
+            <li><a href="reports.php">Reports</a></li>
         <?php endif; ?>
-
-        <li><a href="reports.php">Reports</a></li>
     </ul>
 </nav>
 

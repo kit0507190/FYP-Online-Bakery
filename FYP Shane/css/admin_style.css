@@ -232,7 +232,7 @@ html, body {
     display: flex; gap: 10px;
 }
 .step-btn {
-    width: 4px; height: 44px;
+    width: 45px; height: 44px;
     border: none; border-radius: 50%;
     font-weight: bold; font-size: 1rem;
     color: white; cursor: pointer;
