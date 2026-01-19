@@ -156,6 +156,7 @@ if (isset($_GET['delete'])) {
     <ul>
         <li><a href="admin_dashboard.php">Dashboard</a></li>
         <li><a href="manage_products.php" class="active">Manage Products</a></li>
+        <li><a href="manage_categories.php">Manage Categories</a></li>
         <li><a href="view_orders.php">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
 

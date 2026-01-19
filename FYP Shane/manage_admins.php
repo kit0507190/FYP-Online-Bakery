@@ -126,6 +126,7 @@ $admins = $pdo->query("SELECT * FROM admins ORDER BY status ASC, created_at DESC
     <ul>
         <li><a href="admin_dashboard.php">Dashboard</a></li>
         <li><a href="manage_products.php">Manage Products</a></li>
+        <li><a href="manage_categories.php">Manage Categories</a></li>
         <li><a href="view_orders.php">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
         <li><a href="user_accounts.php">User Accounts</a></li>

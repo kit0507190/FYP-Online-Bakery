@@ -85,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     <ul>
         <li><a href="admin_dashboard.php">Dashboard</a></li>
         <li><a href="manage_products.php">Manage Products</a></li>
+        <li><a href="manage_categories.php">Manage Categories</a></li>
         <li><a href="view_orders.php" class="active">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
         <?php if ($current_admin['role'] === 'super_admin'): ?>

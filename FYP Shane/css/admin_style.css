@@ -135,6 +135,19 @@ html, body {
     transform: translateX(8px);
 }
 
+
+/* Hide scrollbar but keep scrollable */
+.sidebar {
+    overflow-y: scroll;  /* Changed from auto to scroll to always enable scrolling */
+    scrollbar-width: none;  /* For Firefox: hides scrollbar */
+    -ms-overflow-style: none;  /* For Internet Explorer/Edge: hides scrollbar */
+}
+
+/* For Chrome, Safari, and Opera: hides scrollbar */
+.sidebar::-webkit-scrollbar {
+    display: none;
+}
+
 /* ============== MAIN LAYOUT ============== */
 .main {
     margin-left: 200px;

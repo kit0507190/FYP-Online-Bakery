@@ -19,6 +19,7 @@ require_once 'admin_auth.php';  // Secure auth + loads $current_admin
     <ul>
         <li><a href="admin_dashboard.php" class="active">Dashboard</a></li>
         <li><a href="manage_products.php">Manage Products</a></li>
+        <li><a href="manage_categories.php">Manage Categories</a></li>
         <li><a href="view_orders.php">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
 
