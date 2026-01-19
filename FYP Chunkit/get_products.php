@@ -42,6 +42,7 @@ if ($result && $result->num_rows > 0) {
             "allergens" => $row['allergens'],
             "rating" => (float)$row['rating'],
             "reviewCount" => (int)$row['review_count'],
+            "soldCount" => (int)$row['sold_count'], // 👈 新增：销量
             "tags" => !empty($row['tags']) ? explode(',', $row['tags']) : [],
             "shortSize" => $row['size_info'] // 映射 size_info 为前端用的 size
         ];

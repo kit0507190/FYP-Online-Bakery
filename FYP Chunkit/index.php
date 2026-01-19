@@ -28,28 +28,24 @@ session_start();
     </section>
 
     <section class="section" id="categories">
-        <div class="container">
-            <h2 class="section-title">Shop by Categories</h2>
-            <div class="categories-grid">
-                <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
-                    <img src="cake/Baby_Pandaa.jpg" alt="Cakes" class="category-image">
-                    <div class="category-name">Cakes</div>
-                </div>
-                <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
-                    <img src="bread/Sweet Bread/Alsatian Kugelhopf Sweet Bread.webp" alt="Bread" class="category-image">
-                    <div class="category-name">Bread</div>
-                </div>
-                <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
-                    <img src="pastries/Puff Pastry/Mascarpone Puff Pastry.jpg" alt="Pastries" class="category-image">
-                    <div class="category-name">Pastries</div>
-                </div>
-                <div class="category-card" onclick="window.location.href='menu.php?category=cookie'">
-                    <img src="cookies/Butter Cookies/Chocolate Butter Swirl Cookies.jpg" alt="Cookies" class="category-image">
-                    <div class="category-name">Cookies</div>
-                </div>
+    <div class="container">
+        <h2 class="section-title">Shop by Categories</h2>
+        <div class="categories-grid">
+            <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
+                <img src="cake/Baby_Pandaa.jpg" alt="Cakes" class="category-image">
+                <div class="category-name">Cakes</div>
+            </div>
+            <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
+                <img src="bread/Sweet Bread/Alsatian Kugelhopf Sweet Bread.webp" alt="Bread" class="category-image">
+                <div class="category-name">Bread</div>
+            </div>
+            <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
+                <img src="pastries/Puff Pastry/Mascarpone Puff Pastry.jpg" alt="Pastries" class="category-image">
+                <div class="category-name">Pastries</div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section class="section" id="featured">
         <div class="container">
@@ -59,19 +55,20 @@ session_start();
     </section>
 
     <section class="section" id="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="About BakeryHouse">
-                </div>
-                <div class="about-text">
-                    <h3>Our Story</h3>
-                    <p>BakeryHouse was founded with a simple mission: to bring the finest artisan baked goods to our community. Our passion for baking drives us to create delicious, high-quality products using only the best ingredients.</p>
-                    <p>Every item in our bakery is crafted with care. We believe that great food brings people together and creates lasting memories.</p>
-                </div>
+    <div class="container">
+        <div class="about-content">
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&h=1000&auto=format&fit=crop" alt="BakeryHouse Story">
+            </div>
+            <div class="about-text">
+                <h3>Our Story</h3>
+                <p>BakeryHouse was founded with a simple mission: to bring the finest artisan baked goods to our community. Our passion for baking drives us to create delicious, high-quality products using only the best ingredients.</p>
+                <p>Every item in our bakery is crafted with care. We believe that great food brings people together and creates lasting memories.</p>
+                <p>Visit us today and taste the difference that passion and quality ingredients make!</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section class="section testimonials" id="testimonials">
         <div class="container">

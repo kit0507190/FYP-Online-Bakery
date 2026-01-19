@@ -19,7 +19,7 @@ session_start();
 
     <?php include 'header.php'; ?>
 
-    <section class="hero about-hero">
+    <section class="hero about-hero" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1517433670267-08bbd4be890f?q=80&w=2000&auto=format&fit=crop');">
         <div class="hero-content">
             <h1 id="heroTitle">Our Story</h1>
             <p id="heroSubtitle">Discover the passion behind BakeryHouse</p>
@@ -28,21 +28,20 @@ session_start();
     </section>
 
     <section class="section" id="about">
-        <div class="container">
-            <h2 class="section-title">Our Journey</h2>
-            <div class="about-content">
-                <div class="about-image">
-                    <img src="https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60" alt="About BakeryHouse">
-                </div>
-                <div class="about-text">
-                    <h3>From Humble Beginnings</h3>
-                    <p>BakeryHouse was founded in 2010 by Lim See Yuan Shane, Wong Chun Kit and Lim Jun Yan with a simple mission: to bring the finest artisan baked goods to our community. What started as a small neighborhood bakery has grown into a beloved local institution.</p>
-                    <p>Our passion for baking drives us to create delicious, high-quality products using only the best ingredients. We believe that great food brings people together and creates lasting memories.</p>
-                    <p>Every item in our bakery is crafted with care, from our signature sourdough bread to our decadent cakes and pastries. We source our ingredients locally whenever possible and never use artificial preservatives.</p>
-                </div>
+    <div class="container">
+        <div class="about-content">
+            <div class="about-image">
+                <img src="https://images.unsplash.com/photo-1555507036-ab1f4038808a?q=80&w=1200&auto=format&fit=crop" alt="BakeryHouse Story">
+            </div>
+            <div class="about-text">
+                <h3>Our Journey</h3>
+                <p>BakeryHouse was founded in 2010 by Lim See Yuan Shane, Wong Chun Kit and Lim Jun Yan with a simple mission: to bring the finest artisan baked goods to our community. What started as a small neighborhood bakery has grown into a beloved local institution.</p>
+                <p>Our passion for baking drives us to create delicious, high-quality products using only the best ingredients. We believe that great food brings people together and creates lasting memories.</p>
+                <p>Every item in our bakery is crafted with care, from our signature sourdough bread to our decadent cakes and pastries.</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <section class="section" id="values">
         <div class="container">

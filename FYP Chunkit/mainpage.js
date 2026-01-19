@@ -79,20 +79,20 @@ document.addEventListener('DOMContentLoaded', () => {
  * 加载产品数据引擎
  */
 function loadFeaturedProducts() {
-    // 虚拟产品数据库
-    const products = [
-        { id: 1, name: "DOUBLE OREO TEMPTATION", price: 128.00, image: "cake/Festival/Red Velvet 3D Christmas Tree Cake.jpg" },
-        { id: 2, name: "Cherry Cream Cheese Danish", price: 13.20, image: "pastries/Danish Pastries/Cherry Cream Cheese Danish.jpg" },
-        { id: 3, name: "Crusty Artisan Bread", price: 12.50, image: "bread/Artisan Bread/Crusty Artisan Bread.webp" },
-        { id: 4, name: "Classic Lemon Glazed Loaf", price: 13.50, image: "bread/Sweet Bread/Starbucks Lemon Loaf.jpg" }
+    // 1. 更新产品数据：添加分类、子分类，并确保 ID 与数据库 SQL 文件一致
+    const products = [ 
+        { id: 1, name: "A LITTLE SWEET", price: 98.00, image: "cake/A_Little_Sweet.jpg", cat: "cake", sub: "5 inch" },
+        { id: 264, name: "Cherry Cream Cheese Danish", price: 13.20, image: "pastries/Danish Pastries/Cherry Cream Cheese Danish.jpg", cat: "pastry", sub: "danish" },
+        { id: 233, name: "Crusty Artisan Bread", price: 12.50, image: "bread/Artisan Bread/Crusty Artisan Bread.webp", cat: "bread", sub: "artisan" },
+        { id: 243, name: "Classic Lemon Glazed Loaf", price: 13.50, image: "bread/Sweet Bread/Starbucks Lemon Loaf.jpg", cat: "bread", sub: "sweet" }
     ];
 
     const container = document.getElementById('featuredProducts');
     if (!container) return;
 
-    // 动态拼接 HTML 字符串并注入容器
+    // 2. 动态生成跳转链接，带上 category, subcategory 和特定的 open_id
     container.innerHTML = products.map(p => `
-        <div class="product-card" onclick="sessionStorage.setItem('currentProduct', ${p.id}); window.location.href='product-details.html'">
+        <div class="product-card" onclick="window.location.href='menu.php?category=${p.cat}&subcategory=${encodeURIComponent(p.sub)}&open_id=${p.id}'">
             <img src="${p.image}" alt="${p.name}" class="product-image">
             <div class="product-info">
                 <h3 class="product-name">${p.name}</h3>

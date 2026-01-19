@@ -32,51 +32,133 @@ body {
 }
 
 /* ============================================================
-   2. HERO SECTION (带背景图遮罩)
+   2. HERO SECTION (完全同步 Mainpage 效果)
    ============================================================ */
 .hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)),
-        url('https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    /* 全屏高度：屏幕高度减去 header 高度 */
+    height: calc(100vh - 85px); 
+    min-height: 500px;
+    
+    /* 背景图设置 */
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
-    color: white;
+    
+    /* 🚀 关键修改：去掉之前的 fixed，确保图片随页面滚动 */
+    background-attachment: scroll; 
+    
+    /* 居中文字布局 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    padding: 180px 0 100px;
+    color: white;
+    width: 100%;
 }
 
-.hero h1 {
-    font-size: 48px;
+.hero-content {
+    max-width: 800px;
+    padding: 0 20px;
+    z-index: 2;
+}
+
+#heroTitle {
+    font-size: 4rem; 
     margin-bottom: 20px;
+    /* 初始动画状态 */
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.8s ease;
 }
 
-.hero p {
-    font-size: 24px;
+#heroSubtitle {
+    font-size: 1.5rem;
     margin-bottom: 30px;
     opacity: 0;
     transform: translateY(30px);
-    transition: all 0.8s ease 0.2s;
 }
 
-.hero-btn {
-    background-color: var(--accent-color);
+/* ============================================================
+   2. HERO SECTION (已调亮遮罩，同步 Mainpage 效果)
+   ============================================================ */
+.hero {
+    /* 全屏高度：屏幕高度减去 header 高度 */
+    height: calc(100vh - 85px); 
+    min-height: 500px;
+    
+    /* 🚀 修改点：将原来的 0.5 改成了 0.2，图片立刻变亮 */
+    background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+                url('https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    
+    /* 确保图片随页面滚动 */
+    background-attachment: scroll;
+    
+    /* 居中文字布局 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     color: white;
-    border: none;
+    width: 100%;
+}
+
+.hero-content {
+    max-width: 800px;
+    padding: 0 20px;
+    z-index: 2;
+}
+
+#heroTitle {
+    font-size: 4rem; 
+    margin-bottom: 20px;
+    /* 初始动画状态 */
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+#heroSubtitle {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+/* ============================================================
+   英雄区按钮样式 (按照你的要求保留并同步)
+   ============================================================ */
+.hero-btn {
+    background-color: var(--accent-color); /* 使用金色变量 #d4a76a */
+    color: white;
     padding: 12px 30px;
+    border: none;
     border-radius: 5px;
     font-size: 18px;
     font-weight: 600;
     cursor: pointer;
+    text-decoration: none;
+    
+    /* 🚀 核心 1：添加过渡效果 */
+    transition: all 0.3s ease;
+    
+    /* 🚀 核心 2：动画初始状态 */
     opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s ease 0.4s;
+    transform: translateY(20px);
+    display: inline-block; 
 }
 
+/* 🚀 核心 3：鼠标悬停效果 (放大 + 变色) */
 .hero-btn:hover {
-    background-color: #c2955a;
+    background-color: #c49659; /* 稍微深一点的金色 */
+    transform: scale(1.05) translateY(-2px); /* 向上浮动并放大 */
+    box-shadow: 0 5px 15px rgba(212, 167, 106, 0.4); /* 增加金色发光阴影 */
+}
+
+/* 🚀 核心 4：配合 about_us.js 的动画类 */
+.hero-btn.fade-in {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 /* ============================================================
@@ -115,36 +197,69 @@ body {
 }
 
 /* ============================================================
-   4. ABOUT, VALUES & TEAM CARDS
+   ABOUT SECTION - 最终强制填充方案
    ============================================================ */
-/* Story */
-.about-content {
-    display: flex;
-    align-items: center;
-    gap: 40px;
+#about .about-content {
+    display: flex !important;
+    /* 🚀 关键：强制左右两列高度完全一致 */
+    align-items: stretch !important; 
+    gap: 60px;
     margin-bottom: 60px;
 }
 
-.about-image {
-    flex: 1;
-    border-radius: 10px;
+#about .about-image {
+    flex: 1.2 !important;
+    /* 🚀 设定一个最小高度，确保图片足够大气 */
+    min-height: 520px !important; 
+    border-radius: 12px;
     overflow: hidden;
-    opacity: 0;
-    transform: translateX(-50px);
-    transition: 0.8s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    /* 确保容器本身也是 flex，方便图片填满 */
+    display: flex !important;
 }
 
-.about-image img {
-    width: 100%;
-    height: auto;
-    display: block;
+#about .about-image img {
+    width: 100% !important;
+    /* 🚀 核心：强制图片高度撑满父容器 */
+    height: 100% !important;
+    /* 🚀 核心：自动裁剪，确保图片不变形且填满上下 */
+    object-fit: cover !important;
+    display: block !important;
 }
 
-.about-text {
-    flex: 1;
-    opacity: 0;
-    transform: translateX(50px);
-    transition: 0.8s 0.2s;
+#about .about-text {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    /* 让文字在垂直方向上居中，对齐图片中心 */
+    justify-content: center !important;
+}
+
+/* 文字格式优化 */
+.about-text h3 {
+    font-size: 36px !important;
+    color: var(--main-color);
+    margin-bottom: 25px;
+    position: relative;
+    display: inline-block;
+}
+
+.about-text h3::after {
+    content: '';
+    position: absolute;
+    width: 50px;
+    height: 3px;
+    background: var(--accent-color);
+    bottom: -8px;
+    left: 0;
+}
+
+.about-text p {
+    font-size: 18px !important;
+    line-height: 1.8 !important;
+    margin-bottom: 20px;
+    color: #555;
+    text-align: justify;
 }
 
 /* Values */

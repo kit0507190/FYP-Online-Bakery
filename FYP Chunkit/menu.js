@@ -34,17 +34,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const productsPerPage = 9;
 
     // --- 3. 核心初始化 ---
+    // --- 3. 核心初始化 ---
+    // --- 3. 核心初始化 ---
     async function initPage() {
+        // A. 从 URL 中读取分类、子分类以及要自动打开的产品 ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const catParam = urlParams.get('category');
+        const subParam = urlParams.get('subcategory');
+        const openId = urlParams.get('open_id'); // 👈 新增：获取要弹窗的产品 ID
+
+        if (catParam) {
+            currentCategory = catParam;
+            currentSubCategory = subParam || 'all';
+        }
+
         setupEventListeners();
+        // B. 同步侧边栏的视觉状态
+        syncSidebarUI();
+
         if (loadingSpinner) loadingSpinner.style.display = 'block';
 
         try {
-            // A. 获取产品
             const response = await fetch('get_products.php');
             if (!response.ok) throw new Error('Network Error');
             products = await response.json();
 
-            // B. 同步数据库收藏状态
             if (window.isLoggedIn === true) {
                 const favRes = await fetch('get_user_favorites.php');
                 if (favRes.ok) {
@@ -55,6 +69,17 @@ document.addEventListener('DOMContentLoaded', function () {
             renderProducts();
             updateCartCount();
             loadRecentlyViewed();
+
+            // --- ✨ 新增：如果 URL 带有 open_id，则自动触发弹窗 ---
+            if (openId) {
+                const productId = parseInt(openId);
+                // 稍微延迟执行，确保 renderProducts 已经把 DOM 渲染好了
+                setTimeout(() => {
+                    quickViewProduct(productId);
+                }, 300); 
+            }
+            // ----------------------------------------------
+
         } catch (error) {
             console.error("加载出错:", error);
             if(productsGrid) productsGrid.innerHTML = '<div class="no-products">System loading failed.</div>';
@@ -152,7 +177,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-price">RM ${product.price.toFixed(2)}</p>
                     <p class="product-size">${product.shortSize || ''}</p>
-                    <div class="product-rating"><span class="stars">${stars}</span><span>${product.rating || ''}</span></div>
+                  
+<div class="product-rating" style="margin-bottom: 10px;"> 
+    <span class="stars">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5-Math.floor(product.rating))}</span>
+    <span class="rating-count" style="font-size: 14px;">
+        ${product.rating} (${product.reviewCount} Reviews | ${product.soldCount} Sold)
+    </span>
+</div>
                     <p class="product-description">${product.description || ''}</p>
                 </div>
             </div>`;
@@ -204,82 +235,151 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- 7. 修正后的 Quick View (包含 Inch 逻辑和极速反馈) ---
+// --- 7. 优化后的 Quick View (同步 Favorites 的高级设计 + 补全销量信息) ---
 function quickViewProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
-    addToRecentlyViewed(productId); //
+    addToRecentlyViewed(productId);
     
-    // 检查当前状态
-    const isFavorite = favorites.includes(parseInt(product.id)); //
+    // 检查当前收藏状态
+    const isFavorite = favorites.includes(parseInt(product.id));
 
+    // 重新构建内容：Favorites 的排版 + Menu 的数据
     quickViewContent.innerHTML = `
-        <button class="close-modal" id="closeModal">×</button>
-        <div style="display: flex; gap: 30px; padding: 30px;">
-            <div style="flex: 1;">
-                <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 10px;">
+        <button class="close-modal" id="closeModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
+        
+        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;">
+            <div style="flex: 1.1; position: sticky; top: 0;">
+                <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;">
             </div>
-            <div style="flex: 1;">
-                <h2 style="margin-bottom: 15px; color: #5a3921;">${product.name}</h2>
-                <p style="font-size: 24px; color: #d4a76a; font-weight: bold; margin-bottom: 15px;">RM ${product.price.toFixed(2)}</p>
-                <div style="margin-bottom: 15px;">
-                    <span class="stars">${'★'.repeat(Math.floor(product.rating||0))}☆</span>
-                    <span>${product.rating || ''} (${product.reviewCount || 0} reviews)</span>
+
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <h2 style="margin-bottom: 10px; color: #5a3921; font-size: 1.8rem; line-height: 1.2;">${product.name}</h2>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem;">
+                    <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
+                    <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
+                    <span style="color: #ddd;">|</span>
+                    <span style="color: #888;">${product.reviewCount || 0} Reviews</span>
+                    <span style="color: #ddd;">|</span>
+                    <span style="color: #d4a76a; font-weight: 600;">${product.soldCount || 0} Sold</span>
                 </div>
-                <p style="margin-bottom: 20px; line-height: 1.6;">${product.fullDescription || product.description || ''}</p>
-                <p><strong>Ingredients:</strong> ${product.ingredients || ''}</p>
+
+                <p style="font-size: 28px; color: #d4a76a; font-weight: 700; margin-bottom: 25px;">RM ${parseFloat(product.price).toFixed(2)}</p>
                 
-                <p><strong>Size:</strong> ${product.fullSize || ''}</p>
+                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
+                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">${product.fullDescription || product.description || ''}</p>
+                </div>
                 
-                <p><strong>Allergens:</strong> ${product.allergens || ''}</p>
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
+                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
+                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.fullSize || product.shortSize || 'Standard'}</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Allergens</span>
+                        <span style="flex: 1; color: #e57373; font-size: 0.9rem; font-weight: 500;">${product.allergens || 'None'}</span>
+                    </div>
+                </div>
                 
-                <div style="display: flex; gap: 10px; margin-top: 25px; align-items: stretch;">
-                    <button class="add-to-cart-btn" 
-                            style="background: #d4a76a; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; flex: 1; font-weight: bold;">
+                <div style="display: flex; gap: 12px; margin-top: auto;">
+                    <button class="add-to-cart-btn" id="modalAddToCartBtn"
+                            style="background: #d4a76a; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; flex: 1; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(212, 167, 106, 0.3);">
                         Add to Cart
                     </button>
-                    
-                    <button class="modal-fav-btn ${isFavorite ? 'active' : ''}" 
-                            data-id="${product.id}"
-                            style="position: relative; background: #f5f5f5; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; width: 50px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                    <button class="modal-fav-btn ${isFavorite ? 'active' : ''}" id="modalFavBtn"
+                            style="background: #fff; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; width: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.2s;">
                         ${isFavorite ? '❤️' : '🤍'}
                     </button>
                 </div>
             </div>
-        </div>`;
+        </div>
+    `;
 
     quickViewModal.style.display = 'flex';
     
-    // 绑定关闭按钮
+    // 重新绑定按钮事件
     document.getElementById('closeModal').onclick = () => quickViewModal.style.display = 'none';
     
-    // 绑定加入购物车按钮
-    quickViewContent.querySelector('.add-to-cart-btn').onclick = () => { 
+    document.getElementById('modalAddToCartBtn').onclick = () => { 
         addToCart(product.id, 1);
         quickViewModal.style.display = 'none'; 
     };
 
-    // 绑定收藏按钮（极速反馈逻辑）
-    const modalFavBtn = quickViewContent.querySelector('.modal-fav-btn');
+    const modalFavBtn = document.getElementById('modalFavBtn');
     modalFavBtn.onclick = () => {
         if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
-
-        // 立即切换视觉状态 (0 延迟)
         const isNowActive = modalFavBtn.classList.toggle('active');
         modalFavBtn.innerHTML = isNowActive ? '❤️' : '🤍';
-
-        // 后台发送请求同步数据库
-        toggleFavorite(product.id);
+        toggleFavorite(product.id); // 调用原有的逻辑
     };
 }
 
-    // --- 7. 辅助函数 ---
+    // --- 7. 全能逻辑搜索 (包含所有子分类名称匹配) ---
     function filterProducts() {
+        const searchTerm = currentSearch.trim().toLowerCase();
+
+        // 🚀 逻辑 A：智能搜索模式 (当搜索框有内容时)
+        if (searchTerm) {
+            // 完整子分类名字映射表
+            const subNameMapping = {
+                // Cakes Subcategories
+                '5 inch': '5 inch Cake',
+                'cheese': 'Cheese Flavour',
+                'chocolate': 'Chocolate & Coffee',
+                'mini': 'Cute Mini Cake',
+                'durian': 'Durian Series',
+                'festival': 'Festival',
+                'fondant': 'Fondant Cake Design',
+                'fresh-cream': 'Fresh Cream Cake',
+                'full-moon': 'Full Moon Gift Packages',
+                'little': 'Little Series',
+                'strawberry': 'Strawberry Flavour',
+                'animal': 'The Animal Series',
+                'vanilla': 'Vanilla Flavour',
+                'wedding': 'Wedding Gift Packages',
+                // Pastries Subcategories
+                'croissant': 'Croissants',
+                'danish': 'Danish Pastries',
+                'tart': 'Tarts',
+                'puff': 'Puff Pastry',
+                // Bread Subcategories
+                'sourdough': 'Sourdough',
+                'wholegrain': 'Whole Grain Bread',
+                'artisan': 'Artisan Bread',
+                'sweet': 'Sweet Bread'
+            };
+
+            return products.filter(p => {
+                // 1. 匹配产品名称 (例如: Red Velvet)
+                const nameMatch = p.name.toLowerCase().includes(searchTerm);
+                
+                // 2. 匹配大分类 (例如: cake, bread, pastry)
+                const catMatch = p.category && p.category.toLowerCase().includes(searchTerm);
+                
+                // 3. 匹配子分类
+                const rawSub = p.subcategory ? p.subcategory.replace(/['"]+/g, '').toLowerCase() : '';
+                // 匹配原始代号 (例如: "artisan")
+                const subRawMatch = rawSub.includes(searchTerm);
+                // 匹配完整显示名称 (例如: "Artisan Bread")
+                const displaySubName = subNameMapping[rawSub] || '';
+                const subDisplayMatch = displaySubName.toLowerCase().includes(searchTerm);
+                
+                // 只要满足任意一个条件，就搜出来
+                return nameMatch || catMatch || subRawMatch || subDisplayMatch;
+            });
+        }
+
+        // 🚀 逻辑 B：侧边栏浏览模式 (搜索框为空时)
         return products.filter(product => {
             if (product.category !== currentCategory) return false;
             const cleanSub = product.subcategory ? product.subcategory.replace(/['"]+/g, '') : '';
             if (currentSubCategory !== 'all' && cleanSub !== currentSubCategory) return false;
-            if (currentSearch && !(product.name.toLowerCase().includes(currentSearch.toLowerCase()) || (product.description && product.description.toLowerCase().includes(currentSearch.toLowerCase())))) return false;
             return true;
         });
     }
@@ -295,9 +395,31 @@ function quickViewProduct(productId) {
     }
 
     function updateActiveCategory() {
+        // 如果正在搜索，标题显示搜索关键词
+        if (currentSearch.trim()) {
+            activeCategory.textContent = `Search Results for "${currentSearch}"`;
+            return;
+        }
+
         const categoryNames = {'bread':'Bread','cake':'Cakes','pastry':'Pastries','cookie':'Cookies'};
-        const subNames = {'all':`All ${categoryNames[currentCategory]}`,'5 inch':'5 inch Cake','cheese':'Cheese Flavour','chocolate':'Chocolate & Coffee','mini':'Cute Mini Cake','durian':'Durian Series','festival':'Festival','fondant':'Fondant Cake Design','fresh-cream':'Fresh Cream Cake','full-moon':'Full Moon Gift Packages','little':'Little Series','strawberry':'Strawberry Flavour','animal':'The Animal Series','vanilla':'Vanilla Flavour','wedding':'Wedding Gift Packages','croissant':'Croissants','danish':'Danish Pastries','tart':'Tarts','puff':'Puff Pastry','sourdough':'Sourdough','wholegrain':'Whole Grain Bread','artisan':'Artisan Bread','sweet':'Sweet Bread'};
-        if (activeCategory) activeCategory.textContent = currentSubCategory !== 'all' ? (subNames[currentSubCategory] || 'Products') : (subNames['all'] || 'Products');
+        const subNames = {
+            'all': `All ${categoryNames[currentCategory] || 'Products'}`,
+            '5 inch':'5 inch Cake','cheese':'Cheese Flavour','chocolate':'Chocolate & Coffee',
+            'mini':'Cute Mini Cake','durian':'Durian Series','festival':'Festival',
+            'fondant':'Fondant Cake Design','fresh-cream':'Fresh Cream Cake',
+            'full-moon':'Full Moon Gift Packages','little':'Little Series',
+            'strawberry':'Strawberry Flavour','animal':'The Animal Series',
+            'vanilla':'Vanilla Flavour','wedding':'Wedding Gift Packages',
+            'croissant':'Croissants','danish':'Danish Pastries','tart':'Tarts',
+            'puff':'Puff Pastry','sourdough':'Sourdough','wholegrain':'Whole Grain Bread',
+            'artisan':'Artisan Bread','sweet':'Sweet Bread'
+        };
+
+        if (activeCategory) {
+            activeCategory.textContent = currentSubCategory !== 'all' 
+                ? (subNames[currentSubCategory] || 'Products') 
+                : (subNames['all'] || 'Products');
+        }
     }
 
     function updateResultsInfo(total) {
@@ -393,6 +515,40 @@ function loadRecentlyViewed() {
     }
 
     function showToast(msg) { if (toast) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2500); } }
+
+    /**
+     * 根据当前的 currentCategory 和 currentSubCategory 同步侧边栏视觉效果
+     */
+    function syncSidebarUI() {
+        // 1. 清除所有旧状态
+        document.querySelectorAll('.category-main').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.category-arrow').forEach(a => a.classList.remove('active'));
+        document.querySelectorAll('.subcategories').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.subcategory-item').forEach(i => i.classList.remove('active'));
+
+        // 2. 激活对应的父分类
+        const targetMain = document.querySelector(`.category-main[data-category="${currentCategory}"]`);
+        if (targetMain) {
+            targetMain.classList.add('active');
+            
+            // 展开子菜单
+            const arrow = targetMain.querySelector('.category-arrow');
+            if (arrow) arrow.classList.add('active');
+            
+            const subContainer = targetMain.nextElementSibling;
+            if (subContainer && subContainer.classList.contains('subcategories')) {
+                subContainer.classList.add('active');
+                
+                // 3. 激活对应的子分类项
+                const targetSub = subContainer.querySelector(`.subcategory-item[data-subcategory="${currentSubCategory}"]`);
+                if (targetSub) {
+                    targetSub.classList.add('active');
+                }
+            }
+        }
+        updateActiveCategory();
+    }
+
 
     initPage();
 });

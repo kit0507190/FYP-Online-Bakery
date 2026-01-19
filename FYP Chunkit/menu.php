@@ -18,20 +18,15 @@
 <!-- ↓↓↓ 从这里开始：下面全部照抄 menu.html，一行不改 ↓↓↓ -->
 
 <!-- Breadcrumb -->
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="index.php">Home</a> > 
-            <span>Menu</span>
-        </div>
-    </div>
+    
 
     <!-- Menu Page -->
     <section class="menu-page">
-        <div class="container">
-            <h1 style="text-align: center; margin: 20px 0; font-size: 32px;">Our Delicious Bakery Products</h1>
+    <div class="container">
+        <div class="menu-header-box">
+            <h1 class="menu-title">Our Delicious Bakery Products</h1>
             
-            <!-- Search and Filter Bar -->
-            <div class="search-filter-bar">
+            <hr class="menu-divider"> <div class="search-filter-bar">
                 <div class="search-box">
                     <input type="text" class="search-input" id="searchInput" placeholder="Search products...">
                     <button class="search-btn" id="searchBtn">🔍</button>
@@ -41,11 +36,11 @@
                         <option value="name">Sort by Name</option>
                         <option value="price-low">Price: Low to High</option>
                         <option value="price-high">Price: High to Low</option>
-                        <option value="rating">Highest Rated</option>
-                        <option value="popular">Most Popular</option>
+                        <option value="rating">Top Rated</option>
                     </select>
                 </div>
             </div>
+        </div>
             
             <div class="menu-layout">
                 <!-- Categories Sidebar -->

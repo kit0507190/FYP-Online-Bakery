@@ -167,23 +167,51 @@ body {
 }
 
 /* ============================================================
-   5. ABOUT & TESTIMONIALS (已优化：加大字号与排版)
+   ABOUT SECTION - 完美填充效果
    ============================================================ */
 .about-content { 
     display: flex; 
-    align-items: center; /* 确保图片和文字在水平线上居中对齐 */
-    gap: 60px;           /* 增加图片和文字之间的间距，让页面更“透气” */
+    /* 🚀 核心 1：让左右两列（图片和文字）的高度强制保持一致 */
+    align-items: stretch; 
+    gap: 60px;
+    margin-top: 40px;
 }
 
+.about-image {
+    flex: 1;
+    /* 🚀 核心 2：给一个最小高度，防止在文字极少时图片缩得太小 */
+    min-height: 480px; 
+    border-radius: 12px; 
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.about-image img {
+    /* 🚀 核心 3：强制图片填满父容器的 100% 高度 */
+    width: 100%;
+    height: 100%;
+    /* 🚀 核心 4：确保图片在拉伸填充时比例完美，不模糊不变形 */
+    object-fit: cover; 
+    display: block;
+}
+
+.about-text {
+    flex: 1;
+    /* 让文字在垂直方向上居中对齐，如果图片比文字高，文字会留在中间 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* 文字细节保持不变 */
 .about-text h3 {
-    font-size: 36px;      /* 加大标题字号 */
+    font-size: 36px;
     color: var(--main-color);
-    margin-bottom: 25px;  /* 增加标题下方的间距 */
+    margin-bottom: 25px;
     position: relative;
     display: inline-block;
 }
 
-/* 在 Our Story 下方加一个小金色横线，增加设计感 */
 .about-text h3::after {
     content: '';
     position: absolute;
@@ -194,17 +222,12 @@ body {
     left: 0;
 }
 
-.about-text p { 
-    font-size: 18px;       /* 将正文字号从默认的 16px 提升到 18px */
-    line-height: 1.8;      /* 增加行高，让文字不那么拥挤 */
-    margin-bottom: 20px;   /* 段落之间的间距 */
-    color: #666;           /* 稍微调淡一点颜色，增加高级感 */
-    text-align: justify;   /* 两端对齐，让排版更整齐 */
-}
-
-/* 最后一个段落不需要底部间距 */
-.about-text p:last-child {
-    margin-bottom: 0;
+.about-text p {
+    font-size: 18px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    color: #5a3921;
+    text-align: justify;
 }
 
 .testimonials { background-color: var(--bg-light); }

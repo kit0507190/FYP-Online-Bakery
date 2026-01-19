@@ -473,12 +473,10 @@ header {
 .modal-content {
     background: white;
     border-radius: 15px;
-    max-width: 800px;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
+    max-width: 850px; /* 改为 850px */
+    width: 95%;      /* 在小屏幕下占满 */
     position: relative;
-    animation: modalAppear 0.3s ease-out;
+    /* 其余保持不变 */
 }
 
 @keyframes modalAppear {
@@ -599,6 +597,7 @@ header {
 }
 
 /* Toast Notification */
+/* --- menu.css 约第 478 行 --- */
 .toast {
     position: fixed;
     bottom: 20px;
@@ -609,7 +608,8 @@ header {
     padding: 15px 25px;
     border-radius: 5px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1001;
+    /* 🚀 核心修改：将数值改大，确保在弹窗之上 */
+    z-index: 100000 !important; 
     display: none;
     max-width: 400px;
     text-align: center;
@@ -711,4 +711,111 @@ header + .container {
 }
 .page-content {
     padding-top: 90px; /* 视你的 header 高度微调 */
+}
+
+/* --- 新的菜单头部白框容器 --- */
+.menu-header-box {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    margin-top: 20px;
+}
+
+/* 标题样式 */
+.menu-title {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 32px;
+    color: #5a3921;
+}
+
+/* 分隔线样式 */
+.menu-divider {
+    border: none;
+    border-top: 1px solid #eee; /* 浅灰色线条 */
+    margin-bottom: 25px;
+}
+
+/* 核心优化：去掉原本 search-filter-bar 的阴影和背景，因为它现在在白框里了 */
+.search-filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    background: transparent; /* 改为透明 */
+    padding: 0;               /* 去掉内边距 */
+    box-shadow: none;        /* 去掉阴影 */
+}
+
+/* 适配手机端：在小屏幕上白框依然好看 */
+@media (max-width: 768px) {
+    .menu-header-box {
+        padding: 20px;
+    }
+    .search-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* ============================================================
+   精准调整：压缩 "All Cakes" 与产品列表之间的间距
+   ============================================================ */
+
+/* 1. 调小 "All Cakes" 或 "All Bread" 标题的上下间距 */
+#activeCategory {
+    margin-top: 5px !important;    /* 顶部间距缩小 */
+    margin-bottom: 5px !important; /* 与下方文字的间距缩小 */
+    font-size: 24px;               /* 稍微缩小一点标题字号，更显精致 */
+}
+
+/* 2. 调小 "Showing 1-9 of 191 products" 的下方间距 */
+#resultsInfo {
+    margin-bottom: 10px !important; /* 原本可能很大，现在改为 10px */
+    display: block;                /* 确保边距生效 */
+    font-size: 14px;
+    color: #8e735b;
+}
+
+/* 3. 调小侧边栏和产品主区域顶部的对齐高度 */
+.menu-main {
+    padding-top: 0 !important;    /* 移除主区域顶部的内边距 */
+}
+
+/* 4. 调小产品网格顶部的间距 */
+.products-grid {
+    margin-top: 5px !important;   /* 让第一排产品贴近上面的文字 */
+}
+
+/* ============================================================
+   终极压缩：彻底消除搜索框下方的多余空白
+   ============================================================ */
+
+/* 1. 压缩白框底部的内边距 */
+.menu-header-box {
+    padding-bottom: 10px !important; /* 原本可能是 25px，现在缩减到 10px */
+    margin-bottom: 10px !important; /* 缩小整个白框与下方内容的距离 */
+}
+
+/* 2. 移除搜索栏本身自带的底部边距 */
+.search-filter-bar {
+    margin-bottom: 0 !important;    /* 确保搜索栏下面不留任何空隙 */
+}
+
+/* 3. 向上拉近 "All Cakes" 标题，消除与白框之间的间隙 */
+.menu-main {
+    padding-top: 0 !important;      /* 移除主区域顶部的所有内边距 */
+}
+
+#activeCategory {
+    margin-top: 0 !important;       /* 让分类标题直接贴着白框边缘 */
+    padding-top: 5px !important;
+}
+
+/* 4. 再次压缩 "Showing..." 文字的边距 */
+#resultsInfo {
+    margin-top: 2px !important;
+    margin-bottom: 8px !important;
 }

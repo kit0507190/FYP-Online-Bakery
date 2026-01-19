@@ -24,9 +24,20 @@ try {
         $payment_status = 'paid';
         $order_status = 'preparing';
 
-        // 核心修复：支付成功才清空数据库购物车
+        // 1. 核心修复：支付成功才清空数据库购物车
         $clearCartStmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
         $clearCartStmt->execute([$userId]);
+
+        // 2. ✨ 新增：自动增加销量逻辑
+        // 根据订单 ID，找到订单详情里所有的产品和对应的购买数量，并加到 products 表中
+        $updateSoldStmt = $pdo->prepare("
+            UPDATE products p 
+            JOIN orders_detail od ON p.id = od.product_id 
+            SET p.sold_count = p.sold_count + od.quantity 
+            WHERE od.order_id = ?
+        ");
+        $updateSoldStmt->execute([$orderId]);
+
     } else {
         // 如果用户点击取消或支付失败
         $payment_status = 'failed';
@@ -37,14 +48,12 @@ try {
     $stmt = $pdo->prepare("UPDATE orders SET payment_status = ?, status = ? WHERE id = ?");
     $stmt->execute([$payment_status, $order_status, $orderId]);
 
-    $pdo->commit();
+    $pdo->commit(); // 👈 只有执行到这里，上面的销量和状态更新才会真正写入数据库
 
-    // --- 核心修改：分流跳转逻辑 ---
+    // --- 核心修改：分流跳转逻辑 (保持不变，仅用于页面跳转) ---
     if ($action === 'paid') {
-        // 只有支付成功，才去结果展示页
         header("Location: order_result.php?order_id={$orderId}");
     } else {
-        // 如果支付取消或失败，退回到支付页面，并带上错误提示参数
         header("Location: payment.php?msg=payment_cancelled");
     }
     exit;
@@ -53,4 +62,3 @@ try {
     $pdo->rollBack();
     die("Database error: " . $e->getMessage());
 }
-?>

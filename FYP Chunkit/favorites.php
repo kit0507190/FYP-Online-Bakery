@@ -10,7 +10,7 @@ if (!$isLoggedIn) {
 
 $user_id = $_SESSION['user_id'];
 
-// ✨ 核心修改：加入 ORDER BY f.id DESC，确保最新收藏的排在最前
+// ✨ 核心逻辑保持不变：确保最新收藏排在最前
 $sql = "SELECT p.* FROM products p 
         JOIN user_favorites f ON p.id = f.product_id 
         WHERE f.user_id = ? 
@@ -23,6 +23,7 @@ $result = $stmt->get_result();
 
 $fav_products = [];
 while($row = $result->fetch_assoc()) {
+    $row['fullSize'] = $row['size']; 
     $fav_products[] = $row;
 }
 ?>
@@ -30,7 +31,51 @@ while($row = $result->fetch_assoc()) {
 <link rel="stylesheet" href="menu.css">
 
 <style>
-/* 弹窗遮罩层 */
+/* --- 1. UI 视觉优化 --- */
+.product-card {
+    background: white; 
+    border-radius: 15px; 
+    overflow: hidden; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+    cursor: pointer; 
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease; /* 增加平滑过渡 */
+}
+
+/* 悬停时的浮起效果 */
+.product-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 25px rgba(90, 57, 33, 0.15);
+}
+
+/* 快速移除按钮 (右上角 X) */
+.quick-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #e74c3c;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.quick-remove:hover {
+    background: #e74c3c;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* 弹窗遮罩层优化 */
 #quickViewModal {
     position: fixed !important; 
     top: 0;
@@ -38,6 +83,7 @@ while($row = $result->fetch_assoc()) {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.7); 
+    backdrop-filter: blur(5px); /* 增加背景模糊，更高级 */
     z-index: 9999 !important; 
     display: none;
     align-items: center;
@@ -50,22 +96,57 @@ while($row = $result->fetch_assoc()) {
     max-width: 850px;
     border-radius: 15px;
     position: relative;
-    animation: fadeIn 0.3s ease;
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+/* --- 2. 移动端适配 --- */
+@media (max-width: 768px) {
+    #quickViewContent > div {
+        flex-direction: column !important;
+        padding: 15px !important;
+    }
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}
+
+/* Toast 样式优化 */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #5a3921;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    /* 🚀 核心修改：确保这里的 z-index 也是最高的 */
+    z-index: 100000 !important; 
 }
 </style>
 
 <div class="container" style="padding: 50px 20px; min-height: 60vh;">
-    <h1 style="color: #5a3921; margin-bottom: 30px; border-bottom: 2px solid #d4a76a; padding-bottom: 10px;">My Favorites ❤️</h1>
+    <h1 style="color: #5a3921; margin-bottom: 30px; border-bottom: 2px solid #d4a76a; padding-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+        My Favorites <span style="font-size: 0.8em;">❤️</span>
+    </h1>
     
-    <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
+    <div class="products-grid" id="favoritesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
         <?php if (count($fav_products) > 0): ?>
             <?php foreach($fav_products as $p): ?>
-                <div class="product-card" onclick="openQuickView(<?= $p['id'] ?>)" style="background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); cursor: pointer; position: relative;">
+                <div class="product-card" id="card-<?= $p['id'] ?>" onclick="openQuickView(<?= $p['id'] ?>)">
+                    
+                    <button class="quick-remove" title="Remove" onclick="event.stopPropagation(); toggleFavorite(<?= $p['id'] ?>, this)">
+                        ✕
+                    </button>
+
                     <img src="<?= $p['image'] ?>" alt="<?= $p['name'] ?>" style="width: 100%; height: 250px; object-fit: cover;">
                     <div style="padding: 20px;">
                         <h3 style="color: #5a3921; margin-bottom: 10px;"><?= $p['name'] ?></h3>
@@ -74,14 +155,14 @@ while($row = $result->fetch_assoc()) {
                         
                         <button class="add-to-cart-btn" 
                                 onclick="event.stopPropagation(); openQuickView(<?= $p['id'] ?>)"
-                                style="width: 100%; margin-top: 15px; background: #d4a76a; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                            Add to Cart
+                                style="width: 100%; margin-top: 15px; background: #d4a76a; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: background 0.2s;">
+                            View Details
                         </button>
                     </div>
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
-            <div style="text-align: center; padding: 50px 0; grid-column: 1/-1;">
+            <div id="emptyMessage" style="text-align: center; padding: 50px 0; grid-column: 1/-1;">
                 <p style="font-size: 18px; color: #888;">You haven't added any favorites yet.</p>
                 <a href="menu.php" style="display: inline-block; margin-top: 20px; color: #d4a76a; text-decoration: underline;">Explore our Menu</a>
             </div>
@@ -96,10 +177,11 @@ while($row = $result->fetch_assoc()) {
 <div id="toast" class="toast" style="display:none;"></div>
 
 <script>
+// 基础数据保持不变
 const products = <?= json_encode($fav_products) ?>;
 let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
 
-// 同步购物车到数据库
+// 原有逻辑：同步购物车
 async function syncCartToDB() {
     try {
         await fetch('sync_cart.php?action=update', {
@@ -112,8 +194,8 @@ async function syncCartToDB() {
     }
 }
 
-// 打开弹窗逻辑
-// favorites.php 中的 openQuickView 函数
+// 弹窗逻辑保持不变，仅增加内部样式微调
+// --- 优化后的 Quick View (同步 Menu 的数据与设计) ---
 function openQuickView(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -122,32 +204,53 @@ function openQuickView(productId) {
     const content = document.getElementById('quickViewContent');
 
     content.innerHTML = `
-        <button class="close-modal" onclick="closeModal()">×</button>
-        <div style="display: flex; gap: 30px; padding: 30px;">
-            <div style="flex: 1;">
-                <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 10px;">
+        <button class="close-modal" onclick="closeModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
+        
+        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;">
+            <div style="flex: 1.1; position: sticky; top: 0;">
+                <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;">
             </div>
-            <div style="flex: 1;">
-                <h2 style="margin-bottom: 15px; color: #5a3921;">${product.name}</h2>
-                <p style="font-size: 24px; color: #d4a76a; font-weight: bold; margin-bottom: 15px;">RM ${parseFloat(product.price).toFixed(2)}</p>
-                <div style="margin-bottom: 15px;">
-                    <span style="color: #ffc107;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
-                    <span>${product.rating || ''} (${product.review_count || 0} reviews)</span>
+
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <h2 style="margin-bottom: 10px; color: #5a3921; font-size: 1.8rem; line-height: 1.2;">${product.name}</h2>
+                
+                <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 0.95rem;">
+                    <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
+                    <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
+                    <span style="color: #ddd;">|</span>
+                    <span style="color: #888;">${product.review_count || 0} Reviews</span>
+                    <span style="color: #ddd;">|</span>
+                    <span style="color: #d4a76a; font-weight: 600;">${product.sold_count || 0} Sold</span>
                 </div>
-                <p style="margin-bottom: 20px; line-height: 1.6; color: #666;">${product.full_description || product.description || ''}</p>
+
+                <p style="font-size: 28px; color: #d4a76a; font-weight: 700; margin-bottom: 25px;">RM ${parseFloat(product.price).toFixed(2)}</p>
                 
-                <p style="margin-bottom: 5px;"><strong>Ingredients:</strong> ${product.ingredients || ''}</p>
+                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
+                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">${product.full_description || product.description || ''}</p>
+                </div>
                 
-                <p style="margin-bottom: 5px;"><strong>Inch:</strong> ${product.inch || ''}</p>
+                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
+                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
+                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.fullSize || 'Standard'}</span>
+                    </div>
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Allergens</span>
+                        <span style="flex: 1; color: #e57373; font-size: 0.9rem; font-weight: 500;">${product.allergens || 'None'}</span>
+                    </div>
+                </div>
                 
-                <p style="margin-bottom: 5px;"><strong>Allergens:</strong> ${product.allergens || ''}</p>
-                
-                <div style="display: flex; gap: 10px; margin-top: 25px; align-items: stretch;">
-                    <button onclick="addToCart(${product.id})" style="background: #d4a76a; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; flex: 1; font-weight: bold;">
+                <div style="display: flex; gap: 12px; margin-top: auto;">
+                    <button onclick="addToCart(${product.id})" 
+                            style="background: #d4a76a; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; flex: 1; font-weight: 700; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(212, 167, 106, 0.3);">
                         Add to Cart
                     </button>
                     <button onclick="toggleFavorite(${product.id}, this)" 
-                            style="background: #f5f5f5; border: 1px solid #ddd; border-radius: 5px; cursor: pointer; width: 50px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                            style="background: #fff; border: 1px solid #ddd; border-radius: 10px; cursor: pointer; width: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: all 0.2s;">
                         ❤️
                     </button>
                 </div>
@@ -165,22 +268,19 @@ window.onclick = function(event) {
     if (event.target == document.getElementById('quickViewModal')) closeModal();
 }
 
-// 加入购物车核心逻辑
+// 购物车逻辑保持不变
 function addToCart(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
 
-    // --- 核心逻辑：确保新加的在最上面 ---
     const existingIndex = cart.findIndex(i => i.id == productId);
     let finalQuantity = 1;
 
     if (existingIndex > -1) {
-        // 如果已经收藏的商品已经在购物车，取出数量并删除旧位置
         finalQuantity = cart[existingIndex].quantity + 1;
         cart.splice(existingIndex, 1);
     }
 
-    // 重新推入末尾，配合 cart.php 的 reverse() 就会出现在最顶端
     cart.push({ 
         id: product.id, 
         name: product.name, 
@@ -188,10 +288,9 @@ function addToCart(productId) {
         image: product.image, 
         quantity: finalQuantity 
     });
-    // ----------------------------------
     
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
-    syncCartToDB(); // 立即同步到数据库
+    syncCartToDB(); 
     
     showToast(product.name + " added to cart!");
     updateHeaderCount(); 
@@ -206,6 +305,7 @@ function updateHeaderCount() {
     }
 }
 
+// ✨ 重点优化：无刷新移除逻辑
 async function toggleFavorite(id, btn) {
     try {
         const response = await fetch('toggle_favorite.php', {
@@ -214,18 +314,50 @@ async function toggleFavorite(id, btn) {
             body: JSON.stringify({ product_id: id })
         });
         const result = await response.json();
+        
         if (result.status === 'success' && result.action === 'removed') {
             showToast('Removed from favorites');
-            setTimeout(() => location.reload(), 800);
+            
+            // 如果是在弹窗里操作的，先关闭弹窗
+            closeModal();
+
+            // 找到对应的卡片并执行消失动画
+            const card = document.getElementById('card-' + id);
+            if (card) {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8)';
+                
+                // 等动画结束后移除元素
+                setTimeout(() => {
+                    card.remove();
+                    // 检查是否删空了，如果空了显示提示语
+                    const remainingCards = document.querySelectorAll('.product-card');
+                    if (remainingCards.length === 0) {
+                        const grid = document.getElementById('favoritesGrid');
+                        grid.innerHTML = `
+                            <div id="emptyMessage" style="text-align: center; padding: 50px 0; grid-column: 1/-1;">
+                                <p style="font-size: 18px; color: #888;">You haven't added any favorites yet.</p>
+                                <a href="menu.php" style="display: inline-block; margin-top: 20px; color: #d4a76a; text-decoration: underline;">Explore our Menu</a>
+                            </div>`;
+                    }
+                }, 300);
+            }
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error(e);
+        // 如果网络出错，降级处理：直接刷新
+        location.reload(); 
+    }
 }
 
 function showToast(msg) {
     const toast = document.getElementById('toast');
     toast.textContent = msg;
     toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 2500);
+    toast.style.animation = 'fadeIn 0.3s';
+    setTimeout(() => { 
+        toast.style.display = 'none'; 
+    }, 2500);
 }
 </script>
 
