@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-price">RM ${product.price.toFixed(2)}</p>
-                    <p class="product-size">${product.size || ''}</p>
+                    <p class="product-size">${product.shortSize || ''}</p>
                     <div class="product-rating"><span class="stars">${stars}</span><span>${product.rating || ''}</span></div>
                     <p class="product-description">${product.description || ''}</p>
                 </div>
@@ -229,7 +229,7 @@ function quickViewProduct(productId) {
                 <p style="margin-bottom: 20px; line-height: 1.6;">${product.fullDescription || product.description || ''}</p>
                 <p><strong>Ingredients:</strong> ${product.ingredients || ''}</p>
                 
-                <p><strong>Inch:</strong> ${product.inch || ''}</p>
+                <p><strong>Size:</strong> ${product.fullSize || ''}</p>
                 
                 <p><strong>Allergens:</strong> ${product.allergens || ''}</p>
                 
@@ -309,17 +309,38 @@ function quickViewProduct(productId) {
 
     
 
-    function loadRecentlyViewed() {
-        if (!recentlyViewedSection || recentlyViewed.length === 0) return;
-        recentProductsContainer.innerHTML = '';
-        recentlyViewed.forEach(pid => {
-            const p = products.find(x => x.id === pid);
-            if (p) {
-                recentProductsContainer.innerHTML += `<div class="recent-product-card" data-id="${p.id}"><img src="${p.image}" alt="${p.name}"><h4>${p.name}</h4><p>RM ${p.price.toFixed(2)}</p></div>`;
-            }
-        });
-        document.querySelectorAll('.recent-product-card').forEach(card => card.addEventListener('click', function(){ quickViewProduct(parseInt(this.getAttribute('data-id'))); }));
+    // menu.js 约第 262 行
+function loadRecentlyViewed() {
+    if (!recentlyViewedSection) return;
+    
+    // 如果没有最近浏览的数据，隐藏该区域；否则显示
+    if (recentlyViewed.length === 0) {
+        recentlyViewedSection.style.display = 'none';
+        return;
     }
+    
+    recentlyViewedSection.style.display = 'block';
+    recentProductsContainer.innerHTML = '';
+
+    recentlyViewed.forEach(pid => {
+        const p = products.find(x => x.id === pid);
+        if (p) {
+            // 只保留图片和名字，移除了价格
+            recentProductsContainer.innerHTML += `
+                <div class="recent-product-card" data-id="${p.id}">
+                    <img src="${p.image}" alt="${p.name}" class="recent-product-image">
+                    <h4 class="recent-product-name">${p.name}</h4>
+                </div>`;
+        }
+    });
+
+    // 绑定点击事件：点击最近浏览的产品，弹出对应的信息弹窗
+    document.querySelectorAll('.recent-product-card').forEach(card => {
+        card.addEventListener('click', function() {
+            quickViewProduct(parseInt(this.getAttribute('data-id')));
+        });
+    });
+}
 
     function addToRecentlyViewed(id) {
         recentlyViewed = recentlyViewed.filter(x => x !== id);

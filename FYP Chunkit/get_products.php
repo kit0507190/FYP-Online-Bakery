@@ -38,12 +38,12 @@ if ($result && $result->num_rows > 0) {
             "description" => $row['description'],
             "fullDescription" => $row['full_description'],
             "ingredients" => $row['ingredients'],
-            "inch" => $row['inch'],
+            "fullSize" => $row['size'],
             "allergens" => $row['allergens'],
             "rating" => (float)$row['rating'],
             "reviewCount" => (int)$row['review_count'],
             "tags" => !empty($row['tags']) ? explode(',', $row['tags']) : [],
-            "size" => $row['size_info'] // 映射 size_info 为前端用的 size
+            "shortSize" => $row['size_info'] // 映射 size_info 为前端用的 size
         ];
     }
 }
