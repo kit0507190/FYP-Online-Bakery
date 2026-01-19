@@ -283,17 +283,25 @@ function quickViewProduct(productId) {
                     <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
                     <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
                     <span style="color: #ddd;">|</span>
-                    <sp...(truncated 863 characters)...bottom: 1px dashed #eee; padding-bottom: 10px;">
+                    <span style="color: #666;">${product.reviewCount || 0} reviews</span>
+                    <span style="color: #ddd;">|</span>
+                    <span style="color: #666;">${product.soldCount || 0} sold</span>
+                </div>
+                
+                <div style="margin-bottom: 20px; font-size: 1.4rem; font-weight: 700; color: #c17e3c;">
+                    RM ${product.price.toFixed(2)}
+                </div>
+                
+                <p style="margin-bottom: 25px; color: #555; font-size: 0.95rem; line-height: 1.5;">${product.description || ''}</p>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: #f9f5f2; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
                     </div>
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.fullSize || product.shortSize || 'Standard'}</span>
-                    </div>
-                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
-                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Allergens</span>
-                        <span style="flex: 1; color: #e57373; font-size: 0.9rem; font-weight: 500;">${product.allergens || 'None'}</span>
                     </div>
                 </div>
                 
@@ -433,7 +441,7 @@ function quickViewProduct(productId) {
         'cookie': 'Cookies'
     };
         const subNames = {
-            'all': `All ${categoryNames[currentCategory] || 'Products'}`,
+            'all': categoryNames[currentCategory] || 'All Products',
             'cheese':'Cheese Flavour','chocolate':'Chocolate & Coffee',
             'mini':'Cute Mini Cake','durian':'Durian Series','festival':'Festival',
             'fondant':'Fondant Cake Design','fresh-cream':'Fresh Cream Cake',

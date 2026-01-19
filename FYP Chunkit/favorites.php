@@ -260,11 +260,6 @@ function openQuickView(productId) {
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.fullSize || 'Standard'}</span>
                     </div>
-                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
-                        <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Allergens</span>
-                        <span style="flex: 1; color: #e57373; font-size: 0.9rem; font-weight: 500;">${product.allergens || 'None'}</span>
-                    </div>
-                </div>
                 
                 <div style="display: flex; gap: 12px; margin-top: auto;">
                     <button onclick="addToCart(${product.id})" 
