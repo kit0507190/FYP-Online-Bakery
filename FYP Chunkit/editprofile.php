@@ -58,8 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Full name can only contain letters and spaces.";
     }
 
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) { 
-        $errors[] = "Valid email is required."; 
+     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email address format.";
+    } else {
+        $domain = strtolower(substr(strrchr($email, "@"), 1));
+        if ($domain !== 'gmail.com') {
+            $errors[] = "Invalid email address format，Only @gmail.com accounts are allowed.";
+        }
     }
 
     // --- 电话号码验证 (马来西亚格式) ---
