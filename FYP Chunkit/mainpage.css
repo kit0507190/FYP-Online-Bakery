@@ -316,3 +316,32 @@ footer {
     .about-content { flex-direction: column; }
     .about-image, .about-text { transform: none !important; }
 }
+/* ============================================================
+   产品与分类卡片悬停浮动效果（保持原有比例）
+   ============================================================ */
+
+/* 1. 针对 Shop by Categories 的分类卡片 */
+.category-card {
+    /* 只添加动画效果，不改动宽度或高度 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    cursor: pointer;
+}
+
+.category-card:hover {
+    /* 向上平滑移动 8px，不影响周围元素布局 */
+    transform: translateY(-8px) !important;
+    /* 添加深棕色系的柔和阴影，增加立体感 */
+    box-shadow: 0 10px 20px rgba(90, 57, 33, 0.15) !important;
+}
+
+/* 2. 针对 Best Selling Products 的产品卡片 (由 mainpage.js 生成) */
+.product-card {
+    /* 确保动态生成的卡片也有过渡动画 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+    cursor: pointer;
+}
+
+.product-card:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 10px 20px rgba(90, 57, 33, 0.15) !important;
+}

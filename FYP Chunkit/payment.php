@@ -122,32 +122,40 @@ function parseAddr($raw) {
 
                 <div class="right-column">
                     <div class="card">
-                        <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span><i class="fas fa-map-marker-alt"></i> Delivery Address</span>
-                            <span class="btn-change" onclick="toggleModal(true)" style="color: #d4a76a; font-weight: bold; cursor: pointer;">Change</span>
-                        </div>
-                        
-                        <div class="address-box" style="display: flex; align-items: flex-start; gap: 15px; margin-top: 10px;">
-                            <i class="fas fa-location-dot" style="color: #c5a073; font-size: 18px; margin-top: 4px;"></i>
-                            <div class="address-details">
-                                <div class="user-meta" style="font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px;">
-                                    <span id="displayUserName"><?php echo strtoupper(htmlspecialchars($userData['name'])); ?></span> 
-                                    <span id="displayUserPhone" style="margin-left: 20px;"><?php echo htmlspecialchars($userData['phone'] ?? ''); ?></span>
-                                </div>
-                                <div class="address-text" id="addressLabel" style="color: #666; font-size: 14px; line-height: 1.5;">
-                                    Loading address...
-                                </div>
-                            </div>
-                        </div>
+    <div class="card-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fas fa-map-marker-alt"></i> Delivery Address</span>
+        <span class="btn-change" onclick="toggleModal(true)" style="color: #d4a76a; font-weight: bold; cursor: pointer;">Change</span>
+    </div>
+    
+    <div class="address-box" style="display: flex; align-items: flex-start; gap: 15px; margin-top: 10px;">
+        <i class="fas fa-location-dot" style="color: #c5a073; font-size: 18px; margin-top: 4px;"></i>
+        <div class="address-details">
+            <div class="user-meta" style="font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px;">
+                <span id="displayUserName"><?php echo strtoupper(htmlspecialchars($userData['name'])); ?></span> 
+                <span id="displayUserPhone" style="margin-left: 20px;"><?php echo htmlspecialchars($userData['phone'] ?? ''); ?></span>
+            </div>
+            <div class="address-text" id="addressLabel" style="color: #666; font-size: 14px; line-height: 1.5;">
+                <?php 
+                if ($addressCount > 0) {
+                    $def = $allAddresses[0]; // 默认地址排在第一位
+                    $p = parseAddr($def['address_text']);
+                    echo htmlspecialchars($p['street']) . ", " . htmlspecialchars($p['area']) . ", Melaka, " . htmlspecialchars($p['postcode']);
+                } else {
+                    echo "No address found. Please add one.";
+                }
+                ?>
+            </div>
+        </div>
+    </div>
 
-                        <input type="hidden" name="fullName" value="<?php echo htmlspecialchars($userData['name']); ?>">
-                        <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
-                        <input type="hidden" name="phone" value="<?php echo htmlspecialchars($userData['phone'] ?? ''); ?>">
-                        <input type="hidden" name="address" id="hiddenAddress">
-                        <input type="hidden" name="city" id="hiddenCity">
-                        <input type="hidden" name="postcode" id="hiddenPostcode">
-                        <input type="hidden" name="cart_data" id="cartDataInput">
-                    </div>
+    <input type="hidden" name="fullName" value="<?php echo htmlspecialchars($userData['name']); ?>">
+    <input type="hidden" name="email" value="<?php echo htmlspecialchars($userData['email']); ?>">
+    <input type="hidden" name="phone" value="<?php echo htmlspecialchars($userData['phone'] ?? ''); ?>">
+    <input type="hidden" name="address" id="hiddenAddress" value="<?php echo $addressCount > 0 ? htmlspecialchars(parseAddr($allAddresses[0]['address_text'])['street']) : ''; ?>">
+    <input type="hidden" name="city" id="hiddenCity" value="<?php echo $addressCount > 0 ? htmlspecialchars(parseAddr($allAddresses[0]['address_text'])['area']) : ''; ?>">
+    <input type="hidden" name="postcode" id="hiddenPostcode" value="<?php echo $addressCount > 0 ? htmlspecialchars(parseAddr($allAddresses[0]['address_text'])['postcode']) : ''; ?>">
+    <input type="hidden" name="cart_data" id="cartDataInput">
+</div>
 
                     <div class="card">
     <div class="card-title">Payment Method</div>
@@ -192,22 +200,47 @@ function parseAddr($raw) {
     </div>
 
     <div class="modal" id="addrModal">
-        <div class="modal-content">
-            <h3 style="text-align:center; margin-bottom:20px; color:var(--primary);">Select Delivery Address</h3>
-            <div id="modalList">
+    <div class="modal-content">
+        <h3><i class="fas fa-map-marker-alt"></i> Delivery Address</h3>
+        
+        <div id="modalList" style="max-height: 380px; overflow-y: auto; padding: 5px;">
+            <?php if (empty($allAddresses)): ?>
+                <div class="empty-addr-state">
+                    <i class="fas fa-map-location-dot"></i>
+                    <p>No addresses found.<br>Please add one to continue.</p>
+                </div>
+            <?php else: ?>
                 <?php foreach ($allAddresses as $addr): 
                     $p = parseAddr($addr['address_text']); 
                 ?>
                     <div class="addr-option <?php echo $addr['is_default'] ? 'selected' : ''; ?>" 
                          onclick="selectAddr(this, '<?php echo addslashes($p['street']); ?>', '<?php echo addslashes($p['area']); ?>', '<?php echo addslashes($p['postcode']); ?>')">
-                        <strong><?php echo htmlspecialchars($userData['name']); ?></strong><br>
-                        <span style="font-size:13px; color:#666;"><?php echo htmlspecialchars($p['street']); ?>, <?php echo htmlspecialchars($p['area']); ?></span>
+                        
+                        <div class="addr-title-row">
+                            <strong><i class="fas fa-user"></i> <?php echo htmlspecialchars($userData['name']); ?></strong>
+                            <?php if ($addr['is_default']): ?>
+                                <span class="default-badge">Default</span>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <span><i class="fas fa-location-arrow"></i> <?php echo htmlspecialchars($p['street']); ?>, <?php echo htmlspecialchars($p['area']); ?>, <?php echo htmlspecialchars($p['postcode']); ?></span>
                     </div>
                 <?php endforeach; ?>
-            </div>
-            <button onclick="toggleModal(false)" style="width:100%; padding:12px; background:#eee; border:none; border-radius:8px; cursor:pointer; font-weight:bold; margin-top:10px;">Close</button>
+            <?php endif; ?>
         </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding: 0 5px;">
+            <a href="manageaddress.php" style="color: #d4a76a; text-decoration: none; font-size: 13px; font-weight: 600;">
+                <i class="fas fa-edit"></i> Edit List
+            </a>
+            <a href="add.address.php" style="color: #5a3921; text-decoration: none; font-size: 13px; font-weight: 600;">
+                <i class="fas fa-plus-circle"></i> Add New Address
+            </a>
+        </div>
+
+        <button class="btn-modal-close" onclick="toggleModal(false)">Cancel</button>
     </div>
+</div>
 
     <div id="addressRequiredModal" class="force-modal-overlay">
         <div class="force-modal-content">
@@ -339,9 +372,39 @@ function parseAddr($raw) {
         document.getElementById('addressRequiredModal').style.display = 'none';
     }
 
-    function toggleModal(show) { 
-        document.getElementById('addrModal').classList.toggle('active', show); 
+    // 切换弹窗显示/隐藏
+function toggleModal(show) { 
+    const modal = document.getElementById('addrModal');
+    if (show) {
+        modal.classList.add('active');
+    } else {
+        modal.classList.remove('active');
     }
+}
+
+// 选择地址时的处理函数
+function selectAddr(el, street, area, postcode) {
+    // 1. 样式即时切换
+    document.querySelectorAll('.addr-option').forEach(item => item.classList.remove('selected'));
+    el.classList.add('selected');
+
+    // 2. 更新主页面的地址显示块
+    const displayLabel = document.getElementById('addressLabel');
+    displayLabel.style.opacity = '0'; // 简单的淡出效果
+    
+    setTimeout(() => {
+        displayLabel.innerText = `${street}, ${area}, Melaka, ${postcode}`;
+        displayLabel.style.opacity = '1';
+        
+        // 更新隐藏域
+        document.getElementById('hiddenAddress').value = street;
+        document.getElementById('hiddenCity').value = area;
+        document.getElementById('hiddenPostcode').value = postcode;
+    }, 200);
+
+    // 3. 自动关闭弹窗，并给用户一个微小的延迟感，确保他们看到了勾选动作
+    setTimeout(() => toggleModal(false), 400); 
+}
 
     // --- 4. 输入格式化监听 ---
 

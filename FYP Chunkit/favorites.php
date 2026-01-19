@@ -39,16 +39,14 @@ while($row = $result->fetch_assoc()) {
     box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
     cursor: pointer; 
     position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease; /* 增加平滑过渡 */
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease; 
 }
 
-/* 悬停时的浮起效果 */
 .product-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 12px 25px rgba(90, 57, 33, 0.15);
 }
 
-/* 快速移除按钮 (右上角 X) */
 .quick-remove {
     position: absolute;
     top: 12px;
@@ -83,7 +81,7 @@ while($row = $result->fetch_assoc()) {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.7); 
-    backdrop-filter: blur(5px); /* 增加背景模糊，更高级 */
+    backdrop-filter: blur(5px); 
     z-index: 9999 !important; 
     display: none;
     align-items: center;
@@ -105,7 +103,6 @@ while($row = $result->fetch_assoc()) {
     to { opacity: 1; transform: scale(1); }
 }
 
-/* --- 2. 移动端适配 --- */
 @media (max-width: 768px) {
     #quickViewContent > div {
         flex-direction: column !important;
@@ -128,15 +125,44 @@ while($row = $result->fetch_assoc()) {
     padding: 12px 30px;
     border-radius: 50px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    /* 🚀 核心修改：确保这里的 z-index 也是最高的 */
-    z-index: 100000 !important; 
+    z-index: 100000 !important; /* 确保在弹窗之上 */
+}
+
+/* --- 🌟 收藏页标题专属：心跳动效 --- */
+.heart-pulse {
+    animation: heartbeat 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.3));
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.25); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* 确保标题下方的原本边框消失 */
+.menu-header-box h1 {
+    border-bottom: none !important;
 }
 </style>
 
-<div class="container" style="padding: 50px 20px; min-height: 60vh;">
-    <h1 style="color: #5a3921; margin-bottom: 30px; border-bottom: 2px solid #d4a76a; padding-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-        My Favorites <span style="font-size: 0.8em;">❤️</span>
-    </h1>
+<div class="container" style="padding: 20px 20px; min-height: 60vh;">
+    
+    <div class="menu-header-box" style="text-align: center; margin-top: 0; padding: 10px 20px; margin-bottom: 40px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);">
+        <h1 style="color: #5a3921; margin-bottom: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 15px; font-size: 2.6rem; font-weight: 800; border: none; padding-bottom: 0;">
+            My Favorites 
+            <span class="heart-pulse" style="font-size: 2rem; display: inline-block;">❤️</span>
+        </h1>
+        
+        <p style="color: #8e735b; font-size: 1.1rem; margin-top: 10px; font-family: 'Georgia', serif; font-style: italic;">
+            <?php $count = count($fav_products); ?>
+            You have curated <strong><?= $count ?></strong> precious <?= $count === 1 ? 'treat' : 'treats' ?>.
+        </p>
+        
+        <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 20px auto 0; border-radius: 10px;">
+    </div>
     
     <div class="products-grid" id="favoritesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;">
         <?php if (count($fav_products) > 0): ?>
@@ -177,11 +203,9 @@ while($row = $result->fetch_assoc()) {
 <div id="toast" class="toast" style="display:none;"></div>
 
 <script>
-// 基础数据保持不变
 const products = <?= json_encode($fav_products) ?>;
 let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
 
-// 原有逻辑：同步购物车
 async function syncCartToDB() {
     try {
         await fetch('sync_cart.php?action=update', {
@@ -194,8 +218,6 @@ async function syncCartToDB() {
     }
 }
 
-// 弹窗逻辑保持不变，仅增加内部样式微调
-// --- 优化后的 Quick View (同步 Menu 的数据与设计) ---
 function openQuickView(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -268,7 +290,6 @@ window.onclick = function(event) {
     if (event.target == document.getElementById('quickViewModal')) closeModal();
 }
 
-// 购物车逻辑保持不变
 function addToCart(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -305,7 +326,6 @@ function updateHeaderCount() {
     }
 }
 
-// ✨ 重点优化：无刷新移除逻辑
 async function toggleFavorite(id, btn) {
     try {
         const response = await fetch('toggle_favorite.php', {
@@ -317,20 +337,15 @@ async function toggleFavorite(id, btn) {
         
         if (result.status === 'success' && result.action === 'removed') {
             showToast('Removed from favorites');
-            
-            // 如果是在弹窗里操作的，先关闭弹窗
             closeModal();
 
-            // 找到对应的卡片并执行消失动画
             const card = document.getElementById('card-' + id);
             if (card) {
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.8)';
                 
-                // 等动画结束后移除元素
                 setTimeout(() => {
                     card.remove();
-                    // 检查是否删空了，如果空了显示提示语
                     const remainingCards = document.querySelectorAll('.product-card');
                     if (remainingCards.length === 0) {
                         const grid = document.getElementById('favoritesGrid');
@@ -345,7 +360,6 @@ async function toggleFavorite(id, btn) {
         }
     } catch (e) { 
         console.error(e);
-        // 如果网络出错，降级处理：直接刷新
         location.reload(); 
     }
 }

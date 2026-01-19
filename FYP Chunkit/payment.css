@@ -320,3 +320,163 @@ body {
     border-color: #e74c3c;
     background-color: #fff8f8;
 }
+/* 地址切换弹窗基础样式 */
+/* 弹窗整体背景 */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* 遮罩层加深 */
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px); /* 背景模糊，增加高级感 */
+}
+
+.modal.active { display: flex; animation: fadeIn 0.3s ease; }
+
+/* 弹窗主体 */
+.modal-content {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    border: 1px solid #eee;
+}
+
+/* 标题样式 */
+.modal-content h3 {
+    color: #5a3921; /* 主色调棕色 */
+    font-size: 22px;
+    margin-bottom: 20px;
+    font-weight: 800;
+    text-align: center;
+}
+
+/* 地址选项卡片 */
+.addr-option {
+    padding: 18px;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fafafa;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.addr-option:hover {
+    background: #fff9f0;
+    border-color: #d4a76a;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(212, 167, 106, 0.15);
+}
+
+/* 选中状态 */
+.addr-option.selected {
+    border: 2px solid #d4a76a;
+    background: #fffcf7;
+}
+
+/* 在选中项右上角加一个勾选图标（伪元素） */
+/* 修改选中的打勾图标 - 确保不被遮挡 */
+.addr-option.selected::after {
+    content: '\f058';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 12px;      /* 稍微往上调一点点 */
+    right: 12px;    /* 稍微往右边靠 */
+    color: #2ecc71; /* 使用和你标签一样的青绿色 */
+    font-size: 22px;
+    z-index: 2;     /* 确保它在标签之上 */
+    background: white; /* 给图标加个白色背景圆底，防止透出下面的颜色 */
+    border-radius: 50%;
+}
+
+.addr-option strong {
+    color: #333;
+    font-size: 16px;
+}
+
+.addr-option span {
+    color: #777;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* 关闭按钮 */
+.btn-modal-close {
+    width: 100%;
+    padding: 12px;
+    background: #5a3921; /* 使用深棕色按钮 */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 16px;
+    margin-top: 15px;
+    transition: background 0.3s;
+}
+
+.btn-modal-close:hover {
+    background: #7a5537;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+/* --- 滚动条美化：匹配面包店的主色调 --- */
+#modalList::-webkit-scrollbar { width: 6px; }
+#modalList::-webkit-scrollbar-track { background: #fff7ec; border-radius: 10px; }
+#modalList::-webkit-scrollbar-thumb { background: #d4a76a; border-radius: 10px; }
+
+/* --- 地址卡片内的动态标题栏 --- */
+/* 标题行优化 */
+.addr-title-row {
+    display: flex;
+    justify-content: flex-start; /* 改为向左对齐 */
+    align-items: center;
+    gap: 10px;      /* 名字和标签之间的间距 */
+    margin-bottom: 5px;
+    padding-right: 35px; /* 重要：给右侧的打勾图标留出 35px 的空白区域 */
+}
+
+/* 这样标签就会紧贴在名字后面，而不会挤到打勾的位置 */
+.default-badge {
+    background: #2ecc71;
+    color: #ffffff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px; /* 改成小方角看起来更精致 */
+    text-transform: uppercase;
+    font-weight: bold;
+    flex-shrink: 0; /* 防止标签被挤压 */
+}
+
+/* --- 交互：点击时的波纹效果反馈 --- */
+.addr-option:active {
+    transform: scale(0.98);
+    background: #fdf2e2;
+}
+
+/* --- 无地址时的空状态样式 --- */
+.empty-addr-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #aaa;
+}
+.empty-addr-state i {
+    font-size: 40px;
+    margin-bottom: 15px;
+    color: #eee;
+}
