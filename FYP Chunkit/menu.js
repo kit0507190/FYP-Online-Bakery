@@ -34,59 +34,83 @@ document.addEventListener('DOMContentLoaded', function () {
     const productsPerPage = 9;
 
     // --- 3. 核心初始化 ---
-    // --- 3. 核心初始化 ---
-    // --- 3. 核心初始化 ---
     async function initPage() {
-        // A. 从 URL 中读取分类、子分类以及要自动打开的产品 ID
-        const urlParams = new URLSearchParams(window.location.search);
-        const catParam = urlParams.get('category');
-        const subParam = urlParams.get('subcategory');
-        const openId = urlParams.get('open_id'); // 👈 新增：获取要弹窗的产品 ID
+    // 1. Set default filter values
+    currentCategory    = 'all';
+    currentSubCategory = 'all';
+    currentPage        = 1;
 
-        if (catParam) {
-            currentCategory = catParam;
-            currentSubCategory = subParam || 'all';
+    // 2. Read URL parameters to override defaults if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const catParam  = urlParams.get('category');
+    const subParam  = urlParams.get('subcategory');
+    const openId    = urlParams.get('open_id');
+
+    if (catParam) {
+        currentCategory    = catParam.toLowerCase();
+        currentSubCategory = subParam ? subParam.toLowerCase() : 'all';
+    }
+
+    // 3. Prepare UI
+    setupEventListeners();
+
+    if (loadingSpinner) {
+        loadingSpinner.style.display = 'block';
+    }
+
+    try {
+        // 4. Load products
+        const response = await fetch('get_products.php');
+        if (!response.ok) {
+            throw new Error(`Failed to load products: ${response.status}`);
+        }
+        products = await response.json();
+
+        // 5. Load favorites if user is logged in
+        if (window.isLoggedIn === true) {
+            try {
+                const favResponse = await fetch('get_user_favorites.php');
+                if (favResponse.ok) {
+                    favorites = await favResponse.json();
+                }
+            } catch (favErr) {
+                console.warn('Favorites failed to load:', favErr);
+                // non-critical — continue anyway
+            }
         }
 
-        setupEventListeners();
-        // B. 同步侧边栏的视觉状态
-        syncSidebarUI();
+        // 6. Now that we have data — sync UI & render
+        syncSidebarUI();       // make sidebar visually match current filter
+        renderProducts();      // ← this is the key line that was missing
 
-        if (loadingSpinner) loadingSpinner.style.display = 'block';
+        updateCartCount();
+        loadRecentlyViewed();
 
-        try {
-            const response = await fetch('get_products.php');
-            if (!response.ok) throw new Error('Network Error');
-            products = await response.json();
-
-            if (window.isLoggedIn === true) {
-                const favRes = await fetch('get_user_favorites.php');
-                if (favRes.ok) {
-                    favorites = await favRes.json();
-                }
-            }
-
-            renderProducts();
-            updateCartCount();
-            loadRecentlyViewed();
-
-            // --- ✨ 新增：如果 URL 带有 open_id，则自动触发弹窗 ---
-            if (openId) {
-                const productId = parseInt(openId);
-                // 稍微延迟执行，确保 renderProducts 已经把 DOM 渲染好了
+        // 7. Optional: auto-open product quick view from URL
+        if (openId) {
+            const productId = parseInt(openId, 10);
+            if (!isNaN(productId)) {
+                // Small delay so DOM is ready
                 setTimeout(() => {
                     quickViewProduct(productId);
-                }, 300); 
+                }, 300);
             }
-            // ----------------------------------------------
-
-        } catch (error) {
-            console.error("加载出错:", error);
-            if(productsGrid) productsGrid.innerHTML = '<div class="no-products">System loading failed.</div>';
-        } finally {
-            if (loadingSpinner) loadingSpinner.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Initialization failed:', error);
+        if (productsGrid) {
+            productsGrid.innerHTML = `
+                <div class="no-products">
+                    <p>Failed to load products. Please try again later.</p>
+                    <small>${error.message}</small>
+                </div>`;
+        }
+    } finally {
+        if (loadingSpinner) {
+            loadingSpinner.style.display = 'none';
         }
     }
+}
 
     // --- 4. 监听器 (保持不变) ---
     function setupEventListeners() {

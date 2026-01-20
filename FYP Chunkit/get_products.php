@@ -1,16 +1,26 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-include 'db_connect.php'; 
 
-// Explicitly select only existing columns (safe even if you drop more later)
-$sql = "SELECT 
+include __DIR__ . '/db_connect.php';  // Now $pdo is available
+
+if (!isset($pdo)) {
+    echo json_encode(['error' => 'PDO connection not available']);
+    exit;
+}
+
+try {
+    $sql = "
+        SELECT 
             p.id,
             p.name,
             p.price,
             p.category_id,
-            p.subcategory,
+            p.subcategory_id,
             p.stock,
             p.description,
             p.ingredients,
@@ -21,38 +31,52 @@ $sql = "SELECT
             p.size_info,
             p.image,
             p.created_at,
-            c.name AS category_name
-        FROM products p 
-        LEFT JOIN categories c ON p.category_id = c.id";
+            LOWER(c.name) AS category,
+            s.name AS subcategory_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN subcategories s ON p.subcategory_id = s.id
+        ORDER BY p.id
+    ";
 
-$result = $conn->query($sql);
-$products = [];
+    $stmt = $pdo->query($sql);
+    $products = [];
 
-if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        
-        // Skip Cookies category completely
-        if ($row['category_name'] && stripos($row['category_name'], 'Cookie') !== false) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        // Skip cookies if needed
+        if (stripos($row['category'] ?? '', 'cookie') !== false) {
             continue;
         }
 
-        // Clean subcategory: remove surrounding quotes like "5 inch" → 5 inch
-        $cleanSub = trim($row['subcategory'] ?? '', "\"'");
+        // Generate subcategory slug from name
+        $subName = $row['subcategory_name'] ?? '';
+        $subSlug = strtolower($subName);
+        $subSlug = preg_replace('/\s*&?\s*/', ' ', $subSlug);
+        $subSlug = preg_replace('/\s+/', '-', $subSlug);
+        $subSlug = preg_replace('/[^a-z0-9-]/', '', $subSlug);
+        $subSlug = trim($subSlug, '-');
 
-        // Map display category name to lowercase slug (cake, bread, pastry)
-        $catMapping = [
-            'Cakes'    => 'cake',
-            'Bread'    => 'bread',
-            'Pastries' => 'pastry'
+        // Your fix map
+        $fix = [
+            'cute-mini-cake'          => 'mini',
+            'the-animal-series'       => 'animal',
+            'full-moon-gift-packages' => 'full-moon',
+            'wedding-gift-packages'   => 'wedding',
+            'fresh-cream-cake'        => 'fresh-cream',
+            'fondant-cake-design'     => 'fondant',
+            'puff-pastry'             => 'puff',
+            'whole-grain-bread'       => 'wholegrain',
+            'danish-pastries'         => 'danish',
+            'artisan-bread'           => 'artisan',
         ];
-        $categorySlug = $catMapping[$row['category_name']] ?? strtolower($row['category_name'] ?? 'all');
+        $subSlug = $fix[$subSlug] ?? $subSlug;
 
         $products[] = [
             "id"           => (int)$row['id'],
             "name"         => $row['name'],
             "price"        => (float)$row['price'],
-            "category"     => $categorySlug,
-            "subcategory"  => $cleanSub,
+            "category"     => $row['category'] ?? 'all',
+            "subcategory"  => $subSlug,
             "image"        => $row['image'] ?? '',
             "description"  => $row['description'] ?? '',
             "ingredients"  => $row['ingredients'] ?? '',
@@ -61,13 +85,11 @@ if ($result && $result->num_rows > 0) {
             "rating"       => (float)$row['rating'],
             "reviewCount"  => (int)$row['review_count'],
             "soldCount"    => (int)$row['sold_count'],
-            "tags"         => [] // you removed tags, keep empty
+            "tags"         => []
         ];
     }
+
+    echo json_encode($products);
+} catch (PDOException $e) {
+    echo json_encode(['error' => 'Query failed: ' . $e->getMessage()]);
 }
-
-// Always return valid JSON (even if empty)
-echo json_encode($products);
-
-$conn->close();
-?>

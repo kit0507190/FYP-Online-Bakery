@@ -9,23 +9,16 @@
 
 <body>
 
-<!-- 只多这一行 -->
 <?php include 'header.php'; ?>
 
-
-
-<!-- ↓↓↓ 从这里开始：下面全部照抄 menu.html，一行不改 ↓↓↓ -->
-
-<!-- Breadcrumb -->
-    
-
-    <!-- Menu Page -->
-    <section class="menu-page">
+<!-- Menu Page -->
+<section class="menu-page">
     <div class="container">
         <div class="menu-header-box">
             <h1 class="menu-title">Our Delicious Bakery Products</h1>
             
-            <hr class="menu-divider"> <div class="search-filter-bar">
+            <hr class="menu-divider">
+            <div class="search-filter-bar">
                 <div class="search-box">
                     <input type="text" class="search-input" id="searchInput" placeholder="Search products...">
                     <button class="search-btn" id="searchBtn">🔍</button>
@@ -41,173 +34,184 @@
             </div>
         </div>
             
-            <div class="menu-layout">
-                <!-- Categories Sidebar -->
-                <div class="categories-sidebar">
-                    <h3 class="category-header">Categories</h3>
+        <div class="menu-layout">
+            <!-- Categories Sidebar – Fully dynamic from database -->
+            <div class="categories-sidebar">
+                <h3 class="category-header">Categories</h3>
 
-                    <!-- All Products (default active) -->
-                    <div class="category-item">
-                        <div class="category-main active" data-category="all">
-                            <span>All Products</span>
-                            <span class="category-arrow active">▼</span>
-                        </div>
-                        <div class="subcategories active">
-                            <a class="subcategory-item active" data-subcategory="all">All Products</a>
-                        </div>
+                <!-- Always-present "All Products" -->
+                <div class="category-item">
+                    <div class="category-main active" data-category="all">
+                        <span>All Products</span>
+                        <span class="category-arrow active">▼</span>
                     </div>
-                    
-                    <!-- Cake Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="cake">
-                            <span>Cakes</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Cakes</a>
-                            <a class="subcategory-item" data-subcategory="cheese">Cheese Flavour</a>
-                            <a class="subcategory-item" data-subcategory="chocolate">Chocolate & Coffee</a>
-                            <a class="subcategory-item" data-subcategory="strawberry">Strawberry Flavour</a>
-                            <a class="subcategory-item" data-subcategory="vanilla">Vanilla Flavour</a>
-                            <a class="subcategory-item" data-subcategory="durian">Durian Series</a>
-                            <a class="subcategory-item" data-subcategory="animal">The Animal Series</a>
-                            <a class="subcategory-item" data-subcategory="fondant">Fondant Cake Design</a>
-                            <a class="subcategory-item" data-subcategory="fresh-cream">Fresh Cream Cake</a>
-                            <a class="subcategory-item" data-subcategory="festival">Festival</a>
-                            <a class="subcategory-item" data-subcategory="little">Little Series</a>
-                            <a class="subcategory-item" data-subcategory="mini">Cute Mini Cake</a>
-                        </div>
+                    <div class="subcategories active">
+                        <a class="subcategory-item active" data-subcategory="all">All Products</a>
                     </div>
-                    
-                    <!-- Bread Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="bread">
-                            <span>Bread</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Bread</a>
-                            <a class="subcategory-item" data-subcategory="sourdough">Sourdough Bread</a>
-                            <a class="subcategory-item" data-subcategory="wholegrain">Whole Grain Bread</a>
-                            <a class="subcategory-item" data-subcategory="artisan">Artisan Bread</a>
-                            <a class="subcategory-item" data-subcategory="sweet">Sweet Bread</a>
-                        </div>
-                    </div>
-                    
-                    <!-- Pastry Category -->
-                    <div class="category-item">
-                        <div class="category-main" data-category="pastry">
-                            <span>Pastries</span>
-                            <span class="category-arrow">▼</span>
-                        </div>
-                        <div class="subcategories">
-                            <a class="subcategory-item active" data-subcategory="all">All Pastries</a>
-                            <a class="subcategory-item" data-subcategory="croissant">Croissants</a>
-                            <a class="subcategory-item" data-subcategory="danish">Danish Pastries</a>
-                            <a class="subcategory-item" data-subcategory="tart">Tarts</a>
-                            <a class="subcategory-item" data-subcategory="puff">Puff Pastry</a>
-                        </div>
-                    </div>
-                    
-                    
+                </div>
+
+                <?php
+                // Include your database connection
+                // Make sure this file exists and returns a PDO instance named $pdo
+                include 'db_connect.php';  
+
+                // Plural display names – minimal and extensible
+                $pluralMap = [
+                    'cake'    => 'Cakes',
+                    'pastry'  => 'Pastries',
+                    'cookie'  => 'Cookies',
+                    'bread'   => 'Bread'   // already plural
+                ];
+
+                // Fetch all categories
+                $stmt = $pdo->query("SELECT id, name FROM categories ORDER BY id");
+                $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                foreach ($categories as $cat) {
+                    $catName   = $cat['name'];
+                    $catSlug   = strtolower($catName);
+                    $display   = $pluralMap[$catSlug] ?? $catName . (substr($catName, -1) === 's' ? '' : 's');
+
+                    echo '<div class="category-item">';
+                    echo '  <div class="category-main" data-category="' . htmlspecialchars($catSlug) . '">';
+                    echo '      <span>' . htmlspecialchars($display) . '</span>';
+                    echo '      <span class="category-arrow">▼</span>';
+                    echo '  </div>';
+                    echo '  <div class="subcategories">';
+
+                    // All items in this category
+                    echo '      <a class="subcategory-item active" data-subcategory="all">All ' . htmlspecialchars($display) . '</a>';
+
+                    // Fetch subcategories
+                    $subStmt = $pdo->prepare("SELECT name FROM subcategories WHERE category_id = ? ORDER BY id");
+                    $subStmt->execute([$cat['id']]);
+                    $subs = $subStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    foreach ($subs as $sub) {
+                        $subName = $sub['name'];
+
+                        // Generate slug consistent with your JS filter logic
+                        $subSlug = strtolower($subName);
+                        $subSlug = preg_replace('/\s*&?\s*/', ' ', $subSlug);    // & → space
+                        $subSlug = preg_replace('/\s+/', '-', $subSlug);         // spaces → dash
+                        $subSlug = preg_replace('/[^a-z0-9-]/', '', $subSlug);   // remove special chars
+                        $subSlug = trim($subSlug, '-');
+
+                        // Small correction map to match existing JS behavior
+                        // Remove entries as you standardize your product.subcategory values
+                        $fix = [
+                            'cute-mini-cake'          => 'mini',
+                            'the-animal-series'       => 'animal',
+                            'full-moon-gift-packages' => 'full-moon',
+                            'wedding-gift-packages'   => 'wedding',
+                            'fresh-cream-cake'        => 'fresh-cream',
+                            'fondant-cake-design'     => 'fondant',
+                            'puff-pastry'             => 'puff',
+                            'whole-grain-bread'       => 'wholegrain',
+                            'danish-pastries'         => 'danish',
+                            'artisan-bread'           => 'artisan',
+                        ];
+
+                        if (isset($fix[$subSlug])) {
+                            $subSlug = $fix[$subSlug];
+                        }
+
+                        echo '      <a class="subcategory-item" data-subcategory="' 
+                             . htmlspecialchars($subSlug) . '">' 
+                             . htmlspecialchars($subName) 
+                             . '</a>';
+                    }
+
+                    echo '  </div>';
+                    echo '</div>';
+                }
+
+                // Optional fallback if no categories exist
+                if (empty($categories)) {
+                    echo '<p style="padding: 15px; color: #777;">No categories available yet.</p>';
+                }
+                ?>
+            </div>
+            
+            <!-- Products Section -->
+            <div class="products-section">
+                <!-- Active Category Display -->
+                <div class="active-category" id="activeCategory">
+                    All Products
                 </div>
                 
-                <!-- Products Section -->
-                <div class="products-section">
-                    <!-- Active Category Display -->
-                    <div class="active-category" id="activeCategory">
-                        All Products
-                    </div>
-                    
-                    <!-- Results Info -->
-                    <div class="results-info" id="resultsInfo">
-                        Showing all products
-                    </div>
-                    
-                    <!-- Loading Spinner -->
-                    <div class="loading-spinner" id="loadingSpinner" style="display:none;">
-                        <div class="spinner"></div>
-                        <p>Loading delicious products...</p>
-                    </div>
-                    
-                    <!-- Products Grid -->
-                    <div class="products-grid" id="productsGrid">
-                        <!-- Products will be dynamically generated -->
-                    </div>
-                    
-                    <!-- Pagination Controls (Prev / Page / Next) -->
-                    <div class="pagination" id="paginationControls" style="margin-top:18px; display:flex; gap:12px; align-items:center; justify-content:center;">
-                        <button id="prevPageBtn">Prev</button>
-                        <div class="page-indicator" id="pageIndicator">Page 1</div>
-                        <button id="nextPageBtn">Next</button>
-                    </div>
-                    
-                    <!-- The old Load More kept but hidden (not used) -->
-                    <div class="load-more-container" style="display:none;">
-                        <button class="load-more-btn" id="loadMoreBtn" style="display: none;">Load More Products</button>
-                    </div>
-                    
-                    <!-- Recently Viewed -->
-                    <div class="recently-viewed" id="recentlyViewed" style="display: none; margin-top:30px;">
-                        <h2 class="section-title">Recently Viewed</h2>
-                        <div class="recent-products" id="recentProducts">
-                            <!-- Recently viewed products will be dynamically loaded -->
-                        </div>
-                    </div>
+                <!-- Results Info -->
+                <div class="results-info" id="resultsInfo">
+                    Showing all products
+                </div>
+                
+                <!-- Loading Spinner -->
+                <div class="loading-spinner" id="loadingSpinner" style="display:none;">
+                    <div class="spinner"></div>
+                    <p>Loading delicious products...</p>
+                </div>
+                
+                <!-- Products Grid -->
+                <div class="products-grid" id="productsGrid">
+                    <!-- Products will be dynamically generated by JS -->
+                </div>
+                
+                <!-- Pagination -->
+                <div class="pagination" id="paginationControls" style="margin-top:18px; display:flex; gap:12px; align-items:center; justify-content:center;">
+                    <button id="prevPageBtn">Prev</button>
+                    <div class="page-indicator" id="pageIndicator">Page 1</div>
+                    <button id="nextPageBtn">Next</button>
+                </div>
+                
+                <!-- Recently Viewed -->
+                <div class="recently-viewed" id="recentlyViewed" style="display: none; margin-top:30px;">
+                    <h2 class="section-title">Recently Viewed</h2>
+                    <div class="recent-products" id="recentProducts"></div>
                 </div>
             </div>
         </div>
-    </section>
-
-    <!-- Quick View Modal -->
-    <div class="modal" id="quickViewModal">
-        <div class="modal-content" id="quickViewContent">
-            <!-- Quick view content will be dynamically loaded -->
-        </div>
     </div>
+</section>
 
-    
+<!-- Quick View Modal -->
+<div class="modal" id="quickViewModal">
+    <div class="modal-content" id="quickViewContent"></div>
+</div>
 
-    <!-- Back to Top Button -->
-    <button class="back-to-top" id="backToTop" style="display:none;">↑</button>
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop" style="display:none;">↑</button>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast" style="display:none;"></div>
+<!-- Toast -->
+<div class="toast" id="toast" style="display:none;"></div>
 
-    <?php include 'footer.php'; ?>
-	
-	<!-- ⚠️ JS 一定在这里，和 menu.html 一模一样 -->
-	<script src="menu.js"></script>
-	
-    <script>
-        async function forceSyncCart() {
-            // 只有登录了才执行同步
-            if (!window.isLoggedIn) return; 
-            
-            // 获取最新的本地购物车数据
-            const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-            
-            try {
-                // 发送给同步接口
-                await fetch('sync_cart.php?action=update', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ cart: currentCart })
-                });
-                console.log("同步成功：数据库已更新");
-            } catch (e) {
-                console.error("同步失败:", e);
-            }
+<?php include 'footer.php'; ?>
+
+<script src="menu.js"></script>
+
+<script>
+    async function forceSyncCart() {
+        if (!window.isLoggedIn) return;
+        
+        const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+        
+        try {
+            await fetch('sync_cart.php?action=update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart: currentCart })
+            });
+            console.log("Cart synced to database");
+        } catch (e) {
+            console.error("Cart sync failed:", e);
         }
+    }
 
-        // 监听页面点击：只要点了“Add to Cart”按钮，就触发同步
-        document.addEventListener('click', (e) => {
-            if (e.target.innerText && e.target.innerText.includes('Add to Cart')) {
-                // 延迟 0.8 秒，确保 menu.js 已经先把数据存进了 localStorage
-                setTimeout(forceSyncCart, 800); 
-            }
-        });
-    </script>
+    document.addEventListener('click', (e) => {
+        if (e.target.innerText && e.target.innerText.includes('Add to Cart')) {
+            setTimeout(forceSyncCart, 800);
+        }
+    });
+</script>
 
 </body>
 </html>

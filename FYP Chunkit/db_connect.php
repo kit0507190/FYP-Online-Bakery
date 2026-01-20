@@ -1,9 +1,17 @@
 <?php
+// db_connect.php (PDO version)
 $servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "bakeryhouse"; // 👈 请确保这里与 phpMyAdmin 中的名字一致
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) { die("Connection failed: " . $conn->connect_error); }
-$conn->set_charset("utf8mb4");
-?>
+$username   = "root";
+$password   = "";
+$dbname     = "bakeryhouse";
+
+try {
+    $pdo = new PDO(
+        "mysql:host=$servername;dbname=$dbname;charset=utf8mb4",
+        $username,
+        $password,
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
+}
