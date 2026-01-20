@@ -10,21 +10,29 @@ if (!$isLoggedIn) {
 
 $user_id = $_SESSION['user_id'];
 
-// ✨ 核心逻辑保持不变：确保最新收藏排在最前
+// Use PDO to fetch favorites (latest first)
 $sql = "SELECT p.* FROM products p 
         JOIN user_favorites f ON p.id = f.product_id 
-        WHERE f.user_id = ? 
-        ORDER BY f.id DESC"; 
+        WHERE f.user_id = :user_id 
+        ORDER BY f.id DESC";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+try {
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['user_id' => $user_id]);
+    $fav_products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$fav_products = [];
-while($row = $result->fetch_assoc()) {
-    $row['fullSize'] = $row['size']; 
-    $fav_products[] = $row;
+    // Add fullSize key (same logic as before)
+    foreach ($fav_products as &$product) {
+        $product['fullSize'] = $product['size'] ?? 'Standard';
+    }
+    unset($product); // clean up reference
+
+} catch (PDOException $e) {
+    // For development - in production you might want to show a nicer message
+    echo "<div style='color:red; padding:20px; text-align:center;'>";
+    echo "Error loading favorites: " . htmlspecialchars($e->getMessage());
+    echo "</div>";
+    $fav_products = [];
 }
 ?>
 
@@ -173,11 +181,11 @@ while($row = $result->fetch_assoc()) {
                         ✕
                     </button>
 
-                    <img src="<?= $p['image'] ?>" alt="<?= $p['name'] ?>" style="width: 100%; height: 250px; object-fit: cover;">
+                    <img src="<?= htmlspecialchars($p['image'] ?? '') ?>" alt="<?= htmlspecialchars($p['name'] ?? '') ?>" style="width: 100%; height: 250px; object-fit: cover;">
                     <div style="padding: 20px;">
-                        <h3 style="color: #5a3921; margin-bottom: 10px;"><?= $p['name'] ?></h3>
-                        <p style="color: #d4a76a; font-weight: bold; font-size: 1.2rem;">RM <?= number_format($p['price'], 2) ?></p>
-                        <p style="font-size: 0.9rem; color: #888; margin-top: 5px;"><?= $p['size_info'] ?></p>
+                        <h3 style="color: #5a3921; margin-bottom: 10px;"><?= htmlspecialchars($p['name'] ?? 'Unnamed Product') ?></h3>
+                        <p style="color: #d4a76a; font-weight: bold; font-size: 1.2rem;">RM <?= number_format($p['price'] ?? 0, 2) ?></p>
+                        <p style="font-size: 0.9rem; color: #888; margin-top: 5px;"><?= htmlspecialchars($p['size_info'] ?? '') ?></p>
                         
                         <button class="add-to-cart-btn" 
                                 onclick="event.stopPropagation(); openQuickView(<?= $p['id'] ?>)"
