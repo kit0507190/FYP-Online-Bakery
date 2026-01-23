@@ -31,11 +31,39 @@ body {
     box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08);
 }
 
+/* --- 核心修改：让标题变大并居中 --- */
 .page-title {
     color: var(--primary);
     margin: 0;
-    font-size: 26px; /* 🟢 调小：从 36px 调至 26px */
-    font-weight: 700;
+    font-size: 2.6rem !important;  /* 🚀 调大至 2.6rem，匹配 Menu 页面 */
+    font-weight: 800 !important;   /* 🚀 极粗权重，增加气势 */
+    text-align: center;            /* 居中对齐 */
+    width: 100%;
+}
+
+/* 调整副标题也居中 */
+.page-subtitle {
+    text-align: center;
+    margin: 8px 0 0 0;
+    font-size: 14px;
+    color: var(--grey-text);
+}
+
+/* 调整原本的工具栏容器：改为垂直布局，确保大标题有足够空间 */
+/* --- 核心优化：压缩白框垂直高度 --- */
+.header-card.history-toolbar {
+    flex-direction: column;
+    gap: 5px;                       /* 🚀 缩小内部元素之间的间距 */
+    padding: 15px 35px !important;  /* 🚀 上下 Padding 从 30px 减半到 15px */
+    text-align: center;
+}
+
+/* 进一步压缩过滤器容器的顶部间距 */
+.filter-container {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 5px;                /* 🚀 再次拉近与上方文字的距离 */
 }
 
 /* 订单卡片样式 */

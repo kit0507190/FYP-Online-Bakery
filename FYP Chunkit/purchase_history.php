@@ -62,6 +62,7 @@ try {
     <div class="toolbar-left">
         <h2 class="page-title">Purchase History</h2>
         <p class="page-subtitle">Track and manage your delicious orders</p>
+        <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 15px auto; border-radius: 10px;">
     </div>
     
     <div class="filter-container">
