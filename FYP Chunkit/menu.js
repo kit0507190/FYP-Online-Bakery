@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="product-info">
                     <h3 class="product-name">${product.name}</h3>
                     <p class="product-price">RM ${product.price.toFixed(2)}</p>
-                    <p class="product-size">${product.shortSize || ''}</p>
+                    <p class="product-size">${product.size || ''}</p>
                   
 <div class="product-rating" style="margin-bottom: 10px;"> 
     <span class="stars">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5-Math.floor(product.rating))}</span>
@@ -326,7 +326,7 @@ function quickViewProduct(productId) {
                     </div>
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
-                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.size || product.size_info || 'Standard'}</span>
+                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.size || 'Standard'}</span>
                     </div>
                 </div>
                 

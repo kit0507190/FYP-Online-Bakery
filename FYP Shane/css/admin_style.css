@@ -689,4 +689,49 @@ canvas {
 .date-range-group .add-btn {
     box-shadow: 0 6px 15px rgba(0,0,0,0.18);
 }
+/* Fix oversized images in product list table */
+.product-thumb {
+    width:  60px !important;           /* keep this small */
+    height: 60px !important;
+    object-fit: cover;                 /* crops nicely without distortion */
+    border-radius: 8px;
+    border: 2px solid #ddd;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;                    /* helps with centering */
+    margin: 0 auto;                    /* center in cell if needed */
+}
+
+/* Very important: prevent the image from expanding the table cell */
+td:has(.product-thumb) {
+    width: 80px;                       /* give fixed width to image column */
+    min-width: 80px;
+    max-width: 80px;
+    padding: 8px !important;
+    text-align: center;
+}
+
+/* Make sure Actions column doesn't get crushed */
+td:last-child {                        /* Actions column */
+    white-space: nowrap;
+    min-width: 140px;                  /* enough space for two buttons */
+    text-align: center;
+}
+
+/* Optional: make whole row more readable */
+#productTable tr {
+    height: 80px;                      /* give consistent row height */
+    vertical-align: middle;
+}
+
+/* If buttons are still pushed off → force Actions to stay visible */
+.action-btn {
+    display: inline-block !important;
+    margin: 4px 6px;
+    padding: 6px 12px;
+    font-size: 0.9rem;
+}
+.table-card {
+    overflow-x: auto;
+}
 }
