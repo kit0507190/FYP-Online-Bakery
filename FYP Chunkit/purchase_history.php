@@ -11,14 +11,16 @@ $userEmail = $_SESSION['user_email'] ?? '';
 
 try {
     // 获取订单数据
-    $query = "SELECT o.id as order_id, o.total, o.created_at,
-                     d.product_id, d.product_name, d.price as item_price, d.quantity,
-                     p.image as product_image 
-              FROM orders o 
-              JOIN orders_detail d ON o.id = d.order_id 
-              LEFT JOIN products p ON d.product_id = p.id 
-              WHERE o.customer_email = ? 
-              ORDER BY o.id DESC";
+    // 修改后的查询语句
+$query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
+                 d.product_id, d.product_name, d.price as item_price, d.quantity,
+                 p.image as product_image 
+          FROM orders o 
+          JOIN orders_detail d ON o.id = d.order_id 
+          LEFT JOIN products p ON d.product_id = p.id 
+          WHERE o.customer_email = ? 
+          AND o.payment_status = 'paid'  -- 🚀 只显示已付款的订单
+          ORDER BY o.id DESC";
     
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userEmail]);

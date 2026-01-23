@@ -11,10 +11,11 @@ if (!$isLoggedIn) {
 $user_id = $_SESSION['user_id'];
 
 // Use PDO to fetch favorites (latest first)
-$sql = "SELECT p.* FROM products p 
+// favorites.php 核心查询修改
+$sql = "SELECT p.*, f.id as favorite_record_id FROM products p 
         JOIN user_favorites f ON p.id = f.product_id 
         WHERE f.user_id = :user_id 
-        ORDER BY f.id DESC";
+        ORDER BY f.id DESC"; // 🚀 关键：按收藏记录的 ID 降序，最新的排在最前
 
 try {
     $stmt = $pdo->prepare($sql);
