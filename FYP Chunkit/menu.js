@@ -288,10 +288,8 @@ function quickViewProduct(productId) {
     
     addToRecentlyViewed(productId);
     
-    // 检查当前收藏状态
     const isFavorite = favorites.includes(parseInt(product.id));
 
-    // 重新构建内容：Favorites 的排版 + Menu 的数据
     quickViewContent.innerHTML = `
         <button class="close-modal" id="closeModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
         
@@ -307,16 +305,19 @@ function quickViewProduct(productId) {
                     <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
                     <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #666;">${product.reviewCount || 0} reviews</span>
+                    <span style="color: #666;">${product.review_count || product.reviewCount || 0} reviews</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #666;">${product.soldCount || 0} sold</span>
+                    <span style="color: #666;">${product.sold_count || product.soldCount || 0} sold</span>
                 </div>
                 
                 <div style="margin-bottom: 20px; font-size: 1.4rem; font-weight: 700; color: #c17e3c;">
                     RM ${product.price.toFixed(2)}
                 </div>
                 
-                <p style="margin-bottom: 25px; color: #555; font-size: 0.95rem; line-height: 1.5;">${product.description || ''}</p>
+                <!-- FIXED: Use full_description here, fallback to description -->
+                <p style="margin-bottom: 25px; color: #555; font-size: 0.98rem; line-height: 1.65;">
+                    ${product.full_description || product.description || 'No description available.'}
+                </p>
                 
                 <div style="margin-bottom: 20px; padding: 15px; background: #f9f5f2; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
@@ -325,7 +326,7 @@ function quickViewProduct(productId) {
                     </div>
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
-                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.fullSize || product.shortSize || 'Standard'}</span>
+                        <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.size || product.size_info || 'Standard'}</span>
                     </div>
                 </div>
                 
@@ -345,7 +346,6 @@ function quickViewProduct(productId) {
 
     quickViewModal.style.display = 'flex';
     
-    // 重新绑定按钮事件
     document.getElementById('closeModal').onclick = () => quickViewModal.style.display = 'none';
     
     document.getElementById('modalAddToCartBtn').onclick = () => { 
@@ -358,7 +358,7 @@ function quickViewProduct(productId) {
         if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
         const isNowActive = modalFavBtn.classList.toggle('active');
         modalFavBtn.innerHTML = isNowActive ? '❤️' : '🤍';
-        toggleFavorite(product.id); // 调用原有的逻辑
+        toggleFavorite(product.id);
     };
 }
 
