@@ -10,17 +10,16 @@ if (!isset($_SESSION['user_id'])) {
 $userEmail = $_SESSION['user_email'] ?? ''; 
 
 try {
-    // 获取订单数据
-    // 修改后的查询语句
-$query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
-                 d.product_id, d.product_name, d.price as item_price, d.quantity,
-                 p.image as product_image 
-          FROM orders o 
-          JOIN orders_detail d ON o.id = d.order_id 
-          LEFT JOIN products p ON d.product_id = p.id 
-          WHERE o.customer_email = ? 
-          AND o.payment_status = 'paid'  -- 🚀 只显示已付款的订单
-          ORDER BY o.id DESC";
+    // 1. 获取订单数据（包含 status）
+    $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status, o.status,
+                     d.product_id, d.product_name, d.price as item_price, d.quantity,
+                     p.image as product_image 
+              FROM orders o 
+              JOIN orders_detail d ON o.id = d.order_id 
+              LEFT JOIN products p ON d.product_id = p.id 
+              WHERE o.customer_email = ? 
+              AND o.payment_status = 'paid' 
+              ORDER BY o.id DESC";
     
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userEmail]);
@@ -34,6 +33,7 @@ $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
                 'id' => $oid,
                 'total' => $row['total'],
                 'date' => $row['created_at'],
+                'status' => $row['status'],
                 'items' => []
             ];
         }
@@ -50,9 +50,7 @@ $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase History - Bakery House</title>
-    
-    <link rel="stylesheet" href="purchase_history.css?v=2.1">
-    
+    <link rel="stylesheet" href="purchase_history.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -60,25 +58,55 @@ $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
     <?php include 'header.php'; ?>
 
     <div class="purchase-container">
-        <div class="header-card">
-            <h2 class="page-title">Purchase History</h2>
+        <div class="header-card history-toolbar">
+    <div class="toolbar-left">
+        <h2 class="page-title">Purchase History</h2>
+        <p class="page-subtitle">Track and manage your delicious orders</p>
+    </div>
+    
+    <div class="filter-container">
+        <div class="filter-box">
+            <i class="fas fa-filter filter-icon"></i>
+            <select id="statusFilter" class="modern-select" onchange="filterOrders()">
+                <option value="all">All Orders</option>
+                <option value="preparing">Preparing</option>
+                <option value="ready">Ready</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
         </div>
+    </div>
+</div>
 
         <?php if (empty($orders)): ?>
-            <div class="shopee-card" style="text-align: center; padding: 50px;">
-                <i class="fas fa-shopping-basket" style="font-size: 50px; color: #eee; margin-bottom: 20px;"></i>
-                <p style="color: #999;">No orders yet. Start your sweet journey!</p>
-                <a href="menu.php" style="color: var(--accent); font-weight: bold; text-decoration: none;">Browse Menu</a>
+            <div class="shopee-card empty-state">
+                <i class="fas fa-shopping-basket"></i>
+                <p>No orders yet. Start your sweet journey!</p>
+                <a href="menu.php" class="browse-link">Browse Menu</a>
             </div>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>
-                <div class="shopee-card">
+                <div class="shopee-card" data-status="<?php echo htmlspecialchars($order['status']); ?>">
                     <div class="card-header">
                         <div class="shop-info">
                             <span class="shop-brand"><i class="fas fa-store"></i> Bakery House</span>
                             <span class="order-id-tag">Order ID: #<?php echo $order['id']; ?></span>
                         </div>
                         <div class="order-meta">
+                            <?php
+                                $status = $order['status'];
+                                $icon = "fa-clock"; 
+                                if($status == 'preparing') $icon = "fa-spinner fa-spin"; 
+                                if($status == 'ready')     $icon = "fa-cookie-bite";
+                                if($status == 'delivered') $icon = "fa-truck-fast";
+                                if($status == 'cancelled') $icon = "fa-circle-xmark";
+                            ?>
+
+                            <span class="status-badge status-<?php echo htmlspecialchars($status); ?>">
+                                <i class="fas <?php echo $icon; ?>"></i>
+                                <?php echo htmlspecialchars($status); ?>
+                            </span>
+                            
                             <span class="order-date">
                                 <i class="far fa-calendar-alt"></i> 
                                 <?php echo date('d M Y, h:i A', strtotime($order['date'])); ?>
@@ -107,8 +135,8 @@ $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
                             <span class="amount">RM <?php echo number_format($order['total'], 2); ?></span>
                         </div>
                         <button class="buy-again-btn" onclick='handleBuyAgain(<?php echo htmlspecialchars(json_encode($order['items']), ENT_QUOTES, 'UTF-8'); ?>)'>
-    <i class="fas fa-redo"></i> Buy Again
-</button>
+                            <i class="fas fa-redo"></i> Buy Again
+                        </button>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -116,50 +144,52 @@ $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status,
     </div>
 
     <script>
-    // 🟢 改为 async 函数，因为我们要等待数据库同步完成
-    async function handleBuyAgain(items) {
-    let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
-
-    items.forEach(item => {
-        let pid = item.product_id;
+    // 🚀 JS 过滤逻辑
+    function filterOrders() {
+        const filterValue = document.getElementById('statusFilter').value;
+        const cards = document.querySelectorAll('.shopee-card');
         
-        // 🟢 核心逻辑：先寻找这个产品在不在现有的购物车里
-        let existingIndex = cart.findIndex(c => c.id == pid);
-        let currentQty = 0;
-
-        if (existingIndex > -1) {
-            // 如果已经在车里了，先把旧的数量存起来，然后把这个旧项从数组里删除
-            currentQty = cart[existingIndex].quantity;
-            cart.splice(existingIndex, 1); 
-        }
-
-        // 🟢 不管它是新是旧，统一 push 到数组的最后一位
-        // 这样在 cart.php reverse 之后，它就会排在最上面
-        cart.push({
-            id: pid,
-            name: item.product_name,
-            price: parseFloat(item.item_price),
-            image: item.product_image || "cake/A_Little_Sweet.jpg",
-            quantity: currentQty + parseInt(item.quantity) // 旧量 + 新量
+        cards.forEach(card => {
+            const orderStatus = card.getAttribute('data-status');
+            if (filterValue === 'all' || orderStatus === filterValue) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
         });
-    });
-
-    // 1. 存入本地
-    localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
-
-    // 2. 同步数据库并跳转
-    try {
-        const response = await fetch('sync_cart.php?action=update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart: cart })
-        });
-        window.location.href = 'cart.php'; 
-    } catch (e) {
-        console.error("Sync error:", e);
-        window.location.href = 'cart.php';
     }
-}
-</script>
+
+    async function handleBuyAgain(items) {
+        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
+        items.forEach(item => {
+            let pid = item.product_id;
+            let existingIndex = cart.findIndex(c => c.id == pid);
+            let currentQty = 0;
+            if (existingIndex > -1) {
+                currentQty = cart[existingIndex].quantity;
+                cart.splice(existingIndex, 1); 
+            }
+            cart.push({
+                id: pid,
+                name: item.product_name,
+                price: parseFloat(item.item_price),
+                image: item.product_image || "cake/A_Little_Sweet.jpg",
+                quantity: currentQty + parseInt(item.quantity)
+            });
+        });
+        localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
+        try {
+            await fetch('sync_cart.php?action=update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart: cart })
+            });
+            window.location.href = 'cart.php'; 
+        } catch (e) {
+            console.error("Sync error:", e);
+            window.location.href = 'cart.php';
+        }
+    }
+    </script>
 </body>
 </html>

@@ -179,3 +179,211 @@ body {
     padding: 100px 0;
     color: var(--grey-text);
 }
+/* ============================================================
+   NEW: Order Status Badge Styles
+   ============================================================ */
+
+.order-meta {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 5px 14px;
+    border-radius: 50px; /* 胶囊形状 */
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px; /* 图标和文字的间距 */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+/* 🟠 Preparing: 橙色 + 呼吸灯动画 */
+.status-preparing { 
+    background: #fff4e5; 
+    color: #ff9800; 
+    border: 1px solid #ffe5c4;
+    animation: status-pulse 2s infinite; 
+}
+
+/* 🔵 Ready: 亮蓝色 + 微弱发光 */
+.status-ready { 
+    background: #e3f2fd; 
+    color: #2196f3; 
+    border: 1px solid #bbdefb;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.2);
+}
+
+/* 🟢 Delivered: 柔和绿色 */
+.status-delivered { 
+    background: #e8f5e9; 
+    color: #2e7d32; 
+    border: 1px solid #c8e6c9; 
+}
+
+/* 🔴 Cancelled: 灰色调 */
+.status-cancelled { 
+    background: #f5f5f5; 
+    color: #d32f2f; 
+    border: 1px solid #e0e0e0;
+    opacity: 0.7;
+}
+
+/* ⚪ Pending/Default: 灰色 */
+.status-pending {
+    background: #f9f9f9;
+    color: #999;
+    border: 1px solid #eee;
+}
+
+/* 呼吸灯动画定义 */
+@keyframes status-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
+    70% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(255, 152, 0, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
+}
+/* ============================================================
+   NEW: Order Filter Dropdown Styles (Added at the end)
+   ============================================================ */
+
+/* 1. 标题栏布局：让标题和下拉框左右对齐 */
+.header-card.history-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 2. 过滤器容器 */
+.filter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* 3. 过滤器文字标签 */
+.filter-label {
+    font-size: 14px;
+    color: var(--grey-text);
+    font-weight: 500;
+}
+
+/* 4. 下拉选择框样式：匹配 Bakery House 的金色与圆角风格 */
+.filter-select {
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1.5px solid #eee;
+    color: var(--primary);
+    background-color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(90, 57, 33, 0.03);
+    -webkit-appearance: none; /* 移除默认箭头以统一样式 */
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a3921' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+/* 5. 悬停与聚焦效果 */
+.filter-select:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(212, 167, 106, 0.1);
+}
+
+.filter-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.15);
+}
+
+/* 6. 过滤时的淡入淡出过渡动画 */
+.shopee-card {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+/* ============================================================
+   PRO UI OPTIMIZATION (Bakery House Special)
+   ============================================================ */
+
+/* 1. 增强型工具栏布局 */
+.history-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid var(--accent); /* 侧边金色装饰线，增加高级感 */
+    padding: 25px 35px !important;
+}
+
+.page-subtitle {
+    margin: 5px 0 0 0;
+    font-size: 13px;
+    color: var(--grey-text);
+}
+
+/* 2. 现代过滤器包装器 */
+.filter-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fdfdfd;
+    border: 1px solid #ececec;
+    border-radius: 12px;
+    padding: 0 15px;
+    transition: all 0.3s ease;
+}
+
+.filter-box:hover {
+    border-color: var(--accent);
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(212, 167, 106, 0.1);
+}
+
+.filter-icon {
+    color: var(--accent);
+    font-size: 14px;
+    margin-right: -5px;
+}
+
+/* 3. 彻底重塑下拉框 */
+.modern-select {
+    border: none !important;
+    background: transparent !important;
+    padding: 12px 35px 12px 15px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--primary) !important;
+    width: 180px;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+/* 自定义下拉箭头 */
+.filter-box::after {
+    content: "\f107"; /* FontAwesome 下箭头 */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    right: 15px;
+    color: var(--accent);
+    pointer-events: none;
+}
+
+/* 4. 卡片列表的入场动画 */
+.shopee-card {
+    border: 1px solid transparent;
+}
+
+.shopee-card:hover {
+    border-color: #f1e4d3;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(90, 57, 33, 0.12);
+}
