@@ -40,7 +40,6 @@ if (isset($_POST['add_product'])) {
     $description    = trim($_POST['description'] ?? '');
     $full_description = trim($_POST['full_description'] ?? '');
     $ingredients    = trim($_POST['ingredients'] ?? '');
-    $size           = trim($_POST['size'] ?? '');
     $size_info      = trim($_POST['size_info'] ?? '');
 
     $image = '';
@@ -54,10 +53,10 @@ if (isset($_POST['add_product'])) {
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO products 
-                (name, price, category_id, subcategory_id, stock, description, full_description, ingredients, size, size_info, image)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (name, price, category_id, subcategory_id, stock, description, full_description, ingredients, size_info, image)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
-            $stmt->execute([$name, $price, $category_id, $subcategory_id, $stock, $description, $full_description, $ingredients, $size, $size_info, $image]);
+            $stmt->execute([$name, $price, $category_id, $subcategory_id, $stock, $description, $full_description, $ingredients, $size_info, $image]);
             header("Location: manage_products.php?success=add");
             exit();
         } catch (PDOException $e) {
@@ -79,7 +78,6 @@ if (isset($_POST['update_product'])) {
     $description    = trim($_POST['description'] ?? '');
     $full_description = trim($_POST['full_description'] ?? '');
     $ingredients    = trim($_POST['ingredients'] ?? '');
-    $size           = trim($_POST['size'] ?? '');
     $size_info      = trim($_POST['size_info'] ?? '');
 
     $image = $_POST['existing_image'] ?? '';
@@ -101,10 +99,10 @@ if (isset($_POST['update_product'])) {
             $stmt = $pdo->prepare("
                 UPDATE products SET
                     name = ?, price = ?, category_id = ?, subcategory_id = ?, stock = ?,
-                    description = ?, full_description = ?, ingredients = ?, size = ?, size_info = ?, image = ?
+                    description = ?, full_description = ?, ingredients = ?, size_info = ?, image = ?
                 WHERE id = ?
             ");
-            $stmt->execute([$name, $price, $category_id, $subcategory_id, $stock, $description, $full_description, $ingredients, $size, $size_info, $image, $id]);
+            $stmt->execute([$name, $price, $category_id, $subcategory_id, $stock, $description, $full_description, $ingredients, $size_info, $image, $id]);
             header("Location: manage_products.php?success=update");
             exit();
         } catch (PDOException $e) {
@@ -222,13 +220,7 @@ if ($editing) {
 
                     <div class="form-group">
                         <label>Price (RM)</label>
-                        <div class="input-with-btns">
-                            <input type="number" step="0.01" name="price" min="0" required value="<?= number_format($edit_product['price'] ?? 0, 2) ?>" oninput="blockNegative(this)">
-                            <div class="btn-group">
-                                <button type="button" class="step-btn plus" onclick="addCents()">+0.10</button>
-                                <button type="button" class="step-btn minus" onclick="subtractCents()">-0.10</button>
-                            </div>
-                        </div>
+                        <input type="number" step="0.01" name="price" min="0" required value="<?= number_format($edit_product['price'] ?? 0, 2) ?>" oninput="blockNegative(this)">
                     </div>
 
                     <div class="form-group">
@@ -261,13 +253,7 @@ if ($editing) {
 
                     <div class="form-group">
                         <label>Stock Quantity</label>
-                        <div class="input-with-btns">
-                            <input type="number" name="stock" min="0" required value="<?= $edit_product['stock'] ?? 0 ?>" oninput="blockNegative(this)">
-                            <div class="btn-group">
-                                <button type="button" class="step-btn plus" onclick="addStock()">+1</button>
-                                <button type="button" class="step-btn minus" onclick="subtractStock()">-1</button>
-                            </div>
-                        </div>
+                        <input type="number" name="stock" min="0" required value="<?= $edit_product['stock'] ?? 0 ?>" oninput="blockNegative(this)">
                     </div>
 
                     <div class="form-group full-width">
@@ -283,11 +269,6 @@ if ($editing) {
                     <div class="form-group full-width">
                         <label>Ingredients</label>
                         <textarea name="ingredients" rows="4"><?= htmlspecialchars($edit_product['ingredients'] ?? '') ?></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Size</label>
-                        <input type="text" name="size" value="<?= htmlspecialchars($edit_product['size'] ?? '') ?>">
                     </div>
 
                     <div class="form-group">
@@ -328,13 +309,7 @@ if ($editing) {
 
                     <div class="form-group">
                         <label>Price (RM)</label>
-                        <div class="input-with-btns">
-                            <input type="number" step="0.01" name="price" min="0" required placeholder="45.00" oninput="blockNegative(this)">
-                            <div class="btn-group">
-                                <button type="button" class="step-btn plus" onclick="addCents()">+0.10</button>
-                                <button type="button" class="step-btn minus" onclick="subtractCents()">-0.10</button>
-                            </div>
-                        </div>
+                        <input type="number" step="0.01" name="price" min="0" required placeholder="45.00" oninput="blockNegative(this)">
                     </div>
 
                     <div class="form-group">
@@ -365,13 +340,7 @@ if ($editing) {
 
                     <div class="form-group">
                         <label>Stock Quantity</label>
-                        <div class="input-with-btns">
-                            <input type="number" name="stock" min="0" value="0" required oninput="blockNegative(this)">
-                            <div class="btn-group">
-                                <button type="button" class="step-btn plus" onclick="addStock()">+1</button>
-                                <button type="button" class="step-btn minus" onclick="subtractStock()">-1</button>
-                            </div>
-                        </div>
+                        <input type="number" name="stock" min="0" value="0" required oninput="blockNegative(this)">
                     </div>
 
                     <div class="form-group full-width">
@@ -387,11 +356,6 @@ if ($editing) {
                     <div class="form-group full-width">
                         <label>Ingredients</label>
                         <textarea name="ingredients" rows="4" placeholder="Flour, sugar, eggs, etc."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Size</label>
-                        <input type="text" name="size" placeholder="e.g., 5-inch (Serves 4-6 people)">
                     </div>
 
                     <div class="form-group">
@@ -485,17 +449,6 @@ if ($editing) {
 function blockNegative(input) {
     if (input.value < 0) input.value = 0;
 }
-function addCents() { 
-    let i = document.querySelector('input[name="price"]'); 
-    i.value = (parseFloat(i.value || 0) + 0.10).toFixed(2); 
-}
-function subtractCents() { 
-    let i = document.querySelector('input[name="price"]'); 
-    let v = parseFloat(i.value || 0); 
-    i.value = v >= 0.10 ? (v - 0.10).toFixed(2) : "0.00"; 
-}
-function addStock() { let i = document.querySelector('input[name="stock"]'); i.value = parseInt(i.value || 0) + 1; }
-function subtractStock() { let i = document.querySelector('input[name="stock"]'); let v = parseInt(i.value || 0); if (v > 0) i.value = v - 1; }
 
 // Modal functions
 function openModal(src, caption) {
