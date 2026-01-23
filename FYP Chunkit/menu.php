@@ -16,6 +16,7 @@
     <div class="container">
         <div class="menu-header-box">
             <h1 class="menu-title">Our Delicious Bakery Products</h1>
+            <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 0 auto 20px; border-radius: 10px;">
             
             <hr class="menu-divider">
             <div class="search-filter-bar">

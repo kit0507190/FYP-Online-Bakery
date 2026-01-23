@@ -116,13 +116,30 @@ body {
     margin-top: 20px !important; 
 }
 
+/* 修改后的 Cart 标题样式 - 匹配 Favorites 风格 */
 .cart-title {
     color: #5a3921;
-    font-size: 32px;
-    margin-bottom: 30px;
+    font-size: 2.6rem;           /* 与 Favorites 一致 */
+    font-weight: 800;            /* 极粗权重 */
+    margin-bottom: 10px;         /* 缩小间距，留给下方的横线 */
     text-align: center;
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 15px;
+    border-bottom: none !important; /* 移除原本的灰色细线 */
+    padding-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+/* 复用 Favorites 的心跳/律动动画（可选，用于购物车图标） */
+.cart-icon-pulse {
+    animation: cartPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes cartPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
 /* Empty Cart */

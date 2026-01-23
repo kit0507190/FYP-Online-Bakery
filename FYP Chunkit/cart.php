@@ -28,6 +28,7 @@ if (!isset($_SESSION['user_id'])) {
 <div class="container">
     <div class="cart-content">
         <h1 class="cart-title">Shopping Cart</h1>
+        <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 0 auto 20px; border-radius: 10px;">
 
         <div id="cartContainer"></div>
 
