@@ -282,18 +282,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- 7. 修正后的 Quick View (包含 Inch 逻辑和极速反馈) ---
 // --- 7. 优化后的 Quick View (同步 Favorites 的高级设计 + 补全销量信息) ---
+// --- 7. 优化后的 Quick View (完全同步 Favorites 页面设计) ---
 function quickViewProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
     addToRecentlyViewed(productId);
     
+    // 检查当前产品是否在收藏夹中
     const isFavorite = favorites.includes(parseInt(product.id));
 
     quickViewContent.innerHTML = `
         <button class="close-modal" id="closeModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
         
-        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;">
+        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;" class="modal-body-flex">
             <div style="flex: 1.1; position: sticky; top: 0;">
                 <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;">
             </div>
@@ -305,21 +307,22 @@ function quickViewProduct(productId) {
                     <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
                     <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #666;">${product.review_count || product.reviewCount || 0} reviews</span>
+                    <span style="color: #888;">${product.review_count || product.reviewCount || 0} Reviews</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #666;">${product.sold_count || product.soldCount || 0} sold</span>
+                    <span style="color: #d4a76a; font-weight: 600;">${product.sold_count || product.soldCount || 0} Sold</span>
                 </div>
                 
-                <div style="margin-bottom: 20px; font-size: 1.4rem; font-weight: 700; color: #c17e3c;">
-                    RM ${product.price.toFixed(2)}
+                <div style="margin-bottom: 25px; font-size: 1.8rem; font-weight: 700; color: #d4a76a;">
+                    RM ${parseFloat(product.price).toFixed(2)}
                 </div>
                 
-                <!-- FIXED: Use full_description here, fallback to description -->
-                <p style="margin-bottom: 25px; color: #555; font-size: 0.98rem; line-height: 1.65;">
-                    ${product.full_description || product.description || 'No description available.'}
-                </p>
+                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
+                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">
+                        ${product.full_description || product.description || 'No description available.'}
+                    </p>
+                </div>
                 
-                <div style="margin-bottom: 20px; padding: 15px; background: #f9f5f2; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; background: #f9f5f2; padding: 15px; border-radius: 10px;">
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
@@ -344,21 +347,29 @@ function quickViewProduct(productId) {
         </div>
     `;
 
+    // 显示弹窗
     quickViewModal.style.display = 'flex';
     
+    // 绑定关闭事件
     document.getElementById('closeModal').onclick = () => quickViewModal.style.display = 'none';
     
+    // 绑定加入购物车事件
     document.getElementById('modalAddToCartBtn').onclick = () => { 
         addToCart(product.id, 1);
         quickViewModal.style.display = 'none'; 
     };
 
+    // 绑定收藏切换事件
     const modalFavBtn = document.getElementById('modalFavBtn');
     modalFavBtn.onclick = () => {
         if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
+        
+        // 视觉上立即反馈
         const isNowActive = modalFavBtn.classList.toggle('active');
         modalFavBtn.innerHTML = isNowActive ? '❤️' : '🤍';
-        toggleFavorite(product.id);
+        
+        // 调用原有的收藏逻辑
+        toggleFavorite(parseInt(product.id));
     };
 }
 
