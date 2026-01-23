@@ -540,7 +540,7 @@ function loadRecentlyViewed() {
         return; 
     }
     
-    // 1. 查找产品对象 (使用 == 确保 ID 匹配)
+    // 1. 查找产品对象
     const product = products.find(p => p.id == productId);
     if (!product) {
         console.error("Product not found:", productId);
@@ -552,19 +552,16 @@ function loadRecentlyViewed() {
         cart = [];
     }
 
-    // --- 核心修改：置顶逻辑 ---
-    // 3. 寻找该产品在数组中的索引
+    // 3. 核心：置顶逻辑
     const existingIndex = cart.findIndex(item => item.id == productId);
     let finalQuantity = parseInt(quantity);
 
     if (existingIndex > -1) {
-        // 如果产品已存在：先存下旧数量累加，然后从当前位置“挖掉”它
         finalQuantity += parseInt(cart[existingIndex].quantity);
         cart.splice(existingIndex, 1);
     }
 
-    // 4. 统一 push 到数组的最后一位
-    // 因为渲染时使用了 .reverse()，数组最后一位在视觉上就是第一行
+    // 4. 统一 push 到数组末尾
     cart.push({ 
         id: product.id, 
         name: product.name, 
@@ -572,24 +569,37 @@ function loadRecentlyViewed() {
         image: product.image, 
         quantity: finalQuantity 
     });
-    // -------------------------
 
-    // 5. 更新本地存储与 UI
+    // 5. 更新本地存储
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
-    updateCartCount();
+    
+    // 🚀 关键修复：手动触发 header.php 里的更新函数，实现即时刷新数字
+    if (typeof updateHeaderCartCount === 'function') {
+        updateHeaderCartCount();
+    }
+
+    // 6. 执行 UI 提示和同步
+    updateCartCount(); 
     showToast(`${product.name} added to cart!`);
     
-    // 6. 同步到数据库
     if (typeof forceSyncCart === 'function') {
         forceSyncCart();
     }
 }
 
-    function updateCartCount() {
-        const total = cart.reduce((s, i) => s + i.quantity, 0);
-        localStorage.setItem('cartItemCount', total.toString());
-        if (cartCount) cartCount.textContent = total;
+function updateCartCount() {
+    // 重新从本地读取最新的 cart，确保数字 100% 准确
+    const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+    const total = currentCart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
+    
+    localStorage.setItem('cartItemCount', total.toString());
+    
+    // 更新本地 menu.php 里的数字标签（如果有的话）
+    const localCount = document.querySelector('.cart-count'); 
+    if (localCount) {
+        localCount.textContent = total;
     }
+}
 
     function showToast(msg) { if (toast) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2500); } }
 
