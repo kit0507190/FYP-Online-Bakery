@@ -73,9 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
         exit;
     } catch (PDOException $e) {
-        $pdo->rollBack();
-        $dbErrorMessage = 'Database Error: ' . $e->getMessage();
-    }
+    $pdo->rollBack();
+    // 把下面这行改成 die，这样如果报错，页面会卡住并显示具体错误
+    die("数据库报错了: " . $e->getMessage()); 
+}
 }
 
 function parseAddr($raw) {
@@ -289,65 +290,73 @@ function parseAddr($raw) {
 
     // --- 2. 核心校验逻辑 (Place Order 点击时触发) ---
     function validateCheckout() {
-        // 每次点击前先清除之前的红色错误状态
-        clearErrors();
+    // 1. 每次点击前先清除之前的红色错误状态
+    clearErrors();
 
-        // A. 检查地址是否存在
-        if (userAddressCount === 0) {
-            document.getElementById('addressRequiredModal').style.display = 'flex';
-            return false; 
-        }
-
-        // B. 检查支付方式是否选择
-        const checked = document.querySelector('input[name="paymentMethod"]:checked');
-        if (!checked) { 
-            alert("Please select a payment method."); 
-            return false; 
-        }
-        
-        // C. 如果选的是 Debit Card，执行详细红字校验
-        if (checked.value === 'debitCard') {
-            let isValid = true;
-
-            const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
-            const expiry = document.getElementById('expiryInput').value;
-            const cvv = document.getElementById('cvvInput').value;
-
-            // 校验卡号 (必须 16 位)
-            if (cardNum.length !== 16 || isNaN(cardNum)) {
-                showError('cardNumberInput', 'cardError', 'Please enter a valid 16-digit card number.');
-                isValid = false;
-            }
-
-            // 校验有效期 (MM/YY 格式且需大于等于 2026年1月)
-            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-                showError('expiryInput', 'expiryError', 'Use MM/YY format.');
-                isValid = false;
-            } else {
-                const [m, y] = expiry.split('/').map(num => parseInt(num));
-                const currentYear = 26; // 2026年
-                const currentMonth = 1;
-
-                if (m < 1 || m > 12) {
-                    showError('expiryInput', 'expiryError', 'Invalid month (01-12).');
-                    isValid = false;
-                } else if (y < currentYear || (y === currentYear && m < currentMonth)) {
-                    showError('expiryInput', 'expiryError', 'Card has expired.');
-                    isValid = false;
-                }
-            }
-
-            // 校验 CVV (必须 3 位)
-            if (cvv.length !== 3 || isNaN(cvv)) {
-                showError('cvvInput', 'cvvError', 'Enter 3-digit CVV.');
-                isValid = false;
-            }
-
-            return isValid; // 只有全部校验通过才跳转
-        }
-
-        return true;
+    // 2. 检查地址是否存在
+    if (typeof userAddressCount === 'undefined' || userAddressCount === 0) {
+        document.getElementById('addressRequiredModal').style.display = 'flex';
+        return false; 
     }
+
+    // 3. 检查支付方式是否选择
+    const checked = document.querySelector('input[name="paymentMethod"]:checked');
+    if (!checked) { 
+        alert("Please select a payment method."); 
+        return false; 
+    }
+    
+    // 4. 如果选的是 Debit Card，执行详细校验
+    let isValid = true;
+    if (checked.value === 'debitCard') {
+        const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
+        const expiry = document.getElementById('expiryInput').value;
+        const cvv = document.getElementById('cvvInput').value;
+
+        // 校验卡号 (必须 16 位)
+        if (cardNum.length !== 16 || isNaN(cardNum)) {
+            showError('cardNumberInput', 'cardError', 'Please enter a valid 16-digit card number.');
+            isValid = false;
+        }
+
+        // 校验有效期 (MM/YY 格式且需大于等于 2026年1月)
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+            showError('expiryInput', 'expiryError', 'Use MM/YY format.');
+            isValid = false;
+        } else {
+            const [m, y] = expiry.split('/').map(num => parseInt(num));
+            const currentYear = 26; // 2026年
+            const currentMonth = 1;
+
+            if (m < 1 || m > 12) {
+                showError('expiryInput', 'expiryError', 'Invalid month (01-12).');
+                isValid = false;
+            } else if (y < currentYear || (y === currentYear && m < currentMonth)) {
+                showError('expiryInput', 'expiryError', 'Card has expired.');
+                isValid = false;
+            }
+        }
+
+        // 校验 CVV (必须 3 位)
+        if (cvv.length !== 3 || isNaN(cvv)) {
+            showError('cvvInput', 'cvvError', 'Enter 3-digit CVV.');
+            isValid = false;
+        }
+    }
+
+    // 5. 【核心修复】如果校验通过，把 LocalStorage 的购物车数据同步到隐藏 Input
+    if (isValid) {
+        if (typeof cart !== 'undefined' && cart.length > 0) {
+            // 将购物车数组转成 JSON 字符串，存入隐藏域
+            document.getElementById('cartDataInput').value = JSON.stringify(cart);
+        } else {
+            alert("Your cart is empty!");
+            return false;
+        }
+    }
+
+    return isValid; // 只有全部校验通过且数据同步后，才允许提交表单
+}
 
     // --- 3. UI 辅助函数 ---
 
