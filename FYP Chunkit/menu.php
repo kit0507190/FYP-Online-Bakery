@@ -178,11 +178,12 @@
     <div class="modal-content" id="quickViewContent"></div>
 </div>
 
-<!-- Back to Top -->
-<button class="back-to-top" id="backToTop" style="display:none;">↑</button>
 
 <!-- Toast -->
 <div class="toast" id="toast" style="display:none;"></div>
+
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop" style="display:none;">↑</button>
 
 <?php include 'footer.php'; ?>
 
