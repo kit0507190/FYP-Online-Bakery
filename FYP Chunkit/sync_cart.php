@@ -17,31 +17,32 @@ $user_id = $_SESSION['user_id'];
 $action = $_GET['action'] ?? '';
 
 try {
-    if ($action === 'update') {
-        $input = json_decode(file_get_contents('php://input'), true);
-        
-        // 删除旧数据并插入新数据
+    // 替换 sync_cart.php 中的 action === 'update' 部分
+if ($action === 'update') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    try {
+        $pdo->beginTransaction(); // 开启事务
+
+        // 删除旧数据
         $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$user_id]);
 
-        if (!empty($input['cart'])) {
+        if (!empty($input['cart']) && is_array($input['cart'])) {
             $stmt = $pdo->prepare("INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)");
             foreach ($input['cart'] as $item) {
-                $stmt->execute([$user_id, $item['id'], $item['quantity']]);
+                // 确保数据存在
+                if (isset($item['id']) && isset($item['quantity'])) {
+                    $stmt->execute([$user_id, $item['id'], $item['quantity']]);
+                }
             }
         }
+        
+        $pdo->commit(); // 提交事务
         echo json_encode(['status' => 'success']);
-
-    } elseif ($action === 'fetch') {
-        // 关联产品表获取详情
-        $stmt = $pdo->prepare("SELECT p.id, p.name, p.price, p.image, c.quantity 
-                               FROM cart_items c 
-                               JOIN products p ON c.product_id = p.id 
-                               WHERE c.user_id = ?");
-        $stmt->execute([$user_id]);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode(['status' => 'success', 'cart' => $items]);
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
     }
-} catch (PDOException $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    exit;
 }
 ?>

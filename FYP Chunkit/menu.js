@@ -535,36 +535,51 @@ function loadRecentlyViewed() {
     }
 
     function addToCart(productId, quantity = 1) {
-    if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
+    if (window.isLoggedIn !== true) { 
+        showLoginPrompt(); 
+        return; 
+    }
     
+    // 1. 查找产品对象 (使用 == 确保 ID 匹配)
     const product = products.find(p => p.id == productId);
-    if (!product) return;
+    if (!product) {
+        console.error("Product not found:", productId);
+        return;
+    }
 
-    // --- 核心逻辑：确保新加的在最上面 ---
-    const existingIndex = cart.findIndex(i => i.id == productId);
-    let finalQuantity = quantity;
+    // 2. 确保 cart 变量是数组
+    if (!Array.isArray(cart)) {
+        cart = [];
+    }
+
+    // --- 核心修改：置顶逻辑 ---
+    // 3. 寻找该产品在数组中的索引
+    const existingIndex = cart.findIndex(item => item.id == productId);
+    let finalQuantity = parseInt(quantity);
 
     if (existingIndex > -1) {
-        // 如果已经存在，先拿走它原来的数量，然后把它从数组中删掉
-        finalQuantity = cart[existingIndex].quantity + quantity;
+        // 如果产品已存在：先存下旧数量累加，然后从当前位置“挖掉”它
+        finalQuantity += parseInt(cart[existingIndex].quantity);
         cart.splice(existingIndex, 1);
     }
 
-    // 将商品（不管是新加的还是更新的）重新推入数组末尾
+    // 4. 统一 push 到数组的最后一位
+    // 因为渲染时使用了 .reverse()，数组最后一位在视觉上就是第一行
     cart.push({ 
         id: product.id, 
         name: product.name, 
-        price: product.price, 
+        price: parseFloat(product.price), 
         image: product.image, 
         quantity: finalQuantity 
     });
-    // ----------------------------------
+    // -------------------------
 
+    // 5. 更新本地存储与 UI
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     updateCartCount();
     showToast(`${product.name} added to cart!`);
     
-    // 触发同步（由于 menu.js 没有内置 syncCartToDB，你可以调用你 menu.php 里写的 forceSyncCart）
+    // 6. 同步到数据库
     if (typeof forceSyncCart === 'function') {
         forceSyncCart();
     }
