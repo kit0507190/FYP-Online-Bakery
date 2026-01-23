@@ -855,3 +855,60 @@ header + .container {
     margin-top: 2px !important;
     margin-bottom: 8px !important;
 }
+/* --- 优化后的分页控件样式 --- */
+.pagination {
+    margin: 40px 0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 统一按钮样式 */
+.pagination button {
+    background-color: #fff;
+    color: #5a3921;
+    border: 2px solid #d4a76a; /* 使用金色边框 */
+    padding: 10px 20px;
+    border-radius: 50px;       /* 圆润的胶囊形状 */
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(212, 167, 106, 0.1);
+}
+
+/* 悬停效果：背景变色，图标位移 */
+.pagination button:hover:not(:disabled) {
+    background-color: #d4a76a;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(212, 167, 106, 0.25);
+}
+
+/* 禁用状态：变灰 */
+.pagination button:disabled {
+    border-color: #eee;
+    color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 中间页码文字 */
+.page-indicator {
+    font-family: var(--main-font); /* 使用项目主字体 */
+    color: #5a3921;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 0 15px;
+    letter-spacing: 1px;
+    background: #fdfdfd;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    border: 1px dashed #d4a76a; /* 虚线增加精致感 */
+}

@@ -205,7 +205,24 @@ document.addEventListener('DOMContentLoaded', function () {
             toShow.forEach(p => productsGrid.innerHTML += createProductCard(p));
         }
         updateResultsInfo(total);
-        if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} / ${maxPage}`;
+
+        // 1. 更新页码文字（改为大写 PAGE 更有设计感）
+        if (pageIndicator) {
+            pageIndicator.textContent = `PAGE ${currentPage} / ${maxPage}`;
+        }
+
+        // 2. 优化 Prev 按钮：添加图标并自动处理禁用状态
+        if (prevPageBtn) {
+            prevPageBtn.innerHTML = `<span>←</span> Prev`;
+            prevPageBtn.disabled = (currentPage === 1); // 如果是第一页，按钮变灰不可点
+        }
+
+        // 3. 优化 Next 按钮：添加图标并自动处理禁用状态
+        if (nextPageBtn) {
+            nextPageBtn.innerHTML = `Next <span>→</span>`;
+            nextPageBtn.disabled = (currentPage === maxPage); // 如果是最后一页，按钮变灰不可点
+        }
+
         setupProductEventListeners();
     }
 
