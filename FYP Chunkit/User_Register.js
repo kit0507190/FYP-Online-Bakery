@@ -14,7 +14,34 @@ document.addEventListener('DOMContentLoaded', function () {
     setupToggle('togglePassword', 'password');
     setupToggle('toggleConfirmPassword', 'confirmPassword');
 
-    // 2. Email 实时检查逻辑 (非 alert)
+    // 2. Name 实时检查逻辑 (新增加)
+    const nameInput = document.getElementById('nameInput');
+    const nameError = document.getElementById('nameError');
+
+    nameInput.addEventListener('blur', function() {
+        const val = this.value.trim();
+        const namePattern = /^[a-zA-Z\s]+$/;
+        
+        if (val === "") {
+            clearNameError();
+        } else if (!namePattern.test(val)) {
+            nameError.textContent = "* Name can only contain letters and spaces.";
+            this.classList.add('input-error');
+        } else if (val.length < 2) {
+            nameError.textContent = "* Name must be at least 2 characters.";
+            this.classList.add('input-error');
+        } else {
+            clearNameError();
+        }
+    });
+
+    nameInput.addEventListener('input', clearNameError);
+    function clearNameError() {
+        nameError.textContent = "";
+        nameInput.classList.remove('input-error');
+    }
+
+    // 3. Email 实时检查逻辑
     const emailInput = document.getElementById('emailInput');
     const emailError = document.getElementById('emailError');
 
@@ -22,23 +49,22 @@ document.addEventListener('DOMContentLoaded', function () {
         const val = this.value.trim().toLowerCase();
         
         if (val === "") {
-            clearError();
+            clearEmailError();
         } else if (!val.endsWith('@gmail.com')) {
             emailError.textContent = "* Please use a valid @gmail.com address.";
             this.classList.add('input-error');
         } else {
-            clearError();
+            clearEmailError();
         }
     });
 
-    emailInput.addEventListener('input', clearError);
-
-    function clearError() {
+    emailInput.addEventListener('input', clearEmailError);
+    function clearEmailError() {
         emailError.textContent = "";
         emailInput.classList.remove('input-error');
     }
 
-    // 3. 重新添加 Modal 逻辑
+    // 4. Modal 逻辑 (保持不变)
     const modal = document.getElementById('policyModal');
     const title = document.getElementById('policyTitle');
     const body = document.getElementById('policyBody');
@@ -74,11 +100,8 @@ document.addEventListener('DOMContentLoaded', function () {
         modal.style.display = 'block';
     };
 
-    // 关闭弹窗
     const closeModal = () => modal.style.display = 'none';
     document.querySelector('.close-modal').onclick = closeModal;
     document.getElementById('modalCloseBtn').onclick = closeModal;
-    
-    // 点击遮罩层关闭
     window.onclick = (e) => { if (e.target === modal) closeModal(); };
 });

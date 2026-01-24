@@ -13,11 +13,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
 
-    // 服务器端验证逻辑
-    if (empty($name) || strlen($name) < 2) {
+    // --- 服务器端验证逻辑修复 ---
+    
+    // 1. Name 验证：必须是字母+空格，且至少2个字符
+    if (empty($name)) {
+        $errors[] = "Full name is required.";
+    } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        $errors[] = "Full name can only contain letters and spaces.";
+    } elseif (strlen($name) < 2) {
         $errors[] = "Name must be at least 2 characters.";
     }
 
+    // 2. Email 验证 (保持你原有的 @gmail.com 逻辑)
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
@@ -27,6 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
+    // 3. 密码验证
     if (strlen($password) < 8 || !preg_match("/[A-Za-z]/", $password) || !preg_match("/[0-9]/", $password)) {
         $errors[] = "Password must be 8+ chars with letters & numbers.";
     }
@@ -102,7 +110,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form action="" method="POST" id="registerForm">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter your full name">
+                    <input type="text" name="name" id="nameInput" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter your full name">
+                    <span class="error-msg" id="nameError"></span>
                 </div>
 
                 <div class="form-group">
@@ -132,13 +141,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="login-link">
                     Already have an account? <a href="User_Login.php">Sign In</a>
-                </div>
-
-                <div class="cake-decoration">
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
                 </div>
             </form>
         </div>
