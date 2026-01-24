@@ -1,14 +1,27 @@
 <?php
-// forgot_password.php
+// forgotpassword.php
 session_start(); 
+require_once 'config.php'; 
 
 $message = isset($_GET['message']) ? htmlspecialchars($_GET['message']) : '';
 
-// 自动填充逻辑
 $prefilled_email = '';
-if (isset($_SESSION['user_email'])) {
-    $prefilled_email = htmlspecialchars($_SESSION['user_email']);
+if (isset($_SESSION['user_id'])) {
+    $userId = $_SESSION['user_id'];
+    try {
+        // 逻辑保持不变：直接从数据库查，确保 100% 准确
+        $stmt = $pdo->prepare("SELECT email FROM user_db WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+        if ($user) {
+            $prefilled_email = htmlspecialchars($user['email']);
+            $_SESSION['user_email'] = $user['email'];
+        }
+    } catch (PDOException $e) {
+        $prefilled_email = isset($_SESSION['user_email']) ? htmlspecialchars($_SESSION['user_email']) : '';
+    }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
