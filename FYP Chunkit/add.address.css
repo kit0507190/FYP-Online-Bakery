@@ -151,8 +151,8 @@ body {
     margin-top: 5px;
     display: none;
     font-weight: bold;
-    position: absolute; /* 错误信息也可以不占位，防止抖动 */
-    bottom: -20px;
+    position: relative; 
+    bottom: 0;
 }
 
 .form-input:focus, 
