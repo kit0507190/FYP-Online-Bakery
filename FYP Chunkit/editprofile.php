@@ -1,27 +1,22 @@
 <?php
 /**
- * editprofile.php - 编辑个人资料页面 (已剥离地址修改功能)
+ * editprofile.php - Unified Error Style Version
  */
 session_start();
 
-// 1. 验证登录
+// 1. Authentication Check
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
 }
 
-// 2. 引入数据库配置
 require_once 'config.php';
-
-if (!isset($pdo)) {
-    die("Database connection failed.");
-}
 
 $userId = $_SESSION['user_id'];
 $errors = [];
 $name = $email = $phone = '';
 
-// 3. 获取当前用户的资料信息 (仅获取姓名、邮箱、电话)
+// 2. Fetch current user data
 try {
     $query = "SELECT name, email, phone FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
@@ -32,8 +27,6 @@ try {
         $name = htmlspecialchars($user['name']);
         $email = htmlspecialchars($user['email']);
         $phone = htmlspecialchars($user['phone'] ?? '');
-        
-        // 设置给 header.php 使用的变量
         $isLoggedIn = true;
         $userName = $user['name'];
     } else {
@@ -45,48 +38,43 @@ try {
     die("Error: " . $e->getMessage());
 }
 
-// 4. 处理表单提交更新请求
+// 3. Handle Form Submission (Server-side Validation)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
 
-  // --- 后端基础验证 ---
+    // Name Validation Logic
     if (empty($name)) { 
         $errors[] = "Full name is required."; 
     } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
         $errors[] = "Full name can only contain letters and spaces.";
     }
 
-     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    // Email Validation Logic (@gmail.com only)
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
         $domain = strtolower(substr(strrchr($email, "@"), 1));
         if ($domain !== 'gmail.com') {
-            $errors[] = "Invalid email address format，Only @gmail.com accounts are allowed.";
+            $errors[] = "Invalid email address format, Only @gmail.com accounts are allowed.";
         }
     }
 
-    // --- 电话号码验证 (马来西亚格式) ---
+    // Phone Validation Logic (Malaysia Format)
     if (!empty($phone)) {
-        // ^01 表示必须以 01 开头
-        // [0-9]{8,9} 表示后面跟着 8 到 9 位数字 (总长就是 10-11位)
         if (!preg_match("/^01[0-9]{8,9}$/", $phone)) {
             $errors[] = "Phone number must start with '01' and be 10-11 digits long.";
         }
     }
 
-    // 5. 如果没有错误，执行更新 (仅更新基本资料)
+    // Update Database if no errors
     if (empty($errors)) {
         try {
             $updateQuery = "UPDATE user_db SET name = ?, email = ?, phone = ?, updated_at = NOW() WHERE id = ?";
             $updateStmt = $pdo->prepare($updateQuery);
             $updateStmt->execute([$name, $email, $phone, $userId]);
-
-            // 更新 Session 中的名字
             $_SESSION['user_name'] = $name;
-
-            // 修改成功后跳回 profile.php 并触发弹窗
             header("Location: profile.php?success=1");
             exit();
         } catch (PDOException $e) {
@@ -110,18 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <?php include 'header.php'; ?>
 
-    <div class="message-container">
-        <?php if (!empty($errors)): ?>
-            <div class="error-message">
-                <ul style="margin: 0; padding-left: 20px;">
-                    <?php foreach ($errors as $error): ?>
-                        <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php endif; ?>
-    </div>
-
     <main class="profile-page">
         <div class="profile-container">
             <div class="profile-header">
@@ -129,14 +105,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Update your personal information below</p>
             </div>
 
-            <form action="editprofile.php" method="POST" class="edit-form" id="profileForm">
+            <form action="editprofile.php" method="POST" class="edit-form" id="profileForm" novalidate>
+                
+                <div id="js-error-container" class="message-container">
+                    <?php if (!empty($errors)): ?>
+                        <div class="error-message">
+                            <ul style="margin: 0; padding-left: 20px; list-style: none;">
+                                <?php foreach ($errors as $error): ?>
+                                    <li><i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($error); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+                </div>
+
                 <div class="info-card">
                     <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
                     
                     <div class="form-group required-field">
                         <label class="form-label">Full Name</label>
-                         <input type="text" name="name" class="form-input" value="<?php echo $name; ?>" 
-                                 pattern="[a-zA-Z\s]+" title="Only letters and spaces allowed" required>
+                        <input type="text" name="name" class="form-input" value="<?php echo $name; ?>" required>
                     </div>
                     
                     <div class="form-group required-field">
@@ -158,8 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="info-card">
                     <h2><i class="fas fa-map-marker-alt"></i> Delivery Address</h2>
                     <p style="color: #666; font-size: 0.95rem; line-height: 1.6; margin-bottom: 20px;">
-                        To provide better service, your delivery addresses are now managed in a dedicated Address Book. 
-                        You can add multiple addresses or update your default location there.
+                        To provide better service, your delivery addresses are now managed in a dedicated Address Book.
                     </p>
                     <a href="manageaddress.php" class="btn btn-manage-redirect">
                         <i class="fas fa-external-link-alt"></i> Go to Address Book
@@ -179,7 +166,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php include 'footer.php'; ?>
-
     <script src="editprofile.js"></script>
 </body>
 </html>
