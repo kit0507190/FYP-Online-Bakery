@@ -17,15 +17,23 @@ function uploadImage($file) {
         return false;
     }
     
-    if (!is_dir('uploads')) {
-        mkdir('uploads', 0755, true);
+    $upload_dir = 'product_images/';
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0755, true);
     }
     
+    // You can keep uniqid or use original name sanitized
+    // Option A: unique name (safer against overwrites)
     $newname = uniqid('prod_') . '.' . $ext;
-    $target = 'uploads/' . $newname;
+    
+    // Option B: keep original filename (cleaned) – uncomment if you prefer
+    // $filename = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', basename($file['name']));
+    // $newname = $filename;
+    
+    $target = $upload_dir . $newname;
     
     if (move_uploaded_file($file['tmp_name'], $target)) {
-        return $newname;
+        return $newname;           // ← only filename saved to DB
     }
     return false;
 }
@@ -45,8 +53,11 @@ if (isset($_POST['add_product'])) {
     $image = '';
     if (!empty($_FILES['image']['name'])) {
         $uploaded = uploadImage($_FILES['image']);
-        if ($uploaded) $image = $uploaded;
-        else $error_message = 'Image upload failed (format/size/permission)';
+        if ($uploaded) {
+            $image = $uploaded;
+        } else {
+            $error_message = 'Image upload failed (format/size/permission)';
+        }
     }
 
     if (empty($error_message) && !empty($name) && $price > 0 && $category_id > 0) {
@@ -85,8 +96,9 @@ if (isset($_POST['update_product'])) {
     if (!empty($_FILES['image']['name'])) {
         $uploaded = uploadImage($_FILES['image']);
         if ($uploaded) {
-            if ($image && file_exists('uploads/' . $image)) {
-                @unlink('uploads/' . $image);
+            // Delete old image if exists
+            if ($image && file_exists('product_images/' . $image)) {
+                @unlink('product_images/' . $image);
             }
             $image = $uploaded;
         } else {
@@ -119,8 +131,8 @@ if (isset($_GET['delete'])) {
         $stmt->execute([$id]);
         $image = $stmt->fetchColumn();
 
-        if ($image && file_exists('uploads/' . $image)) {
-            @unlink('uploads/' . $image);
+        if ($image && file_exists('product_images/' . $image)) {
+            @unlink('product_images/' . $image);
         }
 
         $pdo->prepare("DELETE FROM products WHERE id = ?")->execute([$id]);
@@ -153,6 +165,7 @@ if ($editing) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BakeryHouse | Manage Products</title>
     <link rel="stylesheet" href="css/admin_style.css">
+    <link rel="stylesheet" href="css/manage_product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         /* Existing styles from your CSS are linked; these are minor additions for visibility */
@@ -279,7 +292,12 @@ if ($editing) {
                     <div class="form-group full-width">
                         <label>Current Image</label>
                         <?php if (!empty($edit_product['image'])): ?>
-                            <img src="uploads/<?= htmlspecialchars($edit_product['image']) ?>" style="max-width:180px; border-radius:8px;" alt="Current">
+                            <?php
+                        $current_img = $edit_product['image'] && file_exists('product_images/' . $edit_product['image'])
+                                 ? 'product_images/' . htmlspecialchars($edit_product['image'])
+                                : 'images/placeholder.jpg';
+                        ?>
+                        <img src="<?= $current_img ?>" style="max-width:180px; border-radius:8px;" alt="Current">
                         <?php else: ?>
                             <p>No image</p>
                         <?php endif; ?>
@@ -403,7 +421,9 @@ if ($editing) {
                     echo '<tr><td colspan="8" style="text-align:center; padding:3rem; color:#888;">No products found.</td></tr>';
                 } else {
                     while ($row = $stmt->fetch()) {
-                        $img = $row['image'] ? 'uploads/' . htmlspecialchars($row['image']) : 'images/placeholder.jpg';
+                        $img = $row['image'] && file_exists('product_images/' . $row['image'])
+                            ? 'product_images/' . htmlspecialchars($row['image'])
+                             : 'images/placeholder.jpg';
                         $sub = $row['subcat_name'] ? htmlspecialchars($row['subcat_name']) : '—';
                         ?>
                         <tr>
