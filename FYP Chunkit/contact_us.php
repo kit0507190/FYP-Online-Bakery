@@ -97,6 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_message'])) {
                         </div>
                         <div class="info-item">
                             <i class="fas fa-phone-alt"></i>
+                            <div><h4>Phone</h4><p>+60 128617652</p></div>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-envelope"></i>
