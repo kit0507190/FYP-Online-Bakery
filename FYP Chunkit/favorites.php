@@ -12,10 +12,28 @@ $user_id = $_SESSION['user_id'];
 
 // Use PDO to fetch favorites (latest first)
 // favorites.php 核心查询修改
-$sql = "SELECT p.*, f.id as favorite_record_id FROM products p 
-        JOIN user_favorites f ON p.id = f.product_id 
-        WHERE f.user_id = :user_id 
-        ORDER BY f.id DESC"; // 🚀 关键：按收藏记录的 ID 降序，最新的排在最前
+// Use PDO to fetch favorites (latest first)
+$sql = "SELECT 
+    p.id,
+    p.name,
+    p.price,
+    p.description,
+    p.full_description,
+    p.ingredients,
+    p.rating,
+    p.review_count,
+    p.sold_count,
+    p.size_info AS size,
+    CASE 
+        WHEN p.image IS NULL OR p.image = '' THEN 'images/placeholder.jpg'
+        WHEN p.image LIKE 'http%' THEN p.image
+        ELSE CONCAT('product_images/', p.image)
+    END AS image,
+    f.id as favorite_record_id 
+FROM products p 
+JOIN user_favorites f ON p.id = f.product_id 
+WHERE f.user_id = :user_id 
+ORDER BY f.id DESC"; // 🚀 关键：按收藏记录的 ID 降序，最新的排在最前
 
 try {
     $stmt = $pdo->prepare($sql);

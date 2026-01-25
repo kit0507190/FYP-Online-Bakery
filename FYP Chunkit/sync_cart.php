@@ -1,5 +1,6 @@
 <?php
-// sync_cart.php - 修复后的完整版
+// sync_cart.php - Updated to include full image path
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -42,11 +43,19 @@ try {
             throw $e;
         }
 
-    // --- 动作 B: 从数据库读取该用户的购物车 (这就是你之前丢失的代码) ---
+    // --- 动作 B: 从数据库读取该用户的购物车 ---
     } elseif ($action === 'fetch') {
-        // 关联产品表，把名字、价格、图片一次性全拿回来
+        // 关联产品表，把名字、价格、**完整图片路径**一次性全拿回来
         $stmt = $pdo->prepare("
-            SELECT p.id, p.name, p.price, p.image, c.quantity 
+            SELECT 
+                p.id, 
+                p.name, 
+                p.price, 
+                CASE 
+                    WHEN p.image IS NULL OR p.image = '' THEN 'images/placeholder.jpg'
+                    ELSE CONCAT('product_images/', p.image)
+                END AS image,
+                c.quantity 
             FROM cart_items c 
             JOIN products p ON c.product_id = p.id 
             WHERE c.user_id = ?
@@ -56,7 +65,7 @@ try {
 
         echo json_encode([
             'status' => 'success', 
-            'cart' => $cartData
+            'cart'   => $cartData
         ]);
 
     } else {

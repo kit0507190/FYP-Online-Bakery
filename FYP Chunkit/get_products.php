@@ -77,7 +77,7 @@ try {
             "price"        => (float)$row['price'],
             "category"     => $row['category'] ?? 'all',
             "subcategory"  => $subSlug,
-            "image"        => $row['image'] ?? '',
+            "image"        => $row['image'] ? 'product_images/' . $row['image'] : 'images/placeholder.jpg',  // ← Key fix: prepend path + fallback
             "description"  => $row['description'] ?? '',
             "full_description" => $row['full_description'] ?? '',
             "ingredients"  => $row['ingredients'] ?? '',
