@@ -7,7 +7,7 @@ require_once 'config.php';
 
 // 初始化变量
 $errors = [];
-$email = "";
+$email = $_POST['email'] ?? "";
 
 // 处理登录请求
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
