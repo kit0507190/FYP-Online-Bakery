@@ -13,9 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
 
-    // --- 服务器端验证逻辑修复 ---
-    
-    // 1. Name 验证：必须是字母+空格，且至少2个字符
+    // --- 服务器端验证逻辑 ---
     if (empty($name)) {
         $errors[] = "Full name is required.";
     } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
@@ -24,7 +22,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Name must be at least 2 characters.";
     }
 
-    // 2. Email 验证 (保持你原有的 @gmail.com 逻辑)
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
@@ -34,7 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    // 3. 密码验证
     if (strlen($password) < 8 || !preg_match("/[A-Za-z]/", $password) || !preg_match("/[0-9]/", $password)) {
         $errors[] = "Password must be 8+ chars with letters & numbers.";
     }
@@ -130,6 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label>Confirm Password</label>
                     <input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm your password">
                     <span class="password-toggle" id="toggleConfirmPassword">Show</span>
+                    <span class="error-msg" id="confirmError"></span>
                 </div>
 
                 <div class="terms-group">
