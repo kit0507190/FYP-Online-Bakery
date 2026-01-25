@@ -13,8 +13,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
 
-    // 服务器端验证逻辑
-    if (empty($name) || strlen($name) < 2) {
+    // --- 服务器端验证逻辑 ---
+    if (empty($name)) {
+        $errors[] = "Full name is required.";
+    } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        $errors[] = "Full name can only contain letters and spaces.";
+    } elseif (strlen($name) < 2) {
         $errors[] = "Name must be at least 2 characters.";
     }
 
@@ -102,7 +106,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <form action="" method="POST" id="registerForm">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter your full name">
+                    <input type="text" name="name" id="nameInput" value="<?= htmlspecialchars($name) ?>" required placeholder="Enter your full name">
+                    <span class="error-msg" id="nameError"></span>
                 </div>
 
                 <div class="form-group">
@@ -121,6 +126,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <label>Confirm Password</label>
                     <input type="password" name="confirmPassword" id="confirmPassword" required placeholder="Confirm your password">
                     <span class="password-toggle" id="toggleConfirmPassword">Show</span>
+                    <span class="error-msg" id="confirmError"></span>
                 </div>
 
                 <div class="terms-group">
@@ -132,13 +138,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 <div class="login-link">
                     Already have an account? <a href="User_Login.php">Sign In</a>
-                </div>
-
-                <div class="cake-decoration">
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
-                    <div class="cake-piece"></div>
                 </div>
             </form>
         </div>

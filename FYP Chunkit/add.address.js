@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // 每次切换时先清空之前的状态
         postcodeHint.style.display = 'none';
         postcodeError.style.display = 'none';
+        postcodeError.textContent = '';
         postcodeInput.style.borderColor = '';
 
         if (selectedArea !== 'other' && postcodeMap[selectedArea]) {

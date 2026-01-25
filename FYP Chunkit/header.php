@@ -55,41 +55,58 @@ $cur_file  = basename($_SERVER['PHP_SELF']);
 // 1. 全局登录开关
 window.isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
 
-// 2. 核心修复：强制从数据库同步该账号的购物车
+/**
+ * 🚀 核心函数：更新 Header 显示的数量
+ * 增加处理：如果数量为 0，自动隐藏红点；如果大于 0，则显示。
+ */
+function updateHeaderCartCount() {
+    const cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+    const totalItems = cart.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+    
+    const cartCountElement = document.querySelector('.cart-count');
+    if (cartCountElement) {
+        cartCountElement.textContent = totalItems;
+        
+        // 关键修复：处理显示和隐藏逻辑
+        if (totalItems > 0) {
+            cartCountElement.style.display = 'flex'; // 或者 'block'，取决于你的 CSS
+        } else {
+            cartCountElement.style.display = 'none';
+        }
+    }
+}
+
+/**
+ * 🚀 核心函数：强制从服务器同步
+ * 修改点：无论同步成功还是失败，最后都要调用一次 updateHeaderCartCount()
+ */
 async function refreshCartFromServer() {
     if (!window.isLoggedIn) {
-        updateHeaderCartCount(); // 没登录则只读本地
+        updateHeaderCartCount(); 
         return;
     }
 
     try {
-        // 🚀 重点：向后端请求该账号在数据库里的真实数据
         const response = await fetch('sync_cart.php?action=fetch');
         const result = await response.json();
         
         if (result.status === 'success') {
-            // 🚀 重点：用数据库数据强制覆盖本地 LocalStorage，防止 A 账号残留带给 B 账号
             const serverCart = result.cart || [];
             localStorage.setItem('bakeryCart', JSON.stringify(serverCart));
-            updateHeaderCartCount();
         }
     } catch (e) {
-        console.error("Header cart fetch failed:", e);
-    }
-}
-
-// 3. 更新 Header 显示的数量
-function updateHeaderCartCount() {
-    const cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-    const totalItems = cart.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
-    const cartCountElement = document.querySelector('.cart-count');
-    if (cartCountElement) {
-        cartCountElement.textContent = totalItems;
+        console.error("Header cart sync failed:", e);
+    } finally {
+        // 🚀 无论 fetch 成功还是报错，都要刷新 UI 显示本地或最新数据
+        updateHeaderCartCount();
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 页面加载后立即执行一次服务器同步
+    // 1. 🚀 第一步：立即显示本地 LocalStorage 的数据（让用户进页面瞬间看到数字）
+    updateHeaderCartCount();
+
+    // 2. 🚀 第二步：再去后台同步最新的数据库数据
     refreshCartFromServer();
 
     // 用户头像下拉菜单逻辑
@@ -103,13 +120,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', () => dropdown.classList.remove('show'));
     }
 
-    // 监听其他标签页的变动
+    // 监听其他标签页的变动（例如在另一个窗口加了购物车，主页也要动）
     window.addEventListener('storage', (e) => {
         if (e.key === 'bakeryCart') updateHeaderCartCount();
     });
 });
 
-// 拦截 Cart 点击
+// 暴露一个全局函数，方便 menu.js 或 cart.php 手动触发更新
+window.refreshHeaderCart = updateHeaderCartCount;
+
 function checkCartLogin(event) {
     if (!window.isLoggedIn) {
         event.preventDefault();

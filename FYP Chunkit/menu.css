@@ -456,6 +456,7 @@ header {
 }
 
 /* Quick View Modal */
+/* --- 优化后的弹窗遮罩层 --- */
 .modal {
     display: none;
     position: fixed;
@@ -463,25 +464,44 @@ header {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.7); /* 加深背景 */
+    backdrop-filter: blur(5px);           /* 背景模糊效果，和 Favorite 一致 */
     z-index: 1000;
     justify-content: center;
     align-items: center;
     padding: 20px;
 }
 
+/* --- 弹窗内容容器：添加和 Favorite 一致的弹出动画 --- */
 .modal-content {
     background: white;
     border-radius: 15px;
-    max-width: 850px; /* 改为 850px */
-    width: 95%;      /* 在小屏幕下占满 */
+    max-width: 850px;
+    width: 95%;
     position: relative;
-    /* 其余保持不变 */
+    overflow: hidden;
+    /* 核心动画：cubic-bezier 让弹出更有弹性感 */
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-@keyframes modalAppear {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
+/* --- 动画关键帧 --- */
+@keyframes modalPop {
+    from { 
+        opacity: 0; 
+        transform: scale(0.9); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1); 
+    }
+}
+
+/* 适配手机端 */
+@media (max-width: 768px) {
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
 }
 
 .close-modal {
@@ -724,11 +744,17 @@ header + .container {
 }
 
 /* 标题样式 */
+/* 标题样式 - 已调大以匹配 Favorites 页面 */
 .menu-title {
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 32px;
+    margin-bottom: 10px;        /* 稍微缩小底部间距 */
+    font-size: 2.6rem;          /* 从 32px 增加到 2.6rem */
+    font-weight: 800;           /* 增加字体权重，使其更粗 */
     color: #5a3921;
+    display: flex;              /* 使用 flex 布局 */
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
 }
 
 /* 分隔线样式 */
@@ -752,7 +778,12 @@ header + .container {
 /* 适配手机端：在小屏幕上白框依然好看 */
 @media (max-width: 768px) {
     .menu-header-box {
-        padding: 20px;
+    background-color: #fff;
+    padding: 20px 30px;         /* 调整内边距 */
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 25px;        /* 缩小与下方搜索栏的距离 */
+    margin-top: 20px;
     }
     .search-filter-bar {
         flex-direction: column;
@@ -764,19 +795,24 @@ header + .container {
    精准调整：压缩 "All Cakes" 与产品列表之间的间距
    ============================================================ */
 
-/* 1. 调小 "All Cakes" 或 "All Bread" 标题的上下间距 */
+/* 修改：增强分类标题的层次感 */
 #activeCategory {
-    margin-top: 5px !important;    /* 顶部间距缩小 */
-    margin-bottom: 5px !important; /* 与下方文字的间距缩小 */
-    font-size: 24px;               /* 稍微缩小一点标题字号，更显精致 */
+    margin-top: 0 !important;
+    padding-top: 5px !important;
+    margin-bottom: 5px !important;
+    font-size: 24px;               
+    color: #5a3921;
+    font-weight: 700 !important;   /* 🚀 从 600 提升到 700，增加一点点厚度 */
+    letter-spacing: 0.5px;         /* 微调字间距，看起来更高级 */
 }
 
-/* 2. 调小 "Showing 1-9 of 191 products" 的下方间距 */
+/* 辅助：调轻下方文字的视觉分量，形成对比 */
 #resultsInfo {
-    margin-bottom: 10px !important; /* 原本可能很大，现在改为 10px */
-    display: block;                /* 确保边距生效 */
+    margin-top: 2px !important;
+    margin-bottom: 12px !important; /* 稍微拉开一点点跟网格的距离 */
     font-size: 14px;
-    color: #8e735b;
+    color: #8e735b;                /* 使用稍微浅一点的褐色 */
+    font-weight: 400;              /* 保持常规粗细，突出上方的 700 字重 */
 }
 
 /* 3. 调小侧边栏和产品主区域顶部的对齐高度 */
@@ -818,4 +854,61 @@ header + .container {
 #resultsInfo {
     margin-top: 2px !important;
     margin-bottom: 8px !important;
+}
+/* --- 优化后的分页控件样式 --- */
+.pagination {
+    margin: 40px 0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 统一按钮样式 */
+.pagination button {
+    background-color: #fff;
+    color: #5a3921;
+    border: 2px solid #d4a76a; /* 使用金色边框 */
+    padding: 10px 20px;
+    border-radius: 50px;       /* 圆润的胶囊形状 */
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(212, 167, 106, 0.1);
+}
+
+/* 悬停效果：背景变色，图标位移 */
+.pagination button:hover:not(:disabled) {
+    background-color: #d4a76a;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(212, 167, 106, 0.25);
+}
+
+/* 禁用状态：变灰 */
+.pagination button:disabled {
+    border-color: #eee;
+    color: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* 中间页码文字 */
+.page-indicator {
+    font-family: var(--main-font); /* 使用项目主字体 */
+    color: #5a3921;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 0 15px;
+    letter-spacing: 1px;
+    background: #fdfdfd;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    border-radius: 10px;
+    border: 1px dashed #d4a76a; /* 虚线增加精致感 */
 }

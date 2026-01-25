@@ -11,10 +11,11 @@ if (!$isLoggedIn) {
 $user_id = $_SESSION['user_id'];
 
 // Use PDO to fetch favorites (latest first)
-$sql = "SELECT p.* FROM products p 
+// favorites.php 核心查询修改
+$sql = "SELECT p.*, f.id as favorite_record_id FROM products p 
         JOIN user_favorites f ON p.id = f.product_id 
         WHERE f.user_id = :user_id 
-        ORDER BY f.id DESC";
+        ORDER BY f.id DESC"; // 🚀 关键：按收藏记录的 ID 降序，最新的排在最前
 
 try {
     $stmt = $pdo->prepare($sql);
@@ -82,15 +83,16 @@ try {
 }
 
 /* 弹窗遮罩层优化 */
+/* --- 统一弹窗样式：匹配 Menu 页面 --- */
 #quickViewModal {
-    position: fixed !important; 
+    position: fixed !important;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7); 
-    backdrop-filter: blur(5px); 
-    z-index: 9999 !important; 
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    z-index: 9999 !important;
     display: none;
     align-items: center;
     justify-content: center;
@@ -98,10 +100,11 @@ try {
 
 .modal-content {
     background: white;
-    width: 90%;
+    width: 95%;
     max-width: 850px;
     border-radius: 15px;
     position: relative;
+    /* 使用和 Menu 一致的弹出动画 */
     animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     overflow: hidden;
 }
@@ -111,10 +114,11 @@ try {
     to { opacity: 1; transform: scale(1); }
 }
 
+/* 适配移动端布局 */
 @media (max-width: 768px) {
-    #quickViewContent > div {
+    .modal-body-flex {
         flex-direction: column !important;
-        padding: 15px !important;
+        padding: 20px !important;
     }
     .modal-content {
         max-height: 90vh;
@@ -233,10 +237,11 @@ function openQuickView(productId) {
     const modal = document.getElementById('quickViewModal');
     const content = document.getElementById('quickViewContent');
 
+    // 结构完全同步 Menu.js 的 quickViewProduct 逻辑
     content.innerHTML = `
         <button class="close-modal" onclick="closeModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
         
-        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;">
+        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;" class="modal-body-flex">
             <div style="flex: 1.1; position: sticky; top: 0;">
                 <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;">
             </div>
@@ -253,21 +258,26 @@ function openQuickView(productId) {
                     <span style="color: #d4a76a; font-weight: 600;">${product.sold_count || 0} Sold</span>
                 </div>
 
-                <p style="font-size: 28px; color: #d4a76a; font-weight: 700; margin-bottom: 25px;">RM ${parseFloat(product.price).toFixed(2)}</p>
-                
-                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
-                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">${product.full_description || product.description || ''}</p>
+                <div style="margin-bottom: 25px; font-size: 1.8rem; font-weight: 700; color: #d4a76a;">
+                    RM ${parseFloat(product.price).toFixed(2)}
                 </div>
                 
-                <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px;">
+                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
+                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">
+                        ${product.full_description || product.description || 'No description available.'}
+                    </p>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; background: #f9f5f2; padding: 15px; border-radius: 10px;">
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
                     </div>
-                    <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
+                    <div style="display: flex;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Size</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.fullSize || 'Standard'}</span>
                     </div>
+                </div>
                 
                 <div style="display: flex; gap: 12px; margin-top: auto;">
                     <button onclick="addToCart(${product.id})" 

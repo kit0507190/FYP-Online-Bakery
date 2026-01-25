@@ -205,7 +205,24 @@ document.addEventListener('DOMContentLoaded', function () {
             toShow.forEach(p => productsGrid.innerHTML += createProductCard(p));
         }
         updateResultsInfo(total);
-        if (pageIndicator) pageIndicator.textContent = `Page ${currentPage} / ${maxPage}`;
+
+        // 1. 更新页码文字（改为大写 PAGE 更有设计感）
+        if (pageIndicator) {
+            pageIndicator.textContent = `PAGE ${currentPage} / ${maxPage}`;
+        }
+
+        // 2. 优化 Prev 按钮：添加图标并自动处理禁用状态
+        if (prevPageBtn) {
+            prevPageBtn.innerHTML = `<span>←</span> Prev`;
+            prevPageBtn.disabled = (currentPage === 1); // 如果是第一页，按钮变灰不可点
+        }
+
+        // 3. 优化 Next 按钮：添加图标并自动处理禁用状态
+        if (nextPageBtn) {
+            nextPageBtn.innerHTML = `Next <span>→</span>`;
+            nextPageBtn.disabled = (currentPage === maxPage); // 如果是最后一页，按钮变灰不可点
+        }
+
         setupProductEventListeners();
     }
 
@@ -282,18 +299,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- 7. 修正后的 Quick View (包含 Inch 逻辑和极速反馈) ---
 // --- 7. 优化后的 Quick View (同步 Favorites 的高级设计 + 补全销量信息) ---
+// --- 7. 优化后的 Quick View (完全同步 Favorites 页面设计) ---
 function quickViewProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
     addToRecentlyViewed(productId);
     
+    // 检查当前产品是否在收藏夹中
     const isFavorite = favorites.includes(parseInt(product.id));
 
     quickViewContent.innerHTML = `
         <button class="close-modal" id="closeModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
         
-        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;">
+        <div style="display: flex; gap: 40px; padding: 40px; align-items: flex-start;" class="modal-body-flex">
             <div style="flex: 1.1; position: sticky; top: 0;">
                 <img src="${product.image}" alt="${product.name}" style="width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); object-fit: cover;">
             </div>
@@ -305,21 +324,22 @@ function quickViewProduct(productId) {
                     <span style="color: #ffc107; font-size: 1.1rem;">${'★'.repeat(Math.floor(product.rating || 0))}☆</span>
                     <span style="color: #5a3921; font-weight: 600;">${product.rating || '0.0'}</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #666;">${product.review_count || product.reviewCount || 0} reviews</span>
+                    <span style="color: #888;">${product.review_count || product.reviewCount || 0} Reviews</span>
                     <span style="color: #ddd;">|</span>
-                    <span style="color: #666;">${product.sold_count || product.soldCount || 0} sold</span>
+                    <span style="color: #d4a76a; font-weight: 600;">${product.sold_count || product.soldCount || 0} Sold</span>
                 </div>
                 
-                <div style="margin-bottom: 20px; font-size: 1.4rem; font-weight: 700; color: #c17e3c;">
-                    RM ${product.price.toFixed(2)}
+                <div style="margin-bottom: 25px; font-size: 1.8rem; font-weight: 700; color: #d4a76a;">
+                    RM ${parseFloat(product.price).toFixed(2)}
                 </div>
                 
-                <!-- FIXED: Use full_description here, fallback to description -->
-                <p style="margin-bottom: 25px; color: #555; font-size: 0.98rem; line-height: 1.65;">
-                    ${product.full_description || product.description || 'No description available.'}
-                </p>
+                <div style="border-top: 1px solid #f0f0f0; padding-top: 20px; margin-bottom: 25px;">
+                    <p style="line-height: 1.8; color: #666; font-size: 1rem;">
+                        ${product.full_description || product.description || 'No description available.'}
+                    </p>
+                </div>
                 
-                <div style="margin-bottom: 20px; padding: 15px; background: #f9f5f2; border-radius: 10px; display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 30px; background: #f9f5f2; padding: 15px; border-radius: 10px;">
                     <div style="display: flex; border-bottom: 1px dashed #eee; padding-bottom: 10px;">
                         <span style="width: 105px; color: #a1887f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Ingredients</span>
                         <span style="flex: 1; color: #555; font-size: 0.9rem;">${product.ingredients || 'Natural ingredients'}</span>
@@ -344,21 +364,29 @@ function quickViewProduct(productId) {
         </div>
     `;
 
+    // 显示弹窗
     quickViewModal.style.display = 'flex';
     
+    // 绑定关闭事件
     document.getElementById('closeModal').onclick = () => quickViewModal.style.display = 'none';
     
+    // 绑定加入购物车事件
     document.getElementById('modalAddToCartBtn').onclick = () => { 
         addToCart(product.id, 1);
         quickViewModal.style.display = 'none'; 
     };
 
+    // 绑定收藏切换事件
     const modalFavBtn = document.getElementById('modalFavBtn');
     modalFavBtn.onclick = () => {
         if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
+        
+        // 视觉上立即反馈
         const isNowActive = modalFavBtn.classList.toggle('active');
         modalFavBtn.innerHTML = isNowActive ? '❤️' : '🤍';
-        toggleFavorite(product.id);
+        
+        // 调用原有的收藏逻辑
+        toggleFavorite(parseInt(product.id));
     };
 }
 
@@ -535,46 +563,71 @@ function loadRecentlyViewed() {
     }
 
     function addToCart(productId, quantity = 1) {
-    if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
+    if (window.isLoggedIn !== true) { 
+        showLoginPrompt(); 
+        return; 
+    }
     
+    // 1. 查找产品对象
     const product = products.find(p => p.id == productId);
-    if (!product) return;
+    if (!product) {
+        console.error("Product not found:", productId);
+        return;
+    }
 
-    // --- 核心逻辑：确保新加的在最上面 ---
-    const existingIndex = cart.findIndex(i => i.id == productId);
-    let finalQuantity = quantity;
+    // 2. 确保 cart 变量是数组
+    if (!Array.isArray(cart)) {
+        cart = [];
+    }
+
+    // 3. 核心：置顶逻辑
+    const existingIndex = cart.findIndex(item => item.id == productId);
+    let finalQuantity = parseInt(quantity);
 
     if (existingIndex > -1) {
-        // 如果已经存在，先拿走它原来的数量，然后把它从数组中删掉
-        finalQuantity = cart[existingIndex].quantity + quantity;
+        finalQuantity += parseInt(cart[existingIndex].quantity);
         cart.splice(existingIndex, 1);
     }
 
-    // 将商品（不管是新加的还是更新的）重新推入数组末尾
+    // 4. 统一 push 到数组末尾
     cart.push({ 
         id: product.id, 
         name: product.name, 
-        price: product.price, 
+        price: parseFloat(product.price), 
         image: product.image, 
         quantity: finalQuantity 
     });
-    // ----------------------------------
 
+    // 5. 更新本地存储
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
-    updateCartCount();
+    
+    // 🚀 关键修复：手动触发 header.php 里的更新函数，实现即时刷新数字
+    if (typeof updateHeaderCartCount === 'function') {
+        updateHeaderCartCount();
+    }
+
+    // 6. 执行 UI 提示和同步
+    updateCartCount(); 
     showToast(`${product.name} added to cart!`);
     
-    // 触发同步（由于 menu.js 没有内置 syncCartToDB，你可以调用你 menu.php 里写的 forceSyncCart）
     if (typeof forceSyncCart === 'function') {
         forceSyncCart();
     }
 }
 
-    function updateCartCount() {
-        const total = cart.reduce((s, i) => s + i.quantity, 0);
-        localStorage.setItem('cartItemCount', total.toString());
-        if (cartCount) cartCount.textContent = total;
+function updateCartCount() {
+    // 重新从本地读取最新的 cart，确保数字 100% 准确
+    const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+    const total = currentCart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
+    
+    localStorage.setItem('cartItemCount', total.toString());
+    
+    // 更新本地 menu.php 里的数字标签（如果有的话）
+    const localCount = document.querySelector('.cart-count'); 
+    if (localCount) {
+        localCount.textContent = total;
     }
+}
 
     function showToast(msg) { if (toast) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2500); } }
 
