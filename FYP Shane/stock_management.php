@@ -105,8 +105,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
             </thead>
             <tbody>
                 <?php
-                $stmt = $pdo->query("SELECT p.*, c.name AS cat_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.stock ASC, p.name");
-                
+                $stmt = $pdo->query("
+                    SELECT p.*, c.name AS cat_name 
+                    FROM products p 
+                    LEFT JOIN categories c ON p.category_id = c.id 
+                    WHERE p.deleted_at IS NULL
+                    ORDER BY 
+                        p.stock ASC,          -- low stock first (most urgent)
+                        p.name ASC            -- then alphabetical within same stock level
+                ");
                 if ($stmt->rowCount() == 0): ?>
                     <tr>
                         <td colspan="6" style="text-align:center; padding:6rem; color:#999;">

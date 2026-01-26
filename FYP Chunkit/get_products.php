@@ -36,6 +36,7 @@ try {
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         LEFT JOIN subcategories s ON p.subcategory_id = s.id
+        WHERE p.deleted_at IS NULL
         ORDER BY p.id
     ";
 

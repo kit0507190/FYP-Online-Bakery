@@ -124,18 +124,11 @@ if (isset($_POST['update_product'])) {
 }
 
 // DELETE PRODUCT
+// SOFT DELETE PRODUCT
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     try {
-        $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
-        $stmt->execute([$id]);
-        $image = $stmt->fetchColumn();
 
-        if ($image && file_exists('product_images/' . $image)) {
-            @unlink('product_images/' . $image);
-        }
-
-        $pdo->prepare("DELETE FROM products WHERE id = ?")->execute([$id]);
         header("Location: manage_products.php?success=delete");
         exit();
     } catch (PDOException $e) {
@@ -414,7 +407,8 @@ if ($editing) {
                     SELECT p.*, c.name AS cat_name, s.name AS subcat_name 
                     FROM products p 
                     LEFT JOIN categories c ON p.category_id = c.id 
-                    LEFT JOIN subcategories s ON p.subcategory_id = s.id 
+                    LEFT JOIN subcategories s ON p.subcategory_id = s.id
+                    WHERE p.deleted_at IS NULL 
                     ORDER BY p.id DESC
                 ");
                 if ($stmt->rowCount() == 0) {

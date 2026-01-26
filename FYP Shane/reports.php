@@ -35,6 +35,7 @@ if (isset($_GET['export_csv'])) {
         JOIN orders o ON od.order_id = o.id
         JOIN products p ON od.product_id = p.id
         LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.deleted_at IS NULL
         WHERE o.status = 'delivered' AND DATE(o.created_at) BETWEEN ? AND ?
         GROUP BY od.product_id
         ORDER BY units_sold DESC
