@@ -65,7 +65,12 @@
                 ];
 
                 // Fetch all categories
-                $stmt = $pdo->query("SELECT id, name FROM categories ORDER BY id");
+                $stmt = $pdo->query("
+                    SELECT id, name 
+                    FROM categories 
+                    WHERE deleted_at IS NULL 
+                    ORDER BY name id
+                ");
                 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 foreach ($categories as $cat) {
@@ -84,7 +89,13 @@
                     echo '      <a class="subcategory-item active" data-subcategory="all">All ' . htmlspecialchars($display) . '</a>';
 
                     // Fetch subcategories
-                    $subStmt = $pdo->prepare("SELECT name FROM subcategories WHERE category_id = ? ORDER BY id");
+                    $subStmt = $pdo->prepare("
+                        SELECT name 
+                        FROM subcategories 
+                        WHERE category_id = ? 
+                            AND deleted_at IS NULL 
+                        ORDER BY name ASC
+                    ");
                     $subStmt->execute([$cat['id']]);
                     $subs = $subStmt->fetchAll(PDO::FETCH_ASSOC);
 

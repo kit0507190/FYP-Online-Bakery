@@ -68,19 +68,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_subcategory'])) 
     }
 }
 
-// Handle DELETE category (only if no subcategories)
+// Handle DELETE category (soft delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category'])) {
     $id = (int)$_POST['id'];
     if ($id > 0) {
-        // Check if it has subcategories
-        $check = $pdo->prepare("SELECT COUNT(*) FROM subcategories WHERE category_id = ?");
+        // Still check for active subcategories
+        $check = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM subcategories 
+            WHERE category_id = ? AND deleted_at IS NULL
+        ");
         $check->execute([$id]);
+        
         if ($check->fetchColumn() > 0) {
-            $error = "Cannot delete category: It still has subcategories.";
+            $error = "Cannot delete category: It still has active subcategories.";
         } else {
-            $stmt = $pdo->prepare("DELETE FROM categories WHERE id = ?");
+            $stmt = $pdo->prepare("
+                UPDATE categories 
+                SET deleted_at = NOW() 
+                WHERE id = ? AND deleted_at IS NULL
+            ");
             if ($stmt->execute([$id])) {
-                $success = "Category deleted successfully!";
+                $success = "Category moved to trash!";
             } else {
                 $error = "Failed to delete category.";
             }
@@ -88,23 +97,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_category'])) {
     }
 }
 
-// Handle DELETE subcategory
+// Handle DELETE subcategory (soft delete)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_subcategory'])) {
     $id = (int)$_POST['id'];
     if ($id > 0) {
-        $stmt = $pdo->prepare("DELETE FROM subcategories WHERE id = ?");
+        $stmt = $pdo->prepare("
+            UPDATE subcategories 
+            SET deleted_at = NOW() 
+            WHERE id = ? AND deleted_at IS NULL
+        ");
         if ($stmt->execute([$id])) {
-            $success = "Subcategory deleted successfully!";
+            $success = "Subcategory moved to trash!";
         } else {
             $error = "Failed to delete subcategory.";
         }
     }
 }
 
-// Fetch all categories and subcategories
-$categories = $pdo->query("SELECT * FROM categories ORDER BY name ASC")->fetchAll();
+// New: only active (not deleted)
+$categories = $pdo->query("
+    SELECT * FROM categories 
+    WHERE deleted_at IS NULL 
+    ORDER BY name ASC
+")->fetchAll();
+
 $subcategories = [];
-foreach ($pdo->query("SELECT * FROM subcategories ORDER BY name ASC") as $sub) {
+$stmt = $pdo->query("
+    SELECT * FROM subcategories 
+    WHERE deleted_at IS NULL 
+    ORDER BY name ASC
+");
+while ($sub = $stmt->fetch()) {
     $subcategories[$sub['category_id']][] = $sub;
 }
 ?>
