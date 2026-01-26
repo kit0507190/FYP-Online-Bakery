@@ -129,6 +129,8 @@ $admins = $pdo->query("SELECT * FROM admins ORDER BY status ASC, created_at DESC
         <li><a href="manage_categories.php">Manage Categories</a></li>
         <li><a href="view_orders.php">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
+        <li><a href="admin_restore.php">Restore Deleted</a></li>
+        <?php if ($current_admin['role'] === 'super_admin'): ?>
         <li><a href="user_accounts.php">User Accounts</a></li>
         <li><a href="manage_admins.php" class="active">Manage Admins</a></li>
         <li><a href="reports.php">Reports</a></li>
