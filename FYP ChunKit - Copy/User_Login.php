@@ -29,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 如果没有错误，尝试从数据库匹配
     if (empty($errors)) {
         try {
-            $stmt = $pdo->prepare("SELECT id, name, email, password FROM user_db WHERE email = ?");
+            $stmt = $pdo->prepare("SELECT id, name, email, password FROM user_db WHERE email = ? AND deleted_at IS NULL");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 

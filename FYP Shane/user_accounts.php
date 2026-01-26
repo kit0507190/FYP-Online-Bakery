@@ -12,22 +12,37 @@ require_once 'admin_config.php';
 
 $users = [];
 try {
-    $stmt = $pdo->query("SELECT * FROM user_db ORDER BY created_at DESC");
+    $stmt = $pdo->query("
+        SELECT * FROM user_db 
+        WHERE deleted_at IS NULL 
+        ORDER BY created_at DESC
+    ");
     $users = $stmt->fetchAll();
 } catch (PDOException $e) {
     $_SESSION['error_message'] = "Error fetching users. Please try again later.";
 }
 
 // Handle delete request
+// Handle SOFT delete request
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    try {
-        $stmt = $pdo->prepare("DELETE FROM user_db WHERE id = ?");
-        $stmt->execute([$id]);
-        header("Location: user_accounts.php?success=1");
-        exit();
-    } catch (PDOException $e) {
-        $_SESSION['error_message'] = "Error deleting user.";
+    if ($id > 0) {
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE user_db 
+                SET deleted_at = NOW()
+                -- , deleted_by = ?    ← uncomment if you add the column
+                WHERE id = ? 
+                  AND deleted_at IS NULL
+            ");
+            // $stmt->execute([$current_admin['id'], $id]);   ← if using deleted_by
+            $stmt->execute([$id]);
+
+            header("Location: user_accounts.php?success=1");
+            exit();
+        } catch (PDOException $e) {
+            $_SESSION['error_message'] = "Error deleting user: " . $e->getMessage();
+        }
     }
 }
 ?>
@@ -92,7 +107,7 @@ if (isset($_GET['delete'])) {
                     <tr>
                         <td colspan="5" style="text-align:center; padding:6rem; color:#999;">
                             <i class="fas fa-users fa-3x" style="color:#ddd; margin-bottom:1rem;"></i><br>
-                            No registered customers yet.
+                            No active registered customers found.
                         </td>
                     </tr>
                 <?php else: ?>
@@ -105,7 +120,7 @@ if (isset($_GET['delete'])) {
                             <td>
                                 <a href="?delete=<?= $user['id'] ?>" 
                                    class="action-btn delete-btn" 
-                                   onclick="return confirm('Permanently delete <?= htmlspecialchars(addslashes($user['name'])) ?>?\nThis cannot be undone.')">
+                                   onclick="return confirm('Are you sure you want to delete <?= htmlspecialchars(addslashes($user['name'])) ?>?\nThis user can be restored later if needed.')">
                                     Delete
                                 </a>
                             </td>
