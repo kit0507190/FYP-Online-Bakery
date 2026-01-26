@@ -96,6 +96,21 @@ if (isset($_GET['deactivate'])) {
     }
 }
 
+// Handle Reactivate Admin
+if (isset($_GET['reactivate'])) {
+    $id = (int)$_GET['reactivate'];
+    if ($id == $current_admin['id']) {
+        $error_message = "Your own account is already active.";
+    } else {
+        try {
+            $pdo->prepare("UPDATE admins SET status = 'active' WHERE id = ?")->execute([$id]);
+            $success_message = "Admin account reactivated successfully!";
+        } catch (PDOException $e) {
+            $error_message = "Error reactivating admin.";
+        }
+    }
+}
+
 // Fetch all admins
 $admins = $pdo->query("SELECT * FROM admins ORDER BY status ASC, created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -134,6 +149,7 @@ $admins = $pdo->query("SELECT * FROM admins ORDER BY status ASC, created_at DESC
         <li><a href="user_accounts.php">User Accounts</a></li>
         <li><a href="manage_admins.php" class="active">Manage Admins</a></li>
         <li><a href="reports.php">Reports</a></li>
+        <?php endif; ?>
     </ul>
 </nav>
 
@@ -233,13 +249,17 @@ $admins = $pdo->query("SELECT * FROM admins ORDER BY status ASC, created_at DESC
                                 </details>
 
                                 <!-- Deactivate Button -->
-                                <?php if ($admin['status'] === 'active'): ?>
+                                <?php if ($admin['id'] != $current_admin['id']): ?>
+                                    <?php if ($admin['status'] === 'active'): ?>
                                     <a href="?deactivate=<?= $admin['id'] ?>" 
-                                       onclick="return confirm('Deactivate this admin account? They will no longer be able to log in.')" 
-                                       class="action-btn delete-btn">Deactivate</a>
+                                        onclick="return confirm('Deactivate this admin account? They will no longer be able to log in.')" 
+                                        class="action-btn delete-btn">Deactivate</a>
                                 <?php else: ?>
-                                    <em class="inactive">Deactivated</em>
+                                    <a href="?reactivate=<?= $admin['id'] ?>" 
+                                        onclick="return confirm('Reactivate this admin account? They will be able to log in again.')" 
+                                        class="action-btn" style="background:#28a745; color:white;">Reactivate</a>
                                 <?php endif; ?>
+                            <?php endif; ?>
 
                             <?php else: ?>
                                 <em>You (current)</em>
