@@ -69,7 +69,7 @@
                     SELECT id, name 
                     FROM categories 
                     WHERE deleted_at IS NULL 
-                    ORDER BY name id
+                    ORDER BY id
                 ");
                 $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
