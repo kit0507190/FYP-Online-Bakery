@@ -562,51 +562,40 @@ function loadRecentlyViewed() {
         loadRecentlyViewed();
     }
 
-    function addToCart(productId, quantity = 1) {
+function addToCart(productId, quantity = 1) {
     if (window.isLoggedIn !== true) { 
         showLoginPrompt(); 
         return; 
     }
     
-    // 1. 查找产品对象
     const product = products.find(p => p.id == productId);
-    if (!product) {
-        console.error("Product not found:", productId);
-        return;
-    }
+    if (!product) return;
 
-    // 2. 确保 cart 变量是数组
-    if (!Array.isArray(cart)) {
-        cart = [];
-    }
+    if (!Array.isArray(cart)) cart = [];
 
-    // 3. 核心：置顶逻辑
     const existingIndex = cart.findIndex(item => item.id == productId);
     let finalQuantity = parseInt(quantity);
 
     if (existingIndex > -1) {
-        finalQuantity += parseInt(cart[existingIndex].quantity);
-        cart.splice(existingIndex, 1);
+        // Only increase quantity — do NOT move position
+        cart[existingIndex].quantity += finalQuantity;
+    } else {
+        // Only brand new items go to the top
+        cart.unshift({ 
+            id: product.id, 
+            name: product.name, 
+            price: parseFloat(product.price), 
+            image: product.image, 
+            quantity: finalQuantity 
+        });
     }
 
-    // 4. 统一 push 到数组末尾
-    cart.push({ 
-        id: product.id, 
-        name: product.name, 
-        price: parseFloat(product.price), 
-        image: product.image, 
-        quantity: finalQuantity 
-    });
-
-    // 5. 更新本地存储
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     
-    // 🚀 关键修复：手动触发 header.php 里的更新函数，实现即时刷新数字
     if (typeof updateHeaderCartCount === 'function') {
         updateHeaderCartCount();
     }
 
-    // 6. 执行 UI 提示和同步
     updateCartCount(); 
     showToast(`${product.name} added to cart!`);
     

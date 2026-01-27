@@ -59,6 +59,7 @@ try {
             FROM cart_items c 
             JOIN products p ON c.product_id = p.id 
             WHERE c.user_id = ?
+            ORDER BY c.id ASC
         ");
         $stmt->execute([$user_id]);
         $cartData = $stmt->fetchAll(PDO::FETCH_ASSOC);

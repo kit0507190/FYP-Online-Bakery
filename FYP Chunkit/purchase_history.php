@@ -18,6 +18,7 @@ try {
               JOIN orders_detail d ON o.id = d.order_id 
               LEFT JOIN products p ON d.product_id = p.id 
               WHERE o.customer_email = ? 
+              AND deleted_at IS NULL 
               AND o.payment_status = 'paid' 
               ORDER BY o.id DESC";
     
@@ -118,7 +119,9 @@ try {
                     <?php foreach ($order['items'] as $item): ?>
                         <div class="product-item">
                             <?php 
-                                $imgSrc = !empty($item['product_image']) ? $item['product_image'] : 'cake/A_Little_Sweet.jpg'; 
+                                $imgSrc = !empty($item['product_image']) 
+                                ? 'product_images/' . $item['product_image'] 
+                                : 'product_images/placeholder.jpg';  
                             ?>
                             <img src="<?php echo htmlspecialchars($imgSrc); ?>" class="product-img" alt="Product">
                             
