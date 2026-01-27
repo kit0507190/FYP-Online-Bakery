@@ -2,12 +2,6 @@
 <?php
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
 
-// Restrict this page to Super Admin only
-if ($current_admin['role'] !== 'super_admin') {
-    $_SESSION['error_message'] = "Access denied. This page is restricted to Super Admins only.";
-    header("Location: admin_dashboard.php");
-    exit();
-}
 
 require_once 'admin_config.php';
 
