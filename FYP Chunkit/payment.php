@@ -45,6 +45,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         $pdo->beginTransaction();
+
+        if (is_array($cartData) && !empty($cartData)) {
+            foreach ($cartData as $item) {
+                $productId = (int)$item['id'];
+                $requestedQty = (int)$item['quantity'];
+
+                // Lock the product row and get current stock
+                $stockStmt = $pdo->prepare("SELECT stock FROM products WHERE id = ? AND deleted_at IS NULL FOR UPDATE");
+                $stockStmt->execute([$productId]);
+                $currentStock = (int)$stockStmt->fetchColumn();
+
+                if ($currentStock === false) {
+                    throw new Exception("Product ID {$productId} not found or deleted.");
+                }
+
+                if ($currentStock < $requestedQty) {
+                    throw new Exception("Sorry, only {$currentStock} left in stock for '{$item['name']}'. Please update your cart.");
+                }
+
+                // Decrease stock (reserve for this order)
+                $updateStmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+                $updateStmt->execute([$requestedQty, $productId]);
+            }
+        } else {
+            throw new Exception("Your cart is empty or invalid.");
+        }
+
         $stmt = $pdo->prepare("
             INSERT INTO orders 
             (customer_name, customer_email, customer_phone, delivery_address, city, postcode, total, payment_method, payment_status, status)
@@ -60,6 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         foreach ($cartData as $item) {
             $stmtDetail->execute([$orderId, $item['id'], $item['name'], $item['price'], $item['quantity'], ($item['price'] * $item['quantity'])]);
         }
+        $clearCartStmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
+        $clearCartStmt->execute([$userId]);
+
         $pdo->commit();
 
         if ($paymentMethod === 'debitCard') {
@@ -75,7 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (PDOException $e) {
     $pdo->rollBack();
     // 把下面这行改成 die，这样如果报错，页面会卡住并显示具体错误
-    die("数据库报错了: " . $e->getMessage()); 
+    $_SESSION['checkout_error'] = $e->getMessage();
+        header("Location: cart.php");
 }
 }
 

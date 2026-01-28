@@ -67,17 +67,27 @@ document.addEventListener('DOMContentLoaded', function () {
         products = await response.json();
 
         // 5. Load favorites if user is logged in
-        if (window.isLoggedIn === true) {
-            try {
-                const favResponse = await fetch('get_user_favorites.php');
-                if (favResponse.ok) {
-                    favorites = await favResponse.json();
-                }
-            } catch (favErr) {
-                console.warn('Favorites failed to load:', favErr);
-                // non-critical — continue anyway
+favorites = [];  // NEW: Default to empty array
+if (window.isLoggedIn === true) {
+    try {
+        const favResponse = await fetch('get_user_favorites.php');
+        if (!favResponse.ok) {
+            console.warn('Favorites fetch failed:', favResponse.status);
+        } else {
+            const favData = await favResponse.json();
+            
+            // NEW: Extract only the product IDs (since that's all we need for checking favorites.includes(id))
+            if (Array.isArray(favData)) {
+                favorites = favData
+                    .map(item => Number(item.id))   // Get 'id' from each object
+                    .filter(id => !isNaN(id) && id > 0);  // Clean up invalid IDs
             }
         }
+    } catch (favErr) {
+        console.warn('Favorites failed to load:', favErr);
+        // NEW: Non-critical — continue with empty favorites if fails
+    }
+}
 
         // 6. Now that we have data — sync UI & render
         syncSidebarUI();       // make sidebar visually match current filter
@@ -312,37 +322,54 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- 6. 核心收藏逻辑 ---
-    async function toggleFavorite(id) {
-        if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
-
-        const product = products.find(p => p.id == id);
-        const pName = product ? product.name : 'Product';
-
-        // 注意：这里我们不再等待请求完成才更新，而是由各个按钮的点击事件负责即时反馈
-        // 此函数主要负责发送请求和更新全局数组
-        try {
-            const response = await fetch('toggle_favorite.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ product_id: id, product_name: pName })
-            });
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                if (result.action === 'added') {
-                    if (!favorites.includes(id)) favorites.push(id);
-                    showToast(`Added ${pName} to favorites! ❤️`);
-                } else {
-                    favorites = favorites.filter(x => x !== id);
-                    showToast('Removed from favorites 🤍');
-                }
-                // 更新背景列表状态
-                renderProducts(); 
-            }
-        } catch (e) { console.error(e); }
+    async function toggleFavorite(productId) {
+    if (!window.isLoggedIn) {
+        showLoginPrompt();
+        return;
     }
 
-    // --- 7. 修正后的 Quick View (包含 Inch 逻辑和极速反馈) ---
+    // NEW: Disable button temporarily to prevent double-clicks
+    const btn = event.currentTarget;  // Assumes called from onclick on the button
+    if (btn) btn.disabled = true;
+
+    try {
+        const response = await fetch('toggle_favorite.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product_id: productId })
+        });
+
+        if (!response.ok) throw new Error('Network error');
+
+        const data = await response.json();
+
+        if (data.status === 'success') {
+            // NEW: Update local favorites from server response (reliable sync)
+            favorites = data.favorites.map(id => Number(id));
+
+            // NEW: Re-render UI to update all hearts immediately
+            renderProducts();  // Refresh product grid
+
+            // NEW: If quickview is open, refresh it too
+            if (quickViewModal && quickViewModal.style.display !== 'none') {
+                quickViewProduct(productId);
+            }
+
+            showToast(data.action === 'added' 
+                ? 'Added to favorites!' 
+                : 'Removed from favorites!');
+        } else {
+            showToast(data.message || 'Failed to update favorite');
+        }
+    } catch (err) {
+        console.error('Toggle favorite failed:', err);
+        showToast('Error updating favorite — please try again');
+    } finally {
+        // NEW: Re-enable button
+        if (btn) btn.disabled = false;
+    }
+}
+
 // --- 7. 优化后的 Quick View (同步 Favorites 的高级设计 + 补全销量信息) ---
 // --- 7. 优化后的 Quick View (完全同步 Favorites 页面设计) ---
 function quickViewProduct(productId) {

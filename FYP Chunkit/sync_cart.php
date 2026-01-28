@@ -20,28 +20,66 @@ $action = $_GET['action'] ?? '';
 try {
     // --- 动作 A: 更新/保存购物车到数据库 ---
     if ($action === 'update') {
-        $input = json_decode(file_get_contents('php://input'), true);
-        
-        $pdo->beginTransaction();
-        try {
-            // 先删除该用户旧的购物车记录
-            $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$user_id]);
-
-            // 循环插入新的记录
-            if (!empty($input['cart']) && is_array($input['cart'])) {
-                $stmt = $pdo->prepare("INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)");
-                foreach ($input['cart'] as $item) {
-                    if (isset($item['id']) && isset($item['quantity'])) {
-                        $stmt->execute([$user_id, $item['id'], $item['quantity']]);
-                    }
-                }
-            }
-            $pdo->commit();
-            echo json_encode(['status' => 'success']);
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            throw $e;
+    $input = json_decode(file_get_contents('php://input'), true);
+    
+    $pdo->beginTransaction();
+    try {
+        // 1. Get current stock for all products in the incoming cart
+        $productIds = array_column($input['cart'] ?? [], 'id');
+        $stocks = [];
+        if (!empty($productIds)) {
+            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+            $stmt = $pdo->prepare("
+                SELECT id, stock 
+                FROM products 
+                WHERE id IN ($placeholders) AND deleted_at IS NULL
+            ");
+            $stmt->execute($productIds);
+            $stocks = $stmt->fetchAll(PDO::FETCH_KEY_PAIR); // id => stock
         }
+
+        // 2. Validate and adjust quantities
+        $validItems = [];
+        foreach ($input['cart'] ?? [] as $item) {
+            $prodId = (int)($item['id'] ?? 0);
+            $qty    = (int)($item['quantity'] ?? 0);
+
+            if ($prodId <= 0 || $qty <= 0) {
+                continue; // skip invalid items
+            }
+
+            $available = isset($stocks[$prodId]) ? (int)$stocks[$prodId] : 0;
+
+            // Soft cap: never allow more than available
+            if ($qty > $available) {
+                $qty = $available;
+                // Optional: you could log this or send a warning later
+            }
+
+            $validItems[] = ['id' => $prodId, 'quantity' => $qty];
+        }
+
+        // 3. Delete old cart
+        $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$user_id]);
+
+        // 4. Insert validated items
+        if (!empty($validItems)) {
+            $stmt = $pdo->prepare("
+                INSERT INTO cart_items (user_id, product_id, quantity) 
+                VALUES (?, ?, ?)
+            ");
+            foreach ($validItems as $item) {
+                $stmt->execute([$user_id, $item['id'], $item['quantity']]);
+            }
+        }
+
+        $pdo->commit();
+        echo json_encode(['status' => 'success']);
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+}
 
     // --- 动作 B: 从数据库读取该用户的购物车 ---
     } elseif ($action === 'fetch') {
