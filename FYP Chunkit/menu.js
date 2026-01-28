@@ -567,6 +567,19 @@ function addToCart(productId, quantity = 1) {
         showLoginPrompt(); 
         return; 
     }
+
+    const requestedQty = parseInt(quantity);
+    const available = parseInt(product.stock || 0);
+
+    if (available <= 0) {
+        showToast("Sorry, this product is out of stock!");
+        return;
+    }
+
+    if (requestedQty > available) {
+        showToast(`Only ${available} left in stock!`);
+        return;
+    }
     
     const product = products.find(p => p.id == productId);
     if (!product) return;

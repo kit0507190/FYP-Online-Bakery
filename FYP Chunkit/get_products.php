@@ -87,6 +87,7 @@ try {
             "reviewCount"  => (int)$row['review_count'],
             "soldCount"    => (int)$row['sold_count'],
             "created_at"   => $row['created_at'],
+            "stock"        => (int)$row['stock'],
         ];
     }
 

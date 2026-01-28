@@ -100,7 +100,7 @@ if (!isset($_SESSION['user_id'])) {
         }
 
         // --- 以下是原本有的逻辑：显示购物车商品 ---
-        const displayCart = [...cart].reverse(); 
+        const displayCart = cart;
         
         let itemsHTML = `
             <div class="cart-list-header">

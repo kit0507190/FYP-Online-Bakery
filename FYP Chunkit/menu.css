@@ -912,3 +912,53 @@ header + .container {
     border-radius: 10px;
     border: 1px dashed #d4a76a; /* 虚线增加精致感 */
 }
+/* Out of stock styling */
+.product-card.out-of-stock {
+    opacity: 0.65;
+    background: #f9f9f9;
+    border: 1px solid #eee;
+}
+
+.product-card.out-of-stock .product-image.faded {
+    filter: grayscale(40%) brightness(0.9);
+}
+
+.stock-status {
+    font-size: 0.95rem;
+    margin: 8px 0 12px;
+    font-weight: 600;
+}
+
+.stock-status.in {
+    color: #2e7d32;   /* green */
+}
+
+.stock-status.out {
+    color: #d32f2f;   /* red */
+    font-weight: bold;
+}
+
+.add-to-cart-btn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    background: #d4a76a;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-to-cart-btn:hover:not(.disabled) {
+    background: #c69a5e;
+    transform: translateY(-2px);
+}
+
+.add-to-cart-btn.disabled {
+    background: #cccccc;
+    color: #777;
+    cursor: not-allowed;
+    box-shadow: none;
+}
