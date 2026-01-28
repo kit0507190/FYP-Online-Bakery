@@ -1,7 +1,4 @@
 <?php
-/**
- * contact_us.php - Optimized Version
- */
 ob_start(); // Start output buffering to ensure header redirects work
 session_start();
 require_once 'config.php';
@@ -24,7 +21,7 @@ $success_msg = false;
 // 2. Check session for success flag (used after redirect)
 if (isset($_SESSION['mail_success'])) {
     $success_msg = true;
-    unset($_SESSION['mail_success']); // Clear flag after displaying
+    unset($_SESSION['mail_success']); 
 }
 
 // 3. Handle Form Submission

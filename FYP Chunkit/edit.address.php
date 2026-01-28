@@ -1,11 +1,8 @@
 <?php
-/**
- * edit.address.php - 完整版：包含邮编验证、智能解析与自定义存储顺序
- */
 session_start();
 require_once 'config.php';
 
-// 1. 验证登录
+// 1. Verify login
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
@@ -15,7 +12,7 @@ $userId = $_SESSION['user_id'];
 $addressId = $_GET['id'] ?? null;
 $errors = [];
 
-// 2. 获取并验证该地址是否属于当前用户
+// 2. Obtain and verify whether the address belongs to the current user.
 if (!$addressId) {
     header("Location: manageaddress.php");
     exit();
@@ -32,7 +29,7 @@ try {
         exit();
     }
 
-    // --- 3. 拆解地址字符串 (适配存储逻辑：街道|地区|邮编|其他) ---
+    // --- 3. Decompose the address string (adapting to storage logic: street|region|zip code|other) ---
     $address_area = $address_postcode = $address_line = $other_area = '';
     $text = $addressData['address_text'];
 
@@ -55,7 +52,7 @@ try {
     die("Error: " . $e->getMessage());
 }
 
-// --- 4. 处理表单提交更新 ---
+// --- 4. Handling Form Submission Updates ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address_area     = trim($_POST['address_area'] ?? '');
     $address_postcode = trim($_POST['address_postcode'] ?? '');

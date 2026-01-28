@@ -84,13 +84,13 @@ body {
 }
 
 /* ============================================================
-   4. FORM ELEMENTS (重点对齐修改)
+   4. FORM ELEMENTS 
    ============================================================ */
 .form-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
-    align-items: flex-start; /* 确保两个标签顶部对齐 */
+    align-items: flex-start; 
 }
 
 .form-group {
@@ -101,7 +101,7 @@ body {
     flex: 1;
 }
 
-/* 邮编容器设置为相对定位，为绝对定位的提示框提供基准 */
+
 .postcode-wrapper {
     position: relative;
 }
@@ -118,9 +118,9 @@ body {
     color: var(--error-red);
 }
 
-/* 关键：黄色提示框样式 - 绝对定位不占位 */
+
 #postcode-hint {
-    display: none; /* 由 JS 控制显示 */
+    display: none; 
     position: absolute;
     top: 0;
     right: 0;
@@ -131,7 +131,7 @@ body {
     border-radius: 4px;
     font-size: 11px;
     z-index: 10;
-    pointer-events: none; /* 防止遮挡鼠标点击输入框 */
+    pointer-events: none;
 }
 
 .form-input, 
@@ -246,7 +246,7 @@ footer {
         gap: 0;
     }
     #postcode-hint {
-        position: static; /* 手机端回到常规流，防止重叠 */
+        position: static; 
         margin-bottom: 5px;
     }
     .action-buttons {

@@ -84,13 +84,13 @@ body {
 }
 
 /* ============================================================
-   4. FORM ELEMENTS (对齐修复)
+   4. FORM ELEMENTS 
    ============================================================ */
 .form-row {
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
-    align-items: flex-start; /* 核心：确保左右标签顶部对齐 */
+    align-items: flex-start; 
 }
 
 .form-group {
@@ -101,7 +101,6 @@ body {
     flex: 1;
 }
 
-/* 邮编包装器设为相对定位 */
 .postcode-wrapper {
     position: relative;
 }
@@ -118,7 +117,6 @@ body {
     color: #e74c3c;
 }
 
-/* 黄色提示框：绝对定位，不影响 Area 标签对齐 */
 #postcode-hint {
     display: none; 
     position: absolute;
@@ -226,7 +224,6 @@ footer {
     text-align: center;
 }
 
-/* 响应式调整 */
 @media (max-width: 600px) {
     .form-row { flex-direction: column; gap: 0; }
     #postcode-hint { position: static; margin-bottom: 5px; }

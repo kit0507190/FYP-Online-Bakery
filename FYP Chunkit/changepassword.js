@@ -1,6 +1,4 @@
-/**
- * changepassword.js
- */
+// Toggle password visibility between text and password types
 function togglePasswordDisplay(id) {
     const input = document.getElementById(id);
     const icon = input.nextElementSibling.querySelector('i');
@@ -13,6 +11,7 @@ function togglePasswordDisplay(id) {
     }
 }
 
+// Initialize form validation on page load
 document.addEventListener('DOMContentLoaded', function() {
     const passwordForm = document.getElementById('passwordForm');
     const saveButton = document.getElementById('saveButton');
@@ -25,11 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const confirmPwd = document.getElementById('confirm_password').value.trim();
             
             let clientErrors = [];
-
+            // Check if current password is empty
             if (currentPwd === "") {
                 clientErrors.push("Current password is required.");
             }
 
+            // Validate new password strength (8+ chars, letters & numbers)
             const hasLetter = /[A-Za-z]/.test(newPwd);
             const hasNumber = /[0-9]/.test(newPwd);
 
@@ -37,10 +37,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 clientErrors.push("Password must be 8+ chars with letters & numbers.");
             }
 
+            // Verify if new passwords match
             if (newPwd !== confirmPwd) {
                 clientErrors.push("New passwords do not match.");
             }
-
+            
+            // Display errors if validation fails
             if (clientErrors.length > 0) {
                 event.preventDefault();
                 
@@ -52,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 errorContainer.innerHTML = errorHtml;
                 
-                // 重点：滚动到 header 下方一点点，这样红色提示条就在视觉中心
                 window.scrollTo({ top: 150, behavior: 'smooth' });
                 return;
             }

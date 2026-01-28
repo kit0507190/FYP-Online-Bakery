@@ -1,5 +1,5 @@
 /* ============================================================
-   1. 变量与基础重置
+   1. Variables and Basic Reset
    ============================================================ */
 :root {
     --bakery-brown: #5a3921;
@@ -21,11 +21,11 @@ body {
     background-color: var(--bakery-bg);
     color: var(--text-main);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding-top: 85px; /* 避开固定导航栏 */
+    padding-top: 85px; 
 }
 
 /* ============================================================
-   2. 布局容器
+   2. Layout Container
    ============================================================ */
 .profile-container {
     max-width: 800px;
@@ -54,7 +54,7 @@ body {
 }
 
 /* ============================================================
-   3. 头部装饰
+   3. Head ornaments
    ============================================================ */
 .profile-header {
     background: linear-gradient(135deg, var(--bakery-brown) 0%, #7a5537 100%);
@@ -72,7 +72,7 @@ body {
 }
 
 /* ============================================================
-   4. 地址卡片列表
+   4. Address Card List
    ============================================================ */
 .address-list {
     display: flex;
@@ -88,7 +88,7 @@ body {
     transition: transform 0.2s ease;
 }
 
-/* 默认地址卡片的高亮样式 */
+
 .address-card.is-default {
     border: 2px solid var(--bakery-gold);
     background-color: #fffdfa;
@@ -96,7 +96,6 @@ body {
     overflow: hidden;
 }
 
-/* 卡片内部结构 */
 .address-body {
     display: flex;
     justify-content: space-between;
@@ -124,7 +123,7 @@ body {
 }
 
 /* ============================================================
-   5. 按钮、标签与动作
+   5. Buttons, Labels, and Actions
    ============================================================ */
 .address-actions {
     display: flex;
@@ -180,7 +179,7 @@ body {
     transform: scale(1.1);
 }
 
-/* 添加新地址按钮 */
+
 .add-action {
     text-align: center;
     margin-top: 40px;
@@ -207,33 +206,7 @@ body {
 }
 
 /* ============================================================
-   6. 页脚与空状态
-   ============================================================ */
-footer {
-    padding: 40px 0;
-    background-color: #5a3921;
-    color: white;
-    text-align: center;
-}
-
-.footer-logo img {
-    height: 60px;
-    margin-bottom: 15px;
-}
-
-.footer-links a {
-    margin: 0 10px;
-    color: white;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.footer-links a:hover {
-    color: #d4a76a;
-}
-
-/* ============================================================
-   7. 响应式调整
+   6. responsive adjustment
    ============================================================ */
 @media (max-width: 600px) {
     .address-body {

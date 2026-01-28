@@ -1,5 +1,5 @@
 /* ============================================================
-   1. GLOBAL STYLES (全局重置与背景)
+   1. GLOBAL STYLES 
    ============================================================ */
 * {
     margin: 0;
@@ -24,7 +24,7 @@ body {
 }
 
 /* ============================================================
-   2. MAIN PROFILE CONTENT (资料页排版)
+   2. MAIN PROFILE CONTENT 
    ============================================================ */
 main.profile-page {
     flex: 1;
@@ -48,7 +48,7 @@ main.profile-page {
 }
 
 /* ============================================================
-   3. INFO CARDS (信息展示卡片)
+   3. INFO CARDS 
    ============================================================ */
 .info-card {
     padding: 35px;
@@ -68,7 +68,7 @@ main.profile-page {
     margin-bottom: 25px;
 }
 
-/* 新增：地址栏头部容器，用于排列标题和按钮 */
+
 .address-header {
     display: flex;
     justify-content: space-between;
@@ -78,7 +78,7 @@ main.profile-page {
     border-bottom: 3px solid #d4a76a;
 }
 
-/* 移除地址栏标题原有的边框，由父容器统一控制 */
+
 .address-header h2 {
     border-bottom: none;
     margin-bottom: 0;
@@ -110,7 +110,7 @@ main.profile-page {
 }
 
 /* ============================================================
-   4. ACTION BUTTONS (按钮样式)
+   4. ACTION BUTTONS 
    ============================================================ */
 .action-buttons {
     display: flex;
@@ -142,7 +142,7 @@ main.profile-page {
 .btn-history { background: #5a3921; }
 .btn-logout { background: #e74c3c; }
 
-/* 新增：管理地址小按钮样式 */
+
 .btn-manage-address {
     display: inline-flex;
     align-items: center;
@@ -168,7 +168,7 @@ main.profile-page {
 
 
 /* ============================================================
-   5. SUCCESS MODAL (成功提示弹窗)
+   5. SUCCESS MODAL 
    ============================================================ */
 .toast-overlay {
     position: fixed;
@@ -239,7 +239,7 @@ main.profile-page {
 }
 
 /* ============================================================
-   7. ANIMATIONS (动画定义)
+   7. ANIMATIONS 
    ============================================================ */
 @keyframes fadeIn { 
     from { opacity: 0; } 

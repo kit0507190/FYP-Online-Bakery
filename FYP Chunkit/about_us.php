@@ -1,8 +1,4 @@
 <?php
-/**
- * about_us.php - 关于我们
- * 核心功能：展示品牌历史、团队成员及核心价值。
- */
 session_start();
 ?>
 <!DOCTYPE html>

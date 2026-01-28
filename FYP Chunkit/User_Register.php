@@ -1,7 +1,6 @@
 <?php
 require_once 'config.php';
 
-// 初始化变量
 $errors = [];
 $name = ""; 
 $email = "";
@@ -12,8 +11,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST["password"] ?? '';
     $confirm  = $_POST["confirmPassword"] ?? '';
     $agree    = isset($_POST["agreeTerms"]);
-
-    // --- 服务器端验证逻辑 ---
+    
+    // Validate Full Name: Required, alphabetic only, and length check
     if (empty($name)) {
         $errors[] = "Full name is required.";
     } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
@@ -22,6 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Name must be at least 2 characters.";
     }
 
+    // Validate Email: Format check and domain restriction (@gmail.com only)
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
@@ -31,20 +31,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
+    // Validate Password strength: Minimum 8 chars with letters and numbers
     if (strlen($password) < 8 || !preg_match("/[A-Za-z]/", $password) || !preg_match("/[0-9]/", $password)) {
         $errors[] = "Password must be 8+ chars with letters & numbers.";
     }
 
+    // Ensure password and confirmation match
     if ($password !== $confirm) {
         $errors[] = "Passwords do not match.";
     }
 
+    // Check if terms and conditions are accepted
     if (!$agree) {
         $errors[] = "You must agree to the terms and privacy policy.";
     }
 
     if (empty($errors)) {
         try {
+            // Check if the email already exists in the database
             $check = $pdo->prepare("SELECT id FROM user_db WHERE email = ?");
             $check->execute([$email]);
             

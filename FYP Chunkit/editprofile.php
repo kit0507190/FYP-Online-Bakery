@@ -1,7 +1,4 @@
 <?php
-/**
- * editprofile.php - 精简逻辑版
- */
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
@@ -15,7 +12,7 @@ $userId = $_SESSION['user_id'];
 $errors = [];
 $name = $email = $phone = '';
 
-// 1. 获取当前数据
+// 1. Get current data
 try {
     $query = "SELECT name, email, phone FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
@@ -35,7 +32,7 @@ try {
     die("Error: " . $e->getMessage());
 }
 
-// 2. 处理表单提交
+// 2. Handling form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -60,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Phone number must start with '01' and be 10-11 digits long.";
     }
 
-    // 更新数据库
+    // Update database
     if (empty($errors)) {
         try {
             $updateQuery = "UPDATE user_db SET name = ?, email = ?, phone = ?, updated_at = NOW() WHERE id = ?";

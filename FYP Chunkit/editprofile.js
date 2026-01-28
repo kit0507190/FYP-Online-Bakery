@@ -1,6 +1,4 @@
-/**
- * editprofile.js - Handles client-side validation with unified banner display
- */
+
 document.addEventListener('DOMContentLoaded', function() {
     const profileForm = document.getElementById('profileForm');
     const saveButton = document.getElementById('saveButton');
