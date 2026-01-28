@@ -86,7 +86,7 @@ try {
             "rating"       => (float)$row['rating'],
             "reviewCount"  => (int)$row['review_count'],
             "soldCount"    => (int)$row['sold_count'],
-            "tags"         => []
+            "created_at"   => $row['created_at'],
         ];
     }
 

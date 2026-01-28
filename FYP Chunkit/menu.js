@@ -469,14 +469,14 @@ function quickViewProduct(productId) {
     }
 
     function sortProducts(list) {
-        switch(currentSort) {
-            case 'price-low': return [...list].sort((a, b) => a.price - b.price);
-            case 'price-high': return [...list].sort((a, b) => b.price - a.price);
-            case 'rating': return [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
-            case 'popular': return [...list].sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
-            default: return [...list].sort((a, b) => a.name.localeCompare(b.name));
-        }
+    switch(currentSort) {
+        case 'price-low': return [...list].sort((a, b) => a.price - b.price);
+        case 'price-high': return [...list].sort((a, b) => b.price - a.price);
+        case 'rating': return [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        case 'recent': return [...list].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));  // New case: Sort by created_at descending (newest first)
+        default: return [...list].sort((a, b) => a.name.localeCompare(b.name));
     }
+}
 
     function updateActiveCategory() {
         // 如果正在搜索，标题显示搜索关键词
