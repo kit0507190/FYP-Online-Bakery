@@ -176,10 +176,13 @@ if (!isset($_SESSION['user_id'])) {
     }
 
     function updateHeaderCount() {
-        const total = cart.reduce((sum, i) => sum + parseInt(i.quantity), 0);
-        const countEl = document.querySelector('.cart-count');
-        if (countEl) countEl.textContent = total;
+    const count = cart.length;
+    const countEl = document.querySelector('.cart-count');
+    if (countEl) {
+        countEl.textContent = count;
+        countEl.style.display = count > 0 ? 'flex' : 'none';
     }
+}
 
     // 初始化加载
     document.addEventListener('DOMContentLoaded', () => {

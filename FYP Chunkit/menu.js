@@ -224,46 +224,91 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         setupProductEventListeners();
+        setupProductCardClick();
     }
+
+    function setupProductCardClick() {
+    document.querySelectorAll('.product-card').forEach(card => {
+        // Prevent favorite button clicks from opening quick view
+        const favBtn = card.querySelector('.favorite-btn');
+        if (favBtn) {
+            favBtn.addEventListener('click', e => e.stopPropagation());
+        }
+
+        card.addEventListener('click', function(e) {
+            // Optional: ignore clicks on favorite button / out-of-stock overlay etc.
+            if (e.target.closest('.favorite-btn') || e.target.closest('.out-of-stock-overlay')) {
+                return;
+            }
+
+            const productId = parseInt(this.getAttribute('data-id'));
+            if (!isNaN(productId)) {
+                quickViewProduct(productId);
+            }
+        });
+    });
+}
 
     function createProductCard(product) {
-        const isFav = favorites.includes(parseInt(product.id));
-        const badge = (product.tags && product.tags.includes('popular')) ? 'popular' :
-                      (product.tags && product.tags.includes('new')) ? 'new' : '';
-        const stars = '★'.repeat(Math.floor(product.rating || 0)) + '☆'.repeat(Math.max(0, 5 - Math.floor(product.rating||0)));
-        return `
-            <div class="product-card" data-id="${product.id}">
-                ${badge ? `<div class="product-badge ${badge}">${badge === 'popular' ? 'Popular' : 'New'}</div>` : ''}
-                <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${product.id}">${isFav ? '❤️' : '🤍'}</button>
+    const isFav = favorites.includes(parseInt(product.id));
+    const badge = (product.tags && product.tags.includes('popular')) ? 'popular' :
+                  (product.tags && product.tags.includes('new')) ? 'new' : '';
+    const stars = '★'.repeat(Math.floor(product.rating || 0)) + '☆'.repeat(Math.max(0, 5 - Math.floor(product.rating||0)));
+
+    // ── NEW: stock check ──
+    const stock = parseInt(product.stock) || 0;
+    const isOutOfStock = stock <= 0;
+
+    return `
+        <div class="product-card ${isOutOfStock ? 'out-of-stock' : ''}" data-id="${product.id}">
+            ${badge ? `<div class="product-badge ${badge}">${badge === 'popular' ? 'Popular' : 'New'}</div>` : ''}
+            <button class="favorite-btn ${isFav ? 'active' : ''}" data-id="${product.id}">${isFav ? '❤️' : '🤍'}</button>
+            <div class="product-image-wrapper">
                 <img src="${product.image}" alt="${product.name}" class="product-image">
-                <div class="product-info">
-                    <h3 class="product-name">${product.name}</h3>
-                    <p class="product-price">RM ${product.price.toFixed(2)}</p>
-                    <p class="product-size">${product.size || ''}</p>
-                  
-<div class="product-rating" style="margin-bottom: 10px;"> 
-    <span class="stars">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5-Math.floor(product.rating))}</span>
-    <span class="rating-count" style="font-size: 14px;">
-        ${product.rating} (${product.reviewCount} Reviews | ${product.soldCount} Sold)
-    </span>
-</div>
-                    <p class="product-description">${product.description || ''}</p>
+                ${isOutOfStock ? `
+                    <div class="out-of-stock-overlay">
+                        <span class="out-of-stock-text">Out of Stock</span>
+                    </div>
+                ` : ''}
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">${product.name}</h3>
+                <p class="product-price">RM ${product.price.toFixed(2)}</p>
+                <p class="product-size">${product.size || ''}</p>
+                
+                <div class="product-rating" style="margin-bottom: 10px;"> 
+                    <span class="stars">${stars}</span>
+                    <span class="rating-count" style="font-size: 14px;">
+                        ${product.rating} (${product.reviewCount} Reviews | ${product.soldCount} Sold)
+                    </span>
                 </div>
-            </div>`;
-    }
+                <p class="product-description">${product.description || ''}</p>
+            </div>
+        </div>`;
+}
 
     function setupProductEventListeners() {
-        document.querySelectorAll('.favorite-btn').forEach(btn => btn.addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            // 列表页点击：直接调用逻辑
-            toggleFavorite(parseInt(btn.getAttribute('data-id'))); 
-        }));
+        document.querySelectorAll('.favorite-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();   // prevent card click from firing
 
-        document.querySelectorAll('.product-card').forEach(card => card.addEventListener('click', function(e) { 
-            if (!e.target.closest('.favorite-btn')) { 
-                quickViewProduct(parseInt(this.getAttribute('data-id'))); 
-            } 
-        }));
+        const productId = parseInt(btn.getAttribute('data-id'));  // assuming you use data-id on the button
+
+        if (window.isLoggedIn !== true) {
+            // Close quick view modal if it's currently open
+            const quickViewModal = document.getElementById('quickViewModal');
+            if (quickViewModal && quickViewModal.style.display !== 'none') {
+                quickViewModal.style.display = 'none';
+            }
+
+            showLoginPrompt();
+            return;  // stop here — don't try to toggle favorite
+        }
+
+        // Logged in → proceed with normal favorite toggle
+        toggleFavorite(productId);
+    });
+});
     }
 
     // --- 6. 核心收藏逻辑 ---
@@ -308,6 +353,7 @@ function quickViewProduct(productId) {
     
     // 检查当前产品是否在收藏夹中
     const isFavorite = favorites.includes(parseInt(product.id));
+    
 
     quickViewContent.innerHTML = `
         <button class="close-modal" id="closeModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
@@ -372,14 +418,18 @@ function quickViewProduct(productId) {
     
     // 绑定加入购物车事件
     document.getElementById('modalAddToCartBtn').onclick = () => { 
-        addToCart(product.id, 1);
+    const success = addToCart(product.id, 1);   // ← capture return value
+    
+    if (success) {
         quickViewModal.style.display = 'none'; 
-    };
+    }
+    // else → keep modal open so user sees the toast / error
+};
 
     // 绑定收藏切换事件
     const modalFavBtn = document.getElementById('modalFavBtn');
     modalFavBtn.onclick = () => {
-        if (window.isLoggedIn !== true) { showLoginPrompt(); return; }
+        if (window.isLoggedIn !== true) { showProLoginmpt(); return; }
         
         // 视觉上立即反馈
         const isNowActive = modalFavBtn.classList.toggle('active');
@@ -563,64 +613,84 @@ function loadRecentlyViewed() {
     }
 
 function addToCart(productId, quantity = 1) {
-    if (window.isLoggedIn !== true) { 
+    if (window.isLoggedIn !== true) {
+        const quickView = document.getElementById('quickViewModal');
+        if (quickView && quickView.style.display !== 'none') {
+            quickView.style.display = 'none';
+        }
         showLoginPrompt(); 
-        return; 
+        return false;
     }
 
-    const requestedQty = parseInt(quantity);
-    const available = parseInt(product.stock || 0);
+    const product = products.find(p => p.id == productId);
+    if (!product) {
+        showToast("Product not found");
+        return false;
+    }
 
+    const available = Number(product.stock) || 0;
     if (available <= 0) {
-        showToast("Sorry, this product is out of stock!");
-        return;
+        showToast("Sorry, this product is currently out of stock!");
+        return false;
     }
 
-    if (requestedQty > available) {
-        showToast(`Only ${available} left in stock!`);
-        return;
+    // ── NEW: calculate how many are already in cart ──
+    let alreadyInCart = 0;
+    const existing = cart.find(item => item.id == productId);
+    if (existing) {
+        alreadyInCart = Number(existing.quantity) || 0;
+    }
+
+    const requestedTotal = alreadyInCart + quantity;
+
+    if (requestedTotal > available) {
+        if (alreadyInCart > 0) {
+        
+            showToast(`Only ${available} available — cannot add more.`);
+        }
+        return false;
     }
     
-    const product = products.find(p => p.id == productId);
-    if (!product) return;
-
+    // ── Cart logic ──
     if (!Array.isArray(cart)) cart = [];
 
     const existingIndex = cart.findIndex(item => item.id == productId);
-    let finalQuantity = parseInt(quantity);
+    let finalQuantity = quantity;   // ← was using undefined variable 'requestedQty' !!!
 
     if (existingIndex > -1) {
-        // Only increase quantity — do NOT move position
         cart[existingIndex].quantity += finalQuantity;
     } else {
-        // Only brand new items go to the top
         cart.unshift({ 
             id: product.id, 
             name: product.name, 
-            price: parseFloat(product.price), 
+            price: Number(product.price), 
             image: product.image, 
             quantity: finalQuantity 
         });
     }
 
+    // Save
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     
+    updateCartCount();
     if (typeof updateHeaderCartCount === 'function') {
         updateHeaderCartCount();
     }
 
-    updateCartCount(); 
-    showToast(`${product.name} added to cart!`);
-    
+    showToast(`Added ${product.name} to cart!`);
+
+    // async server sync (non-blocking)
     if (typeof forceSyncCart === 'function') {
-        forceSyncCart();
+        forceSyncCart().catch(err => console.warn("Cart sync failed", err));
     }
+
+    return true;   // ← success
 }
 
 function updateCartCount() {
     // 重新从本地读取最新的 cart，确保数字 100% 准确
     const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-    const total = currentCart.reduce((s, i) => s + (parseInt(i.quantity) || 0), 0);
+    const total = currentCart.length;   // number of product types
     
     localStorage.setItem('cartItemCount', total.toString());
     
