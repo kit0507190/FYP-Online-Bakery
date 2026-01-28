@@ -186,7 +186,6 @@ if (!isset($_SESSION['user_id'])) {
 
     // 初始化加载
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(initPage, 100);
     });
 </script>
 </body>
