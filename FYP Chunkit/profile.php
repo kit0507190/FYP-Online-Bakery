@@ -1,22 +1,20 @@
 <?php
-/**
- * profile.php - 用户资料展示页 (已移除 user_db 地址冗余，适配新拼接逻辑)
- */
+
 session_start();
 
-// --- 1. 登录检查 ---
+// --- 1. Login Check ---
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php"); 
     exit();
 }
 
-// --- 2. 引入数据库连接 ---
+// --- 2. Importing a database connection ---
 require_once 'config.php';
 
 $userId = $_SESSION['user_id'];
 
 try {
-    // 首先读取基础用户信息 (注意：已经移除了 address 字段)
+    // Fetch user basic information
     $query = "SELECT name, email, phone, created_at FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userId]);
@@ -28,7 +26,7 @@ try {
         $phone = htmlspecialchars($user['phone'] ?? 'Not provided');
         $memberSince = date("F j, Y", strtotime($user['created_at']));
         
-        // --- 核心修改：仅从 user_addresses 表读取默认地址 (is_default = 1) ---
+        
         $addrQuery = "SELECT address_text FROM user_addresses WHERE user_id = ? AND is_default = 1 LIMIT 1";
         $addrStmt = $pdo->prepare($addrQuery);
         $addrStmt->execute([$userId]);
@@ -39,18 +37,15 @@ try {
         if ($defaultAddr) {
             $raw_address = $defaultAddr['address_text'];
 
-            // --- 核心解析逻辑：适配 街道|地区|邮编|其他 ---
+            // Format address based on delimiter type
             if (strpos($raw_address, '|') !== false) {
                 $parts = explode('|', $raw_address);
-                // 索引对应：0=街道, 1=地区, 2=邮编
                 $addrLine = htmlspecialchars($parts[0] ?? '');
                 $addrArea = htmlspecialchars($parts[1] ?? '');
                 $addrPost = htmlspecialchars($parts[2] ?? '');
-                
-                // 格式化输出：街道在前，地区和邮编在后
                 $address_display = "$addrLine<br>$addrArea, $addrPost<br>Malacca, Malaysia";
             } 
-            // 兼容之前可能残留的逗号格式
+            
             elseif (strpos($raw_address, ', ') !== false) {
                 $address_display = nl2br(htmlspecialchars($raw_address));
             } 

@@ -1,22 +1,17 @@
 <?php
-/**
- * resend_code_handler.php
- * 处理“重发验证码”请求：生成新代码并发送美化后的 HTML 邮件。
- */
 
-// 1. 设置时区为马来西亚
 date_default_timezone_set('Asia/Kuala_Lumpur');
 session_start();
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// 引入邮件库 (请确保路径与你的项目结构一致)
+
 require '../vendor/phpmailer/Exception.php'; 
 require '../vendor/phpmailer/PHPMailer.php';
 require '../vendor/phpmailer/SMTP.php';
 
-// 2. 安全检查：如果 Session 里没有 Email，说明是非法进入，踢回第一步
+// 2. Security check: If there is no email in the session, it indicates unauthorized access; revert to step 1.
 if (!isset($_SESSION['reset_email'])) {
     header("Location: forgotpassword.php");
     exit;
@@ -32,21 +27,21 @@ try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
-    // --- 3. 生成新的 6 位码和新的 10 分钟过期时间 ---
+    // --- 3. Generate a new 6-digit code and a new 10-minute expiration time ---
     $new_code = sprintf("%06d", mt_rand(1, 999999)); 
     $new_expiry = date("Y-m-d H:i:s", time() + 600); 
 
-    // 更新数据库中该邮箱的记录，换成最新的验证码和时间
+   
     $update_stmt = $pdo->prepare("UPDATE password_resets SET token = ?, created_at = ? WHERE email = ?");
     $update_stmt->execute([$new_code, $new_expiry, $email]);
 
-    // --- 4. 配置 PHPMailer 发送新的 HTML 邮件 ---
+    // --- 4. Configure PHPMailer to send new HTML emails ---
     $mail = new PHPMailer(true);
     $mail->isSMTP(); 
     $mail->Host       = 'smtp.gmail.com'; 
     $mail->SMTPAuth   = true; 
-    $mail->Username   = 'yitanglong857@gmail.com'; // 你的 Gmail 账号
-    $mail->Password   = 'ucxn rkss fgtu ahnk';     // 你的 Gmail 应用专用密码
+    $mail->Username   = 'yitanglong857@gmail.com'; 
+    $mail->Password   = 'ucxn rkss fgtu ahnk';     
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
     $mail->Port       = 587; 
     $mail->CharSet    = 'UTF-8'; 
@@ -56,7 +51,7 @@ try {
     $mail->isHTML(true); 
     $mail->Subject = 'Your NEW Verification Code - Bakery House';
 
-    // --- 与主发送逻辑风格统一的 HTML 模板 ---
+    
     $mail->Body = "
     <div style='background-color: #fdf6f0; padding: 40px; font-family: sans-serif;'>
         <div style='max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
@@ -92,12 +87,12 @@ try {
 
     $mail->send();
     
-    // 成功后跳回验证码输入页，并带上提示消息
+   // Upon successful verification, redirect back to the verification code input page with a notification message.
     header("Location: verify_code.php?success=" . urlencode("A new verification code has been sent to your email."));
     exit;
 
 } catch (Exception $e) {
-    // 重发失败，跳回并提示错误
+    // Resend failed, redirected and displayed an error message.
     header("Location: verify_code.php?error=" . urlencode("Resend failed. Please check your connection."));
     exit;
 }

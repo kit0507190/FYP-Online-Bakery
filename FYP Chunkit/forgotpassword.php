@@ -1,5 +1,4 @@
 <?php
-// forgotpassword.php
 session_start(); 
 require_once 'config.php'; 
 
@@ -9,7 +8,6 @@ $prefilled_email = '';
 if (isset($_SESSION['user_id'])) {
     $userId = $_SESSION['user_id'];
     try {
-        // 逻辑保持不变：直接从数据库查，确保 100% 准确
         $stmt = $pdo->prepare("SELECT email FROM user_db WHERE id = ?");
         $stmt->execute([$userId]);
         $user = $stmt->fetch();

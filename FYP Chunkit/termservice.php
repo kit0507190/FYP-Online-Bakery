@@ -1,7 +1,5 @@
 <?php
-/**
- * termservice.php - 服务条款页面
- */
+
 session_start();
 ?>
 <!DOCTYPE html>

@@ -1,21 +1,17 @@
 <?php
-/**
- * User_Login.php - 用户登录页面
- */
 session_start();
 require_once 'config.php';
 
-// 初始化变量
 $errors = [];
 $email = $_POST['email'] ?? "";
 
-// 处理登录请求
+// Handle login request
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST["email"] ?? '');
     $password = $_POST["password"] ?? '';
     $remember = isset($_POST["rememberMe"]);
 
-    // 后端基础验证
+    // Backend basic verification
     if (empty($email)) {
         $errors[] = "Please enter your email address.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -26,7 +22,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Please enter your password.";
     }
 
-    // 如果没有错误，尝试从数据库匹配
     if (empty($errors)) {
         try {
             $stmt = $pdo->prepare("SELECT id, name, email, password FROM user_db WHERE email = ?");
@@ -34,13 +29,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $user = $stmt->fetch();
 
             if ($user && password_verify($password, $user['password'])) {
-                // 登录成功 - 设置 Session
+                // Login successful - Set Session
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_name'] = $user['name'];
                 $_SESSION['user_email'] = $user['email'];
                 $_SESSION['logged_in'] = true;
 
-                // 记住我功能
+                // Remember me function
                 if ($remember) {
                     setcookie('user_email', $email, time() + (30 * 24 * 60 * 60), '/');
                 } else {

@@ -1,5 +1,5 @@
 <?php
-// resetpassword.php
+
 session_start();
 
 if (!isset($_SESSION['code_verified']) || $_SESSION['code_verified'] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION['code_verified']) || $_SESSION['code_verified'] !== true) {
     exit;
 }
 
-// 数据库连接
+
 $host = 'localhost';
 $db   = 'bakeryhouse'; 
 $user = 'root'; 

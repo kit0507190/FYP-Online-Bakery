@@ -1,7 +1,5 @@
 <?php
-/**
- * privacypolicy.php - 隐私政策页面
- */
+
 session_start();
 ?>
 <!DOCTYPE html>

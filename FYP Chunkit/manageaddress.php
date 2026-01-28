@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $userId = $_SESSION['user_id'];
 
-// --- 逻辑 1：删除地址 ---
+// --- Logic 1: Delete address ---
 if (isset($_GET['delete_id'])) {
     $deleteId = $_GET['delete_id'];
     $deleteQuery = "DELETE FROM user_addresses WHERE id = ? AND user_id = ? AND is_default = 0";
@@ -18,7 +18,7 @@ if (isset($_GET['delete_id'])) {
     exit();
 }
 
-// --- 逻辑 2：设置默认地址 ---
+// --- Logic 2: Set the default address ---
 if (isset($_GET['set_default'])) {
     $addressId = $_GET['set_default'];
     $pdo->prepare("UPDATE user_addresses SET is_default = 0 WHERE user_id = ?")->execute([$userId]);
@@ -27,14 +27,12 @@ if (isset($_GET['set_default'])) {
     exit();
 }
 
-// 获取地址列表
+// Get address list
 $stmt = $pdo->prepare("SELECT * FROM user_addresses WHERE user_id = ? ORDER BY is_default DESC, id DESC");
 $stmt->execute([$userId]);
 $addresses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-/**
- * 将 街道|地区|邮编 解析为 街道, 地区, 邮编
- */
+// Format address for display
 function formatAddress($raw) {
     if (empty($raw)) return "No address detail";
     if (strpos($raw, '|') !== false) {

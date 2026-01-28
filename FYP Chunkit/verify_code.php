@@ -1,11 +1,13 @@
 <?php
 session_start();
+
 // Security check: if no email session, kick back to first step
 if (!isset($_SESSION['reset_email'])) {
     header("Location: forgotpassword.php");
     exit;
 }
 
+// Get error or success messages from URL parameters
 $error = isset($_GET['error']) ? htmlspecialchars($_GET['error']) : '';
 $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
 ?>
@@ -16,6 +18,7 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Code - Bakery House</title>
     <style>
+        /* --- General Layout Styles --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -38,7 +41,7 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
             text-align: center;
         }
 
-        /* Logo 样式：模仿 Login 页面 */
+        /* --- Logo and Image Styles --- */
         .logo-image {
             width: 120px;
             height: 120px;
@@ -64,7 +67,7 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
         .instruction { color: #666; font-size: 15px; margin-bottom: 25px; line-height: 1.5; }
         .instruction strong { color: #d4a76a; }
 
-        /* 输入框美化 */
+        /* --- Input Field Design --- */
         input {
             width: 100%;
             padding: 15px;
@@ -83,7 +86,7 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
             box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.2);
         }
 
-        /* 按钮美化 */
+        /* --- Button Styling --- */
         .btn {
             width: 100%;
             padding: 14px;
@@ -98,6 +101,7 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
         }
         .btn:hover { background: #c2955a; }
 
+        /* --- Message Notification Boxes --- */
         .error { color: #e74c3c; background: #f8d7da; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
         .success { color: #27ae60; background: #d4edda; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; }
 
@@ -148,10 +152,12 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
     </div>
 
     <script>
+        // 1. Initialize Timer Settings
         let timeLeft = 60; 
         const resendLink = document.getElementById('resendLink');
         const countdown = document.getElementById('countdown');
 
+        // 2. Countdown Timer Logic
         function startTimer() {
             resendLink.classList.add('disabled');
             let timer = setInterval(function() {
@@ -167,6 +173,7 @@ $success = isset($_GET['success']) ? htmlspecialchars($_GET['success']) : '';
             }, 1000);
         }
 
+        // 3. Execution on Page Load
         window.onload = startTimer;
     </script>
 </body>

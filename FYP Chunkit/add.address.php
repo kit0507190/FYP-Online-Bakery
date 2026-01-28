@@ -1,11 +1,8 @@
 <?php
-/**
- * add.address.php - 完整功能版：包含邮编验证与自定义存储顺序
- */
 session_start();
 require_once 'config.php';
 
-// 1. 验证登录
+// 1. Verify login
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit();
@@ -14,7 +11,7 @@ if (!isset($_SESSION['user_id'])) {
 $userId = $_SESSION['user_id'];
 $errors = [];
 
-// 2. 处理表单提交
+// 2. Handling form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address_area = trim($_POST['address_area'] ?? '');
     $address_postcode = trim($_POST['address_postcode'] ?? '');

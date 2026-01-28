@@ -1,7 +1,4 @@
 <?php
-/**
- * changepassword.php - Final Fixed Version
- */
 session_start();
 if (!isset($_SESSION['user_id'])) { 
     header("Location: User_Login.php"); 
@@ -36,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
     
-    // Server-side Validation
     if (empty($current_password)) { 
         $errors[] = "Current password is required."; 
     }

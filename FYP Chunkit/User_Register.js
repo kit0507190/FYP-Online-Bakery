@@ -1,8 +1,6 @@
-/**
- * User_Register.js - 整合实时验证逻辑
- */
+
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. 密码显示切换 (保持原有逻辑不动)
+    // 1. Password display toggle (keep original logic unchanged)
     const setupToggle = (btnId, inputId) => {
         const btn = document.getElementById(btnId);
         const input = document.getElementById(inputId);
@@ -17,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setupToggle('togglePassword', 'password');
     setupToggle('toggleConfirmPassword', 'confirmPassword');
 
-    // 2. 元素定义
+    // 2. Element Definition
     const nameInput = document.getElementById('nameInput');
     const nameError = document.getElementById('nameError');
     const emailInput = document.getElementById('emailInput');
@@ -26,17 +24,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmInput = document.getElementById('confirmPassword');
     const confirmError = document.getElementById('confirmError');
 
-    // 3. Full Name 实时检查逻辑 (允许输入但实时显示截图中的报错效果)
+    // 3. Real-time Full Name check logic 
     if (nameInput) {
         nameInput.addEventListener('input', function() {
             const val = this.value;
-            // 匹配字母和空格的正则表达式
+            
             const namePattern = /^[a-zA-Z\s]*$/;
             
             if (val === "") {
                 clearNameError();
             } else if (!namePattern.test(val)) {
-                // 对应截图：显示红字警告并将边框变红
+                
                 nameError.textContent = "* Name can only contain letters and spaces.";
                 this.classList.add('input-error');
             } else if (val.trim().length < 2) {
@@ -53,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (nameInput) nameInput.classList.remove('input-error');
     }
 
-    // 4. Email 实时检查逻辑 (保持原有逻辑)
+    // 4. Real-time Email Check Logic 
     if (emailInput) {
         emailInput.addEventListener('input', function() {
             const val = this.value.trim().toLowerCase();
@@ -73,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (emailInput) emailInput.classList.remove('input-error');
     }
 
-    // 5. Confirm Password 实时对比逻辑 (实时显示匹配状态)
+    // 5. Confirm Password Real-time Comparison Logic 
     const validatePasswords = () => {
         const p1 = passwordInput.value;
         const p2 = confirmInput.value;
@@ -97,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmInput.addEventListener('input', validatePasswords);
     }
 
-    // 6. Modal 弹窗逻辑 (保持原有代码不动)
+    // 6. Modal pop-up logic 
     const modal = document.getElementById('policyModal');
     const title = document.getElementById('policyTitle');
     const body = document.getElementById('policyBody');

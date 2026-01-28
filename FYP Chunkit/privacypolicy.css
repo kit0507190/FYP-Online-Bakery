@@ -20,7 +20,7 @@ body {
     color: #333;
     background-color: #fdfdfd;
     line-height: 1.8;
-    padding-top: 85px; /* 避开固定 Header */
+    padding-top: 85px; 
 }
 
 .container {
@@ -46,11 +46,11 @@ body {
 #heroSubtitle { font-size: 20px; font-weight: 300; opacity: 0; transform: translateY(20px); transition: 0.8s 0.2s; }
 
 /* ============================================================
-   3. PRIVACY CARD DESIGN (核心设计部分)
+   3. PRIVACY CARD DESIGN 
    ============================================================ */
 .privacy-container {
     padding: 60px 0;
-    background-color: var(--bg-cream); /* 整个背景使用奶油色 */
+    background-color: var(--bg-cream); 
 }
 
 .privacy-card {
@@ -84,7 +84,7 @@ body {
     margin: 0 auto;
 }
 
-/* 章节样式 */
+
 .privacy-section {
     margin-bottom: 45px;
     opacity: 0;
@@ -111,7 +111,7 @@ body {
     font-size: 18px;
 }
 
-/* 列表样式 */
+
 .styled-list {
     list-style: none;
     padding-left: 10px;
@@ -132,7 +132,7 @@ body {
     font-weight: bold;
 }
 
-/* 高亮框 */
+
 .highlight-box {
     background-color: var(--bg-cream);
     padding: 20px;

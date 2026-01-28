@@ -1,6 +1,4 @@
-/**
- * contact_us.js
- */
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Entry animations for Hero section
     const title = document.getElementById('heroTitle');
@@ -26,9 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/**
- * Closes the success toast and resets form/button states
- */
+
 function closeToast() {
     const toast = document.getElementById('toastOverlay');
     if (toast) {

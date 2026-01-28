@@ -1,5 +1,5 @@
 /* ============================================================
-   1. GLOBAL RESET (全局重置)
+   1. GLOBAL RESET 
    ============================================================ */
 * {
     margin: 0;
@@ -18,7 +18,7 @@ body {
 }
 
 /* ============================================================
-   2. MAIN LAYOUT (主容器布局)
+   2. MAIN LAYOUT 
    ============================================================ */
 .container {
     display: flex;
@@ -31,7 +31,7 @@ body {
 }
 
 /* ============================================================
-   3. LOGO SECTION (左侧展示区)
+   3. LOGO SECTION 
    ============================================================ */
 .logo-section {
     flex: 1;
@@ -94,7 +94,7 @@ body {
 }
 
 /* ============================================================
-   4. FORM SECTION (右侧表单区)
+   4. FORM SECTION 
    ============================================================ */
 .form-section {
     flex: 1.2;
@@ -115,7 +115,7 @@ body {
     color: #8c7b6d;
 }
 
-/* --- Error Message Box (红色警告框) --- */
+/* --- Error Message Box  --- */
 .error-container {
     margin-bottom: 25px;
     padding: 15px;
@@ -140,7 +140,7 @@ body {
     margin-right: 8px;
 }
 
-/* --- Form Controls (输入框相关) --- */
+/* --- Form Controls  --- */
 .form-group {
     position: relative;
     margin-bottom: 20px;
@@ -179,7 +179,7 @@ body {
     cursor: pointer;
 }
 
-/* --- Options (记住我 & 忘记密码) --- */
+/* --- Options (Remember me & Forgot your password) --- */
 .remember-forgot {
     display: flex;
     justify-content: space-between;
@@ -206,7 +206,7 @@ body {
     text-decoration: underline;
 }
 
-/* --- Buttons & Links (按钮与跳转) --- */
+/* --- Buttons & Links  --- */
 .btn-submit {
     width: 100%;
     padding: 15px;
@@ -238,7 +238,7 @@ body {
 }
 
 /* ============================================================
-   5. DECORATIONS (底部装饰)
+   5. DECORATIONS 
    ============================================================ */
 .cake-decoration {
     display: flex;
@@ -259,7 +259,7 @@ body {
 }
 
 /* ============================================================
-   6. RESPONSIVE (响应式设计)
+   6. RESPONSIVE 
    ============================================================ */
 @media (max-width: 768px) {
     .container {

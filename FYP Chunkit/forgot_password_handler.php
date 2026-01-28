@@ -1,22 +1,16 @@
 <?php
-/**
- * forgot_password_handler.php
- * 处理忘记密码请求：验证用户、生成验证码、发送美化后的 HTML 邮件。
- */
-
-// 1. 设置时区为马来西亚，确保生成的过期时间与本地时间一致
 date_default_timezone_set('Asia/Kuala_Lumpur');
 session_start(); 
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// 引入 PHPMailer 核心文件 (请确保路径正确)
+
 require '../vendor/phpmailer/Exception.php'; 
 require '../vendor/phpmailer/PHPMailer.php';
 require '../vendor/phpmailer/SMTP.php';
 
-// 2. 数据库连接配置
+
 $host = 'localhost';
 $db   = 'bakeryhouse';
 $user = 'root'; 
@@ -30,31 +24,27 @@ try {
     exit;
 }
 
-// 3. 处理 POST 请求
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']); 
 
-    // 检查用户输入的 Email 是否存在于我们的用户表中
+    // Check if the email entered by the user exists in our user table.
     $stmt = $pdo->prepare("SELECT id FROM user_db WHERE email = ?");
     $stmt->execute([$email]);
     $user_exists = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($user_exists) {
-        // --- 核心逻辑：生成 6 位随机验证码 ---
         $code = sprintf("%06d", mt_rand(1, 999999)); 
-        // 设置 10 分钟后的时间点作为“过期时间”
-        $expiry_time = date("Y-m-d H:i:s", time() + 600); 
+        $expiry_time = date("Y-m-d H:i:s", time() + 600); // Set the expiration time as 10 minutes later.
 
         $pdo->beginTransaction();
         try {
-            // 先删除该邮箱之前旧的重置请求，防止数据库记录堆积
             $pdo->prepare("DELETE FROM password_resets WHERE email = ?")->execute([$email]);
-            // 将新验证码、邮箱、过期时间存入数据库
             $insert_stmt = $pdo->prepare("INSERT INTO password_resets (email, token, created_at) VALUES (?, ?, ?)");
             $insert_stmt->execute([$email, $code, $expiry_time]);
             $pdo->commit();
 
-            // 将 email 存入 Session，供后续页面使用
+
             $_SESSION['reset_email'] = $email;
 
         } catch (Exception $e) {
@@ -63,14 +53,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit;
         }
 
-        // --- 4. 配置 PHPMailer 发送美化后的 HTML 邮件 ---
+
         try {
             $mail = new PHPMailer(true);
             $mail->isSMTP(); 
             $mail->Host       = 'smtp.gmail.com'; 
             $mail->SMTPAuth   = true; 
-            $mail->Username   = 'yitanglong857@gmail.com'; // 你的 Gmail 账号
-            $mail->Password   = 'ucxn rkss fgtu ahnk';     // 你的 Gmail 应用专用密码
+            $mail->Username   = 'yitanglong857@gmail.com'; 
+            $mail->Password   = 'ucxn rkss fgtu ahnk';     
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
             $mail->Port       = 587; 
             $mail->CharSet    = 'UTF-8'; 
@@ -80,7 +70,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->isHTML(true); 
             $mail->Subject = 'Verify your account - Bakery House';
             
-            // --- 美化后的 HTML 邮件模板 ---
+            
             $mail->Body = "
             <div style='background-color: #fdf6f0; padding: 40px; font-family: sans-serif;'>
                 <div style='max-width: 500px; margin: 0 auto; background-color: #ffffff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'>
@@ -116,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             $mail->send();
             
-            // 邮件发送成功，跳转到验证码校验页
+            
             header("Location: verify_code.php");
             exit;
 
@@ -125,7 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit;
         }
     } else {
-        // 用户不存在提示
+        
         header("Location: forgotpassword.php?message=" . urlencode("The email address is not registered."));
     }
 }
