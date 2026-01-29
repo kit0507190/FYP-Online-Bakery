@@ -9,10 +9,63 @@ if (!isset($_SESSION['user_id'])) {
 
 $userEmail = $_SESSION['user_email'] ?? ''; 
 
+// Handle rating submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_rating') {
+    $productId = intval($_POST['product_id']);
+    $rating = intval($_POST['rating']);
+    $orderDetailId = intval($_POST['order_detail_id']);
+    $orderId = intval($_POST['order_id']);
+
+    if ($rating < 1 || $rating > 5) {
+        echo json_encode(['success' => false, 'message' => 'Invalid rating']);
+        exit();
+    }
+
+    try {
+        // Check if already rated
+        $checkStmt = $pdo->prepare("SELECT id FROM product_ratings WHERE product_id = ? AND customer_email = ?");
+        $checkStmt->execute([$productId, $userEmail]);
+        if ($checkStmt->fetch()) {
+            echo json_encode(['success' => false, 'message' => 'Already rated']);
+            exit();
+        }
+
+        // Insert rating
+        $insertStmt = $pdo->prepare("
+            INSERT INTO product_ratings (product_id, customer_email, rating, order_detail_id, order_id)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $insertStmt->execute([$productId, $userEmail, $rating, $orderDetailId, $orderId]);
+
+        // Recalculate average and count
+        $updateStmt = $pdo->prepare("
+            UPDATE products p
+            SET 
+                p.rating = (
+                    SELECT AVG(r.rating) 
+                    FROM product_ratings r 
+                    WHERE r.product_id = p.id
+                ),
+                p.review_count = (
+                    SELECT COUNT(*) 
+                    FROM product_ratings r 
+                    WHERE r.product_id = p.id
+                )
+            WHERE p.id = ?
+        ");
+        $updateStmt->execute([$productId]);
+
+        echo json_encode(['success' => true]);
+    } catch (PDOException $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit();
+}
+
 try {
     // 1. 获取订单数据（包含 status）
     $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status, o.status,
-                     d.product_id, d.product_name, d.price as item_price, d.quantity,
+                     d.id as order_detail_id, d.product_id, d.product_name, d.price as item_price, d.quantity,
                      p.image as product_image 
               FROM orders o 
               JOIN orders_detail d ON o.id = d.order_id 
@@ -25,6 +78,11 @@ try {
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userEmail]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Fetch all user's ratings in one query for efficiency
+    $ratingsStmt = $pdo->prepare("SELECT product_id FROM product_ratings WHERE customer_email = ?");
+    $ratingsStmt->execute([$userEmail]);
+    $userRatings = $ratingsStmt->fetchAll(PDO::FETCH_COLUMN); // Array of rated product_ids
 
     $orders = [];
     foreach ($results as $row) {
@@ -128,6 +186,25 @@ try {
                             <div class="product-details">
                                 <div class="name"><?php echo htmlspecialchars($item['product_name']); ?></div>
                                 <div class="qty">Quantity: x<?php echo $item['quantity']; ?></div>
+                                
+                                <?php if ($order['status'] === 'delivered'): ?>
+                                    <div class="rating-section" 
+                                        data-product-id="<?php echo $item['product_id']; ?>"
+                                        data-order-detail-id="<?php echo $item['order_detail_id']; ?>"
+                                        data-order-id="<?php echo $order['id']; ?>">
+                                        <?php if (in_array($item['product_id'], $userRatings)): ?>
+                                            <span class="rated-message">Rated!</span>
+                                        <?php else: ?>
+                                            <div class="stars">
+                                                <i class="far fa-star" data-rating="1"></i>
+                                                <i class="far fa-star" data-rating="2"></i>
+                                                <i class="far fa-star" data-rating="3"></i>
+                                                <i class="far fa-star" data-rating="4"></i>
+                                                <i class="far fa-star" data-rating="5"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div class="price">RM <?php echo number_format($item['item_price'], 2); ?></div>
                         </div>
@@ -162,6 +239,98 @@ try {
             }
         });
     }
+
+    // Rating JS
+    // Rating JS - auto-submit version
+document.querySelectorAll('.rating-section').forEach(section => {
+    const stars = section.querySelectorAll('.fa-star');
+    let selectedRating = 0;
+
+    // Highlight stars on hover & click
+    stars.forEach(star => {
+        // Hover preview
+        star.addEventListener('mouseover', () => {
+            const rating = star.dataset.rating;
+            stars.forEach(s => {
+                s.classList.toggle('fas', s.dataset.rating <= rating);
+                s.classList.toggle('far', s.dataset.rating > rating);
+                s.style.color = s.dataset.rating <= rating ? '#d4a76a' : '#ccc';
+            });
+        });
+
+        // Reset on mouse out (unless clicked)
+        star.addEventListener('mouseout', () => {
+            if (selectedRating === 0) {
+                stars.forEach(s => {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                    s.style.color = '#ccc';
+                });
+            }
+        });
+
+        // Click to select & submit
+        star.addEventListener('click', async () => {
+            selectedRating = star.dataset.rating;
+
+            // Final highlight
+            stars.forEach(s => {
+                s.classList.toggle('fas', s.dataset.rating <= selectedRating);
+                s.classList.toggle('far', s.dataset.rating > selectedRating);
+                s.style.color = s.dataset.rating <= selectedRating ? '#d4a76a' : '#ccc';
+            });
+
+            // Disable stars during submit
+            stars.forEach(s => s.style.pointerEvents = 'none');
+
+            const productId = section.dataset.productId;
+            const orderDetailId = section.dataset.orderDetailId;
+            const orderId = section.dataset.orderId;
+
+            try {
+                // Show brief loading state (optional)
+                section.innerHTML += '<span class="rating-loading">Sending...</span>';
+
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        action: 'submit_rating',
+                        product_id: productId,
+                        rating: selectedRating,
+                        order_detail_id: orderDetailId,
+                        order_id: orderId
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    section.innerHTML = '<span class="rated-message">Thank you! ★</span>';
+                } else {
+                    alert(result.message || 'Error submitting rating');
+                    // Reset stars if failed
+                    stars.forEach(s => {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                        s.style.color = '#ccc';
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Network error');
+                // Reset on error
+                stars.forEach(s => {
+                    s.classList.remove('fas');
+                    s.classList.add('far');
+                    s.style.color = '#ccc';
+                });
+            } finally {
+                stars.forEach(s => s.style.pointerEvents = 'auto');
+            }
+        });
+    });
+});
 
     async function handleBuyAgain(items) {
         let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
