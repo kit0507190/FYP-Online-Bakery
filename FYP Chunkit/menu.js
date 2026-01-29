@@ -46,10 +46,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const subParam  = urlParams.get('subcategory');
     const openId    = urlParams.get('open_id');
 
+    console.log('URL Params - category:', catParam, 'subcategory:', subParam, 'open_id:', openId);
+    console.log('Initial currentCategory:', currentCategory, 'currentSubCategory:', currentSubCategory);
+
     if (catParam) {
         currentCategory    = catParam.toLowerCase();
         currentSubCategory = subParam ? subParam.toLowerCase() : 'all';
     }
+
+    if (!catParam) {
+    currentCategory    = 'all';
+    currentSubCategory = 'all';
+    // Also force sidebar to clean state
+    document.querySelectorAll('.category-main.active, .subcategory-item.active, .subcategories.active')
+        .forEach(el => el.classList.remove('active'));
+}
 
     // 3. Prepare UI
     setupEventListeners();
@@ -100,9 +111,13 @@ if (window.isLoggedIn === true) {
         if (openId) {
             const productId = parseInt(openId, 10);
             if (!isNaN(productId)) {
-                // Small delay so DOM is ready
                 setTimeout(() => {
                     quickViewProduct(productId);
+                    
+                    // Clean URL param without reload
+                    const url = new URL(window.location);
+                    url.searchParams.delete('open_id');
+                    window.history.replaceState(null, '', url);
                 }, 300);
             }
         }
@@ -530,9 +545,9 @@ function quickViewProduct(productId) {
             }
 
             // Normal case: must match main category
-            if (product.category !== currentCategory) {
-                return false;
-            }
+            if (product.category?.toLowerCase() !== currentCategory) {
+            return false;
+        }
 
             // When subcategory is 'all' → show all products in this category
             if (currentSubCategory === 'all') {
@@ -541,7 +556,7 @@ function quickViewProduct(productId) {
 
             // Specific subcategory
             const cleanSub = product.subcategory ? product.subcategory.replace(/['"]+/g, '').toLowerCase() : '';
-            return cleanSub === currentSubCategory.toLowerCase();
+        return cleanSub === currentSubCategory.toLowerCase();
         });
     }
 

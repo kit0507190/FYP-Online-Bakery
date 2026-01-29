@@ -1,17 +1,13 @@
 <?php
-// 1. 初始化 Session：必须在页面任何内容输出前调用，用于访问 $_SESSION 变量
+// 1. Start session
 session_start();
 
-// 2. 引入外部配置文件：获取数据库连接信息
-require_once 'config.php';
+// 2. Connect to database (this creates $pdo)
+require_once 'db_connect.php';
 
-// 3. 检查用户登录状态：
-//    isset() 检查变量是否定义
-//    $_SESSION['logged_in'] 是在登录成功页面设置的标志位
+// 3. Check login status
 $isLoggedIn = isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true;
-
-// 4. 获取用户名：如果已登录，从 Session 获取名字，否则为空字符串
-$userName = $isLoggedIn ? $_SESSION['user_name'] : '';
+$userName   = $isLoggedIn ? $_SESSION['user_name'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -36,47 +32,106 @@ $userName = $isLoggedIn ? $_SESSION['user_name'] : '';
     </section>
 
     <section class="section" id="categories">
-    <div class="container">
-        <h2 class="section-title">Shop by Categories</h2>
-        <div class="categories-grid">
-            <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
-                <img src="cake/Baby_Pandaa.jpg" alt="Cakes" class="category-image">
-                <div class="category-name">Cakes</div>
-            </div>
-            <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
-                <img src="bread/Sweet Bread/Alsatian Kugelhopf Sweet Bread.webp" alt="Bread" class="category-image">
-                <div class="category-name">Bread</div>
-            </div>
-            <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
-                <img src="pastries/Puff Pastry/Mascarpone Puff Pastry.jpg" alt="Pastries" class="category-image">
-                <div class="category-name">Pastries</div>
+        <div class="container">
+            <h2 class="section-title">Shop by Categories</h2>
+            <div class="categories-grid">
+                <div class="category-card" onclick="window.location.href='menu.php?category=cake'">
+                    <img src="product_images/Baby_Pandaa.jpg" alt="Cakes" class="category-image">
+                    <div class="category-name">Cakes</div>
+                </div>
+                <div class="category-card" onclick="window.location.href='menu.php?category=bread'">
+                    <img src="product_images/Alsatian Kugelhopf Sweet Bread.webp" alt="Bread" class="category-image">
+                    <div class="category-name">Bread</div>
+                </div>
+                <div class="category-card" onclick="window.location.href='menu.php?category=pastry'">
+                    <img src="product_images/Mascarpone Puff Pastry.jpg" alt="Pastries" class="category-image">
+                    <div class="category-name">Pastries</div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <section class="section" id="featured">
         <div class="container">
             <h2 class="section-title">Best Selling Products</h2>
-            <div class="products-grid" id="featuredProducts"></div>
+            <div class="products-grid">
+
+                <?php
+                // ────────────────────────────────────────────────
+                //   Load top 4 best-selling products
+                // ────────────────────────────────────────────────
+                try {
+                    $stmt = $pdo->prepare("
+                        SELECT id, name, price, image
+                        FROM products
+                        WHERE deleted_at IS NULL
+                        ORDER BY sold_count DESC, id DESC
+                        LIMIT 4
+                    ");
+                    $stmt->execute();
+                    $featured = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                    if (empty($featured)) {
+                        echo '<p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #666;">
+                                No best-selling products available yet.
+                              </p>';
+                    } else {
+                        foreach ($featured as $product) {
+                            // All images are stored directly in product_images/
+                            $img_path = $product['image'] ?? '';
+                            if ($img_path && !str_starts_with($img_path, 'http') && !str_starts_with($img_path, '/')) {
+                                $img_path = 'product_images/' . $img_path;
+                            } else if (empty($img_path)) {
+                                $img_path = 'product_images/placeholder.jpg'; // fallback
+                            }
+
+                            $name_esc = htmlspecialchars($product['name'] ?? 'Unnamed Product');
+                            $price    = number_format((float)($product['price'] ?? 0), 2);
+                            $id_esc   = htmlspecialchars($product['id'] ?? '0');
+                            ?>
+                            <div class="product-card" 
+                                 onclick="window.location.href='menu.php?open_id=<?= $id_esc ?>'">
+                                <img src="<?= htmlspecialchars($img_path) ?>" 
+                                     alt="<?= $name_esc ?>" 
+                                     class="product-image"
+                                     loading="lazy"
+                                     onerror="this.src='product_images/placeholder.jpg'; this.alt='Image not available';">
+                                <div class="product-info">
+                                    <h3 class="product-name"><?= $name_esc ?></h3>
+                                    <p class="product-price">RM <?= $price ?></p>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    }
+                } catch (Exception $e) {
+                    // In production: log the error instead of displaying it
+                    // error_log("Featured products error: " . $e->getMessage());
+                    echo '<p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #c0392b;">
+                            Sorry, we couldn\'t load the best sellers right now.
+                          </p>';
+                }
+                ?>
+
+            </div>
         </div>
     </section>
 
     <section class="section" id="about">
-    <div class="container">
-        <div class="about-content">
-            <div class="about-image">
-                <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&h=1000&auto=format&fit=crop" alt="BakeryHouse Story">
-            </div>
-            <div class="about-text">
-                <h3>Our Story</h3>
-                <p>BakeryHouse was founded with a simple mission: to bring the finest artisan baked goods to our community. Our passion for baking drives us to create delicious, high-quality products using only the best ingredients.</p>
-                <p>Every item in our bakery is crafted with care. We believe that great food brings people together and creates lasting memories.</p>
-                <p>Visit us today and taste the difference that passion and quality ingredients make!</p>
+        <div class="container">
+            <div class="about-content">
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&h=1000&auto=format&fit=crop" alt="BakeryHouse Story">
+                </div>
+                <div class="about-text">
+                    <h3>Our Story</h3>
+                    <p>BakeryHouse was founded with a simple mission: to bring the finest artisan baked goods to our community. Our passion for baking drives us to create delicious, high-quality products using only the best ingredients.</p>
+                    <p>Every item in our bakery is crafted with care. We believe that great food brings people together and creates lasting memories.</p>
+                    <p>Visit us today and taste the difference that passion and quality ingredients make!</p>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
     <section class="section testimonials" id="testimonials">
         <div class="container">
