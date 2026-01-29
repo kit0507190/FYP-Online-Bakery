@@ -24,6 +24,7 @@ $sql = "SELECT
     p.review_count,
     p.sold_count,
     p.size_info AS size,
+    p.stock,
     CASE 
         WHEN p.image IS NULL OR p.image = '' THEN 'images/placeholder.jpg'
         WHEN p.image LIKE 'http%' THEN p.image
@@ -324,6 +325,12 @@ window.onclick = function(event) {
 function addToCart(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
+
+    const available = Number(product.stock) || 0;
+    if (available <= 0) {
+        showToast("Sorry, this product is currently out of stock!");
+        return;
+    }
 
     const existingIndex = cart.findIndex(i => i.id == productId);
     let finalQuantity = 1;
