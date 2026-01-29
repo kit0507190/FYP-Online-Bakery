@@ -11,7 +11,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
 
     $valid_statuses = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
     if (!in_array($new_status, $valid_statuses)) {
-        // In real production you might want better error handling
         header("Location: view_orders.php?error=invalid_status");
         exit();
     }
@@ -19,38 +18,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     // Get current (old) status
     $stmt = $pdo->prepare("SELECT status FROM orders WHERE id = ?");
     $stmt->execute([$order_id]);
-    $old_status = $stmt->fetchColumn() ?: '';
+    $old_status = $stmt->fetchColumn() ?: 'pending'; // fallback
 
-    // Update status
-    $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
-    $stmt->execute([$new_status, $order_id]);
+    // ────────────────────────────────────────────────
+    // Begin transaction — important for atomicity
+    // ────────────────────────────────────────────────
+    $pdo->beginTransaction();
 
-    $stock_deducted = false;
+    try {
+        // Update status
+        $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $stmt->execute([$new_status, $order_id]);
 
-    // Deduct stock only when going TO delivered (and wasn't already delivered)
-    if ($new_status === 'delivered' && $old_status !== 'delivered') {
-        $items_stmt = $pdo->prepare("SELECT product_id, quantity FROM orders_detail WHERE order_id = ?");
-        $items_stmt->execute([$order_id]);
-        $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stock_restored = false;
 
-        foreach ($items as $item) {
-            $qty = (int)($item['quantity'] ?? 0);
-            $product_id = (int)($item['product_id'] ?? 0);
-            if ($qty > 0 && $product_id > 0) {
-                $pdo->prepare("UPDATE products SET stock = GREATEST(stock - ?, 0) WHERE id = ?")
-                    ->execute([$qty, $product_id]);
-                $stock_deducted = true;
+        // Restore stock ONLY when going TO cancelled (and wasn't already cancelled)
+        if ($new_status === 'cancelled' && strtolower($old_status) !== 'cancelled') {
+            $items_stmt = $pdo->prepare("SELECT product_id, quantity FROM orders_detail WHERE order_id = ?");
+            $items_stmt->execute([$order_id]);
+            $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($items as $item) {
+                $qty = (int)($item['quantity'] ?? 0);
+                $product_id = (int)($item['product_id'] ?? 0);
+
+                if ($qty > 0 && $product_id > 0) {
+                    // Add back to stock (no upper limit needed usually)
+                    $update = $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?");
+                    $update->execute([$qty, $product_id]);
+                    $stock_restored = true;
+                }
             }
         }
-    }
 
-    // Redirect with success message (prevents resubmit warning)
-    $redirect = "view_orders.php?status_updated=1";
-    if ($stock_deducted) {
-        $redirect .= "&stock_deducted=1";
+        $pdo->commit();
+
+        // Redirect with feedback
+        $redirect = "view_orders.php?status_updated=1";
+        if ($stock_restored) {
+            $redirect .= "&stock_restored=1";
+        }
+        header("Location: $redirect");
+        exit();
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        // In production: log error, show nicer message
+        header("Location: view_orders.php?error=update_failed");
+        exit();
     }
-    header("Location: $redirect");
-    exit();
 }
 ?>
 
@@ -102,9 +118,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     <?php if (isset($_GET['status_updated'])): ?>
         <div class="alert success" style="padding: 1rem; background: #d4edda; color: #155724; border-radius: 8px; margin-bottom: 2rem;">
             Order status updated successfully!
-            <?php if (isset($_GET['stock_deducted'])): ?>
-                <br>Stock has been automatically deducted.
+            <?php if (isset($_GET['stock_restored'])): ?>
+                <br><strong>Stock has been restored</strong> (order cancelled).
             <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+        <div class="alert error" style="padding: 1rem; background: #f8d7da; color: #721c24; border-radius: 8px; margin-bottom: 2rem;">
+            An error occurred. Please try again.
         </div>
     <?php endif; ?>
 
@@ -159,7 +181,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                             $itemText .= "<strong>{$qty}×</strong> {$name}<br>";
                         }
 
-                        // === IMPORTANT: Normalize status to lowercase ===
                         $status = strtolower($order['status'] ?? 'pending');
 
                         $statusClass = match($status) {
@@ -178,8 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                         $deliveryInfo .= htmlspecialchars($order['city'] ?? '') . ", " . htmlspecialchars($order['postcode'] ?? '') . "</small>";
 
                         $dateTimeDisplay = date('d M Y  H:i', strtotime($order['created_at']));
-
-                        ?>
+                ?>
                         <tr data-status="<?= $status ?>">
                             <td>#<?= sprintf("%04d", $order['id']) ?></td>
                             <td style="font-size:0.9rem; line-height:1.6;"><?= $deliveryInfo ?></td>
@@ -200,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                                 </form>
                             </td>
                         </tr>
-                        <?php
+                <?php
                     }
                 endif; ?>
             </tbody>
@@ -221,7 +241,7 @@ function searchTable() {
 function filterStatus(status) {
     const rows = document.querySelectorAll('#ordersTable tbody tr');
     rows.forEach(row => {
-        const rowStatus = row.dataset.status || ''; // safeguard
+        const rowStatus = row.dataset.status || '';
         row.style.display = (status === '' || rowStatus === status) ? '' : 'none';
     });
 }

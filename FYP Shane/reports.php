@@ -86,7 +86,7 @@ while ($row = $topSalesStmt->fetch(PDO::FETCH_ASSOC)) {
     $topSales[] = $row;
 }
 
-$lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10")->fetchColumn();
+$lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10 AND deleted_at IS NULL")->fetchColumn();
 
 $topName = $topSales[0]['product_name'] ?? 'None';
 $topUnits = $topSales[0]['units_sold'] ?? 0;

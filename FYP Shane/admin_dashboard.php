@@ -49,7 +49,7 @@ require_once 'admin_auth.php';  // Secure auth + loads $current_admin
     $todaySales = $pdo->query("SELECT COALESCE(SUM(total), 0) FROM orders WHERE DATE(created_at) = '$today' AND status = 'delivered'")->fetchColumn();
     $todayOrders = $pdo->query("SELECT COUNT(*) FROM orders WHERE DATE(created_at) = '$today'")->fetchColumn();
     $pendingOrders = $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'pending'")->fetchColumn();
-    $lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10 AND stock > 0")->fetchColumn();
+    $lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10 AND deleted_at IS NULL")->fetchColumn();
     ?>
 
     <div class="dashboard-stats-grid">
