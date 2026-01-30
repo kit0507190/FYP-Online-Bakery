@@ -82,6 +82,7 @@ if (isset($_GET['reactivate'])) {
         <li><a href="view_orders.php">View Orders</a></li>
         <li><a href="stock_management.php">Stock Management</a></li>
         <li><a href="admin_restore.php">Restore Deleted</a></li>
+        <li><a href="user_comments.php">User Comments</a></li>
         <?php if ($current_admin['role'] === 'super_admin'): ?>
             <li><a href="user_accounts.php" class="active">User Accounts</a></li>
             <li><a href="manage_admins.php">Manage Admins</a></li>
