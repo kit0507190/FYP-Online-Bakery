@@ -707,7 +707,8 @@ function addToCart(productId, quantity = 1) {
             name: product.name, 
             price: Number(product.price), 
             image: product.image, 
-            quantity: finalQuantity 
+            quantity: finalQuantity,
+            maxStock: Number(product.stock)
         });
     }
 

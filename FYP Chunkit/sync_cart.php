@@ -1,33 +1,82 @@
 <?php
-// sync_cart.php - Updated to include full image path
+// sync_cart.php - Improved version (2026)
+// Always respond with JSON, even on errors
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-require_once 'config.php'; 
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 
-// 1. 验证登录状态
-if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'message' => 'Not logged in']);
+// ── Enable error display during development ──
+// Remove or comment out these lines in production!
+ini_set('display_errors', 0);           // ← change to 1 only when debugging
+ini_set('display_startup_errors', 0);
+error_reporting(E_ALL);
+
+// Log errors to file instead (safer for production)
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_errors.log'); // adjust path if needed
+
+require_once 'config.php';
+
+// Make sure PDO throws exceptions
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$user_id = $_SESSION['user_id'] ?? null;
+$action  = $_GET['action'] ?? '';
+
+$response = ['status' => 'error', 'message' => 'Unknown error'];
+
+if (!$user_id) {
+    http_response_code(401);
+    $response['message'] = 'Not logged in';
+    echo json_encode($response);
     exit;
 }
 
-$user_id = $_SESSION['user_id'];
-$action = $_GET['action'] ?? '';
-
 try {
-    // --- 动作 A: 更新/保存购物车到数据库 ---
-    if ($action === 'update') {
-    $input = json_decode(file_get_contents('php://input'), true);
-    
-    $pdo->beginTransaction();
-    try {
-        // 1. Get current stock for all products in the incoming cart
-        $productIds = array_column($input['cart'] ?? [], 'id');
+    if ($action === 'fetch') {
+        // ── FETCH USER'S CART ───────────────────────────────────────
+        $stmt = $pdo->prepare("
+            SELECT 
+                p.id, 
+                p.name, 
+                p.price, 
+                COALESCE(CONCAT('product_images/', p.image), 'images/placeholder.jpg') AS image,
+                c.quantity 
+            FROM cart_items c 
+            JOIN products p ON c.product_id = p.id 
+            WHERE c.user_id = :uid
+              AND p.deleted_at IS NULL
+            ORDER BY c.id ASC
+        ");
+        $stmt->execute([':uid' => $user_id]);
+        $cartData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $response = [
+            'status' => 'success',
+            'cart'   => $cartData ?: []
+        ];
+    } 
+    elseif ($action === 'update') {
+        // ── UPDATE / REPLACE CART ───────────────────────────────────
+        $raw = file_get_contents('php://input');
+        $input = json_decode($raw, true);
+
+        if (!is_array($input) || !isset($input['cart'])) {
+            throw new Exception('Invalid or missing cart data');
+        }
+
+        $incomingCart = $input['cart'];
+
+        $pdo->beginTransaction();
+
+        // 1. Get current stock levels
+        $productIds = array_filter(array_column($incomingCart, 'id'), 'is_numeric');
         $stocks = [];
-        if (!empty($productIds)) {
+
+        if ($productIds) {
             $placeholders = implode(',', array_fill(0, count($productIds), '?'));
             $stmt = $pdo->prepare("
                 SELECT id, stock 
@@ -35,83 +84,66 @@ try {
                 WHERE id IN ($placeholders) AND deleted_at IS NULL
             ");
             $stmt->execute($productIds);
-            $stocks = $stmt->fetchAll(PDO::FETCH_KEY_PAIR); // id => stock
+            $stocks = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         }
 
-        // 2. Validate and adjust quantities
+        // 2. Validate & adjust quantities
         $validItems = [];
-        foreach ($input['cart'] ?? [] as $item) {
+        foreach ($incomingCart as $item) {
             $prodId = (int)($item['id'] ?? 0);
             $qty    = (int)($item['quantity'] ?? 0);
 
             if ($prodId <= 0 || $qty <= 0) {
-                continue; // skip invalid items
+                continue;
             }
 
-            $available = isset($stocks[$prodId]) ? (int)$stocks[$prodId] : 0;
-
-            // Soft cap: never allow more than available
+            $available = $stocks[$prodId] ?? 0;
             if ($qty > $available) {
-                $qty = $available;
-                // Optional: you could log this or send a warning later
+                $qty = max(0, $available); // never allow over stock
             }
 
-            $validItems[] = ['id' => $prodId, 'quantity' => $qty];
+            $validItems[] = ['product_id' => $prodId, 'quantity' => $qty];
         }
 
-        // 3. Delete old cart
-        $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$user_id]);
+        // 3. Clear old cart items for this user
+        $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")
+            ->execute([$user_id]);
 
         // 4. Insert validated items
-        if (!empty($validItems)) {
+        if ($validItems) {
             $stmt = $pdo->prepare("
-                INSERT INTO cart_items (user_id, product_id, quantity) 
-                VALUES (?, ?, ?)
+                INSERT INTO cart_items (user_id, product_id, quantity)
+                VALUES (:uid, :pid, :qty)
             ");
             foreach ($validItems as $item) {
-                $stmt->execute([$user_id, $item['id'], $item['quantity']]);
+                $stmt->execute([
+                    ':uid' => $user_id,
+                    ':pid' => $item['product_id'],
+                    ':qty' => $item['quantity']
+                ]);
             }
         }
 
         $pdo->commit();
-        echo json_encode(['status' => 'success']);
-    } catch (Exception $e) {
+
+        $response = ['status' => 'success'];
+    } 
+    else {
+        $response['message'] = 'Invalid action';
+    }
+}
+catch (Exception $e) {
+    if ($pdo->inTransaction()) {
         $pdo->rollBack();
-        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-    }
-}
-
-    // --- 动作 B: 从数据库读取该用户的购物车 ---
-    } elseif ($action === 'fetch') {
-        // 关联产品表，把名字、价格、**完整图片路径**一次性全拿回来
-        $stmt = $pdo->prepare("
-            SELECT 
-                p.id, 
-                p.name, 
-                p.price, 
-                CASE 
-                    WHEN p.image IS NULL OR p.image = '' THEN 'images/placeholder.jpg'
-                    ELSE CONCAT('product_images/', p.image)
-                END AS image,
-                c.quantity 
-            FROM cart_items c 
-            JOIN products p ON c.product_id = p.id 
-            WHERE c.user_id = ?
-            ORDER BY c.id ASC
-        ");
-        $stmt->execute([$user_id]);
-        $cartData = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        echo json_encode([
-            'status' => 'success', 
-            'cart'   => $cartData
-        ]);
-
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid action']);
     }
 
-} catch (Exception $e) {
-    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    error_log("sync_cart.php error: " . $e->getMessage());
+
+    http_response_code(500);
+    $response['message'] = 'Server error: ' . $e->getMessage();
+    // In production, you might want to hide detailed message:
+    // $response['message'] = 'Internal server error';
 }
-?>
+
+echo json_encode($response);
+exit;
