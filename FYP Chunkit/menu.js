@@ -696,21 +696,29 @@ function addToCart(productId, quantity = 1) {
     // ── Cart logic ──
     if (!Array.isArray(cart)) cart = [];
 
-    const existingIndex = cart.findIndex(item => item.id == productId);
-    let finalQuantity = quantity;   // ← was using undefined variable 'requestedQty' !!!
+const existingIndex = cart.findIndex(item => item.id == productId);
+let finalQuantity = quantity; 
 
-    if (existingIndex > -1) {
-        cart[existingIndex].quantity += finalQuantity;
-    } else {
-        cart.unshift({ 
-            id: product.id, 
-            name: product.name, 
-            price: Number(product.price), 
-            image: product.image, 
-            quantity: finalQuantity,
-            maxStock: Number(product.stock)
-        });
-    }
+if (existingIndex > -1) {
+    // 【关键修改点】：如果产品已在购物车，先把它从数组里“抠”出来
+    const existingItem = cart.splice(existingIndex, 1)[0];
+    
+    // 更新数量
+    existingItem.quantity += finalQuantity;
+    
+    // 重新放回到数组的最前面（这样它就变回第一名了）
+    cart.unshift(existingItem);
+} else {
+    // 如果是全新产品，直接放最前面
+    cart.unshift({ 
+        id: product.id, 
+        name: product.name, 
+        price: Number(product.price), 
+        image: product.image, 
+        quantity: finalQuantity,
+        maxStock: Number(product.stock)
+    });
+}
 
     // Save
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
@@ -730,17 +738,22 @@ function addToCart(productId, quantity = 1) {
     return true;   // ← success
 }
 
+// --- menu.js 里的修改 ---
 function updateCartCount() {
-    // 重新从本地读取最新的 cart，确保数字 100% 准确
+    // 1. 重新从本地读取最新的 cart
     const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-    const total = currentCart.length;   // number of product types
     
-    localStorage.setItem('cartItemCount', total.toString());
+    // 🟢 关键修改：计算总件数 (e.g. 4个蛋糕 + 4个面包 = 8)
+    const totalCount = currentCart.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
     
-    // 更新本地 menu.php 里的数字标签（如果有的话）
+    // 2. 将总数存入本地存储供其他页面参考
+    localStorage.setItem('cartItemCount', totalCount.toString());
+    
+    // 3. 更新当前 Menu 页面 Header 里的数字标签
     const localCount = document.querySelector('.cart-count'); 
     if (localCount) {
-        localCount.textContent = total;
+        localCount.textContent = totalCount;
+        localCount.style.display = totalCount > 0 ? 'flex' : 'none';
     }
 }
 

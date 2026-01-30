@@ -273,10 +273,16 @@ function removeItem(id) {
     finalizeChange();
 }
 
+// --- cart.php 里的修改 ---
 function finalizeChange() {
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     loadCartItems();
     syncCartToDB();
+    
+    // 🟢 关键：手动触发 Header 的更新函数
+    if (typeof window.updateHeaderCartCount === 'function') {
+        window.updateHeaderCartCount();
+    }
 }
 
 function updateHeaderCount() {

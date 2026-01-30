@@ -322,6 +322,7 @@ window.onclick = function(event) {
     if (event.target == document.getElementById('quickViewModal')) closeModal();
 }
 
+// --- favorites.php 中的 addToCart 函数修改 ---
 function addToCart(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -336,16 +337,20 @@ function addToCart(productId) {
     let finalQuantity = 1;
 
     if (existingIndex > -1) {
-        finalQuantity = cart[existingIndex].quantity + 1;
+        // 【关键修改】：获取旧数量并从数组中移除该产品
+        finalQuantity = Number(cart[existingIndex].quantity) + 1;
         cart.splice(existingIndex, 1);
     }
 
-    cart.push({ 
+    // 【关键修改】：使用 unshift 将产品插入到数组最前面（索引 0）
+    // 同时补全了 maxStock 以确保与 menu.js 的逻辑兼容
+    cart.unshift({ 
         id: product.id, 
         name: product.name, 
         price: parseFloat(product.price), 
         image: product.image, 
-        quantity: finalQuantity 
+        quantity: finalQuantity,
+        maxStock: available // 建议同步这个字段
     });
     
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
