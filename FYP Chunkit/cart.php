@@ -268,11 +268,12 @@ function finalizeChange() {
 }
 
 function updateHeaderCount() {
-    const count = cart.length;
+    const totalItems = cart.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
+    
     const countEl = document.querySelector('.cart-count');
     if (countEl) {
-        countEl.textContent = count;
-        countEl.style.display = count > 0 ? 'flex' : 'none';
+        countEl.textContent = totalItems;
+        countEl.style.display = totalItems > 0 ? 'flex' : 'none';
     }
 }
 
