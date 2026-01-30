@@ -48,7 +48,7 @@ main.profile-page {
 }
 
 /* ============================================================
-   3. INFO CARDS 
+   3. INFO CARDS & CREDIT HEADER / 
    ============================================================ */
 .info-card {
     padding: 35px;
@@ -58,17 +58,52 @@ main.profile-page {
     margin-bottom: 30px;
 }
 
-.info-card h2 {
+.info-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #d4a76a; 
+}
+
+.info-card-header h2 {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-bottom: 15px;
-    border-bottom: 3px solid #d4a76a;
     color: #5a3921;
-    margin-bottom: 25px;
+    border-bottom: none !important; 
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
 }
 
+.credit-badge {
+    border: 2px solid #d4a76a; 
+    background-color: #fdfaf5; 
+    padding: 6px 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 5px rgba(212, 167, 106, 0.15);
+}
 
+.credit-label {
+    font-size: 12px; 
+    font-weight: 700;
+    color: #8a6d3b;
+    letter-spacing: 0.5px;
+}
+
+.credit-value {
+    font-size: 15px; 
+    font-weight: 800;
+    color: #5a3921;
+}
+
+/* ============================================================
+   4. ADDRESS HEADER & ROWS 
+   ============================================================ */
 .address-header {
     display: flex;
     justify-content: space-between;
@@ -77,7 +112,6 @@ main.profile-page {
     padding-bottom: 15px;
     border-bottom: 3px solid #d4a76a;
 }
-
 
 .address-header h2 {
     border-bottom: none;
@@ -110,7 +144,7 @@ main.profile-page {
 }
 
 /* ============================================================
-   4. ACTION BUTTONS 
+   5. ACTION BUTTONS 
    ============================================================ */
 .action-buttons {
     display: flex;
@@ -139,9 +173,7 @@ main.profile-page {
 
 .btn-edit { background: #d4a76a; }
 .btn-change-password { background: #2c3e50; }
-.btn-history { background: #5a3921; }
 .btn-logout { background: #e74c3c; }
-
 
 .btn-manage-address {
     display: inline-flex;
@@ -161,14 +193,10 @@ main.profile-page {
 .btn-manage-address:hover {
     background-color: #d4a76a;
     color: #ffffff;
-    box-shadow: 0 2px 8px rgba(212, 167, 106, 0.3);
-    transform: translateY(-1px);
 }
 
-
-
 /* ============================================================
-   5. SUCCESS MODAL 
+   6. TOAST MODAL & ANIMATIONS 
    ============================================================ */
 .toast-overlay {
     position: fixed;
@@ -181,7 +209,6 @@ main.profile-page {
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    animation: fadeIn 0.3s ease;
 }
 
 .toast-card {
@@ -208,18 +235,6 @@ main.profile-page {
     justify-content: center;
 }
 
-.toast-card h3 { 
-    color: #5a3921;
-    margin-bottom: 10px; 
-    font-size: 24px;
-}
-
-.toast-card p { 
-    color: #666;
-    margin-bottom: 25px; 
-    line-height: 1.6;
-}
-
 .close-toast {
     background: #d4a76a;
     color: white;
@@ -227,32 +242,11 @@ main.profile-page {
     padding: 12px 45px;
     border-radius: 30px;
     font-weight: bold;
-    font-size: 16px;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.close-toast:hover {
-    background: #5a3921;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-/* ============================================================
-   7. ANIMATIONS 
-   ============================================================ */
-@keyframes fadeIn { 
-    from { opacity: 0; } 
-    to { opacity: 1; } 
+    transition: 0.3s;
 }
 
 @keyframes popUp { 
-    from { 
-        opacity: 0; 
-        transform: scale(0.8); 
-    } 
-    to { 
-        opacity: 1; 
-        transform: scale(1); 
-    } 
+    from { opacity: 0; transform: scale(0.8); } 
+    to { opacity: 1; transform: scale(1); } 
 }
