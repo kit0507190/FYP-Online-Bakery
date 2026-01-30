@@ -53,65 +53,71 @@ $userName   = $isLoggedIn ? $_SESSION['user_name'] : '';
 
     <section class="section" id="featured">
         <div class="container">
-            <h2 class="section-title">Best Selling Products</h2>
+            <h2 class="section-title">Recommended Products</h2>
             <div class="products-grid">
 
                 <?php
-                // ────────────────────────────────────────────────
-                //   Load top 4 best-selling products
-                // ────────────────────────────────────────────────
-                try {
-                    $stmt = $pdo->prepare("
-                        SELECT id, name, price, image
-                        FROM products
-                        WHERE deleted_at IS NULL
-                        ORDER BY sold_count DESC, id DESC
-                        LIMIT 4
-                    ");
-                    $stmt->execute();
-                    $featured = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// ────────────────────────────────────────────────
+//   Load Recommended Products
+// ────────────────────────────────────────────────
+try {
+    $stmt = $pdo->prepare("
+        SELECT 
+            p.id, p.name, p.price, p.image,
+            LOWER(c.name) AS category,          -- Lowercase for URL/JS consistency
+            s.name AS subcategory
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        LEFT JOIN subcategories s ON p.subcategory_id = s.id
+        WHERE p.deleted_at IS NULL
+        ORDER BY p.sold_count DESC, p.id DESC
+        LIMIT 4
+    ");
+    $stmt->execute();
+    $featured = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                    if (empty($featured)) {
-                        echo '<p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #666;">
-                                No best-selling products available yet.
-                              </p>';
-                    } else {
-                        foreach ($featured as $product) {
-                            // All images are stored directly in product_images/
-                            $img_path = $product['image'] ?? '';
-                            if ($img_path && !str_starts_with($img_path, 'http') && !str_starts_with($img_path, '/')) {
-                                $img_path = 'product_images/' . $img_path;
-                            } else if (empty($img_path)) {
-                                $img_path = 'product_images/placeholder.jpg'; // fallback
-                            }
+    if (empty($featured)) {
+        echo '<p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #666;">
+                No best-selling products available yet.
+              </p>';
+    } else {
+        foreach ($featured as $product) {
+            // All images are stored directly in product_images/
+            $img_path = $product['image'] ?? '';
+            if ($img_path && !str_starts_with($img_path, 'http') && !str_starts_with($img_path, '/')) {
+                $img_path = 'product_images/' . $img_path;
+            } else if (empty($img_path)) {
+                $img_path = 'product_images/placeholder.jpg'; // fallback
+            }
 
-                            $name_esc = htmlspecialchars($product['name'] ?? 'Unnamed Product');
-                            $price    = number_format((float)($product['price'] ?? 0), 2);
-                            $id_esc   = htmlspecialchars($product['id'] ?? '0');
-                            ?>
-                            <div class="product-card" 
-                                 onclick="window.location.href='menu.php?open_id=<?= $id_esc ?>'">
-                                <img src="<?= htmlspecialchars($img_path) ?>" 
-                                     alt="<?= $name_esc ?>" 
-                                     class="product-image"
-                                     loading="lazy"
-                                     onerror="this.src='product_images/placeholder.jpg'; this.alt='Image not available';">
-                                <div class="product-info">
-                                    <h3 class="product-name"><?= $name_esc ?></h3>
-                                    <p class="product-price">RM <?= $price ?></p>
-                                </div>
-                            </div>
-                            <?php
-                        }
-                    }
-                } catch (Exception $e) {
-                    // In production: log the error instead of displaying it
-                    // error_log("Featured products error: " . $e->getMessage());
-                    echo '<p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #c0392b;">
-                            Sorry, we couldn\'t load the best sellers right now.
-                          </p>';
-                }
-                ?>
+            $name_esc = htmlspecialchars($product['name'] ?? 'Unnamed Product');
+            $price    = number_format((float)($product['price'] ?? 0), 2);
+            $id_esc   = htmlspecialchars($product['id'] ?? '0');
+            ?>
+            <div class="product-card" 
+     onclick="window.location.href='menu.php?open_id=<?= htmlspecialchars($product['id']) ?>&category=<?= htmlspecialchars($product['category'] ?? 'all') ?>'">
+     
+                <img src="<?= htmlspecialchars($img_path) ?>" 
+                     alt="<?= $name_esc ?>" 
+                     class="product-image"
+                     loading="lazy"
+                     onerror="this.src='product_images/placeholder.jpg'; this.alt='Image not available';">
+                <div class="product-info">
+                    <h3 class="product-name"><?= $name_esc ?></h3>
+                    <p class="product-price">RM <?= $price ?></p>
+                </div>
+            </div>
+            <?php
+        }
+    }
+} catch (Exception $e) {
+    // In production: log the error instead of displaying it
+    // error_log("Featured products error: " . $e->getMessage());
+    echo '<p style="grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; color: #c0392b;">
+            Sorry, we couldn\'t load the best sellers right now.
+          </p>';
+}
+?>
 
             </div>
         </div>
