@@ -88,12 +88,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php include 'header.php'; ?>
 
 <?php if (isset($_GET['success'])): ?>
-<div class="toast-overlay">
+<div class="toast-overlay" id="toastOverlay">
     <div class="toast-card">
         <div class="toast-icon"><i class="fas fa-check"></i></div>
-        <h3 style="color: #5a3921;">Password Changed!</h3>
-        <p style="color: #666; margin: 15px 0 25px;">Your security has been updated successfully.</p>
-        <button class="btn btn-primary" onclick="window.location.href='profile.php'" style="width: 100%;">Done</button>
+        <h3 style="color: #000; font-size: 24px; font-weight: bold; margin-bottom: 10px;">Password Changed!</h3>
+        <p style="color: #333; font-size: 16px; margin-bottom: 20px;">Your security has been updated successfully.</p>
+        <button class="close-toast" onclick="window.location.href='profile.php'">Done</button>
     </div>
 </div>
 <?php endif; ?>
