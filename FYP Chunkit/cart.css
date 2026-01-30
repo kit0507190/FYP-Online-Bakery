@@ -722,3 +722,98 @@ footer p {
 .btn-retry:hover {
     background: #452c1a;
 }
+
+/* 自定义弹窗遮罩层 */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* 背景变暗 */
+    backdrop-filter: blur(3px);      /* 背景模糊 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+/* 激活状态 */
+.custom-modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 弹窗白框 */
+.custom-modal-box {
+    background: white;
+    padding: 35px 30px;
+    border-radius: 25px; /* 圆角 */
+    text-align: center;
+    width: 90%;
+    max-width: 380px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    transform: translateY(20px);
+    transition: all 0.3s ease;
+}
+
+.custom-modal-overlay.active .custom-modal-box {
+    transform: translateY(0);
+}
+
+/* 红色图标圆圈 */
+.modal-icon-wrapper {
+    width: 70px; height: 70px;
+    background: #ffebee;
+    color: #e74c3c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 30px;
+}
+
+.modal-title-custom {
+    color: #e74c3c;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.modal-message-custom {
+    color: #777;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+/* 按钮样式 */
+.modal-actions-custom {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btn-confirm-delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+}
+
+.btn-cancel-delete {
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.btn-cancel-delete:hover { color: #333; }
