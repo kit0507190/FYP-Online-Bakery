@@ -734,4 +734,16 @@ td:last-child {                        /* Actions column */
 .table-card {
     overflow-x: auto;
 }
+.inactive-row { 
+    background: #fff5f5; 
+    opacity: 0.85; 
+}
+td.active { 
+    color: #28a745; 
+    font-weight: 500; 
+}
+td.inactive { 
+    color: #dc3545; 
+    font-style: italic; 
+}
 }

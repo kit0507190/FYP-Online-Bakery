@@ -23,19 +23,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (empty($errors)) {
-        try {
-            $stmt = $pdo->prepare("SELECT id, name, email, password FROM user_db WHERE email = ?");
-            $stmt->execute([$email]);
-            $user = $stmt->fetch();
+    try {
+        // Make sure to SELECT status too!
+        $stmt = $pdo->prepare("
+            SELECT id, name, email, password, status 
+            FROM user_db 
+            WHERE email = ?
+        ");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);   // Use FETCH_ASSOC for clarity
 
-            if ($user && password_verify($password, $user['password'])) {
-                // Login successful - Set Session
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['name'];
+        if ($user && password_verify($password, $user['password'])) {
+            
+            // ── Status check – only runs if credentials are correct ──
+            if (isset($user['status']) && $user['status'] !== 'active') {
+                $errors[] = "Your account has been deactivated. Please contact support.";
+            } 
+            else {
+                // ── Successful login ───────────────────────────────────────
+                $_SESSION['user_id']    = $user['id'];
+                $_SESSION['user_name']  = $user['name'];
                 $_SESSION['user_email'] = $user['email'];
-                $_SESSION['logged_in'] = true;
+                $_SESSION['logged_in']  = true;
 
-                // Remember me function
+                // Remember me
                 if ($remember) {
                     setcookie('user_email', $email, time() + (30 * 24 * 60 * 60), '/');
                 } else {
@@ -44,13 +55,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 header("Location: mainpage.php");
                 exit();
-            } else {
-                $errors[] = "Invalid email or password.";
             }
-        } catch (Exception $e) {
-            $errors[] = "Login failed. Please try again later.";
+        } 
+        else {
+            $errors[] = "Invalid email or password.";
         }
+    } 
+    catch (Exception $e) {
+        $errors[] = "Login failed. Please try again later.";
+        // Optional: log real error somewhere (don't show to user)
+        // error_log("Login PDO error: " . $e->getMessage());
     }
+}
 }
 
 $registered = isset($_GET['registered']) && $_GET['registered'] == '1';
