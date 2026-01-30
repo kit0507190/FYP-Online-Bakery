@@ -3,6 +3,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 require_once 'config.php';
 
 // 1. 强制登录检查
@@ -10,7 +11,25 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit;
 }
+
 ?>
+
+<?php
+if (isset($_SESSION['checkout_error'])) {
+    $errorMsg = $_SESSION['checkout_error'];
+    unset($_SESSION['checkout_error']);  // Clear so it doesn't stick around
+?>
+    <div class="stock-error-alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <div class="alert-content">
+            <strong>Oops! Not Enough Stock</strong>
+            <p><?php echo htmlspecialchars($errorMsg); ?></p>
+            <p>Please reduce the quantity or remove the item(s) shown above, then try checking out again.</p>
+            <a href="checkout.php" class="btn-retry">Back to Checkout</a>  <!-- Or whatever your checkout page is -->
+        </div>
+    </div>
+<?php } ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -102,11 +102,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header("Location: simulate_gateway.php?order_id={$orderId}&method=" . urlencode($paymentMethod));
 }
         exit;
-    } catch (PDOException $e) {
-    $pdo->rollBack();
-    // 把下面这行改成 die，这样如果报错，页面会卡住并显示具体错误
+    } catch (Exception $e) {  // Or catch (Throwable $e) to be extra safe
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();  // Only rollback if a transaction is active
+    }
     $_SESSION['checkout_error'] = $e->getMessage();
-        header("Location: cart.php");
+    header("Location: cart.php");
+    exit;  // Critical: stop script here
 }
 }
 
