@@ -21,13 +21,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Name must be at least 2 characters.";
     }
 
-    // Validate Email: Format check and domain restriction (@gmail.com only)
+    // Validate Email: Format check and domain restriction (@gmail.com,@student.mmu.edu.my,@yahoo.com,@hotmail.com only)
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
         $domain = strtolower(substr(strrchr($email, "@"), 1));
-        if ($domain !== 'gmail.com') {
-            $errors[] = "Only @gmail.com accounts are allowed.";
+        $allowed_domains = ['gmail.com', 'student.mmu.edu.my', 'yahoo.com', 'hotmail.com'];
+
+        if (!in_array($domain, $allowed_domains)) {
+            $errors[] = "Invalid email address format.Only @gmail.com, @student.mmu.edu.my, @yahoo.com, and @hotmail.com are allowed.";
         }
     }
 
@@ -41,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errors[] = "Passwords do not match.";
     }
 
-    // Check if terms and conditions are accepted
+    // Check terms acceptance
     if (!$agree) {
         $errors[] = "You must agree to the terms and privacy policy.";
     }
