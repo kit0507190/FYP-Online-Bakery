@@ -12,7 +12,7 @@ $userId = $_SESSION['user_id'];
 $errors = [];
 $name = $email = $phone = '';
 
-// 1. Get current data
+// 2. Fetch current user data from database
 try {
     $query = "SELECT name, email, phone FROM user_db WHERE id = ?";
     $stmt = $pdo->prepare($query);
@@ -32,32 +32,37 @@ try {
     die("Error: " . $e->getMessage());
 }
 
-// 2. Handling form submissions
+// 3. Process Profile Update Form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
 
+    // Name validation: Required and alphabet only
     if (empty($name)) { 
         $errors[] = "Full name is required."; 
     } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
         $errors[] = "Full name can only contain letters and spaces.";
     }
 
+    // Email validation: Format and Domain check
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Invalid email address format.";
     } else {
         $domain = strtolower(substr(strrchr($email, "@"), 1));
-        if ($domain !== 'gmail.com') {
-            $errors[] = "Only @gmail.com accounts are allowed.";
+        $allowed_domains = ['gmail.com', 'student.mmu.edu.my', 'yahoo.com', 'hotmail.com'];
+        
+        if (!in_array($domain, $allowed_domains)) {
+            $errors[] = "Only @gmail.com, @student.mmu.edu.my, @yahoo.com and @hotmail.com are allowed.";
         }
     }
 
+    // Phone number validation: Malaysian format check
     if (!empty($phone) && !preg_match("/^01[0-9]{8,9}$/", $phone)) {
         $errors[] = "Phone number must start with '01' and be 10-11 digits long.";
     }
 
-    // Update database
+    // 4. Update Database if no errors
     if (empty($errors)) {
         try {
             $updateQuery = "UPDATE user_db SET name = ?, email = ?, phone = ?, updated_at = NOW() WHERE id = ?";
@@ -92,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h1>Edit Profile</h1>
                 <p>Update your personal information below</p>
             </div>
+
             <form action="editprofile.php" method="POST" class="edit-form" id="profileForm" novalidate>
                 <div id="js-error-container" class="message-container">
                     <?php if (!empty($errors)): ?>
@@ -104,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                     <?php endif; ?>
                 </div>
+
                 <div class="info-card">
                     <h2><i class="fas fa-user-circle"></i> Personal Information</h2>
                     <div class="form-group required-field">
@@ -119,11 +126,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                          <input type="tel" name="phone" class="form-input" value="<?php echo $phone; ?>" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
                 </div>
+
                 <div class="info-card">
                     <h2><i class="fas fa-map-marker-alt"></i> Delivery Address</h2>
                     <p style="color: #666;">To provide better service, your delivery addresses are managed in a dedicated Address Book.</p>
                     <a href="manageaddress.php" class="btn btn-manage-redirect"><i class="fas fa-external-link-alt"></i> Go to Address Book</a>
                 </div>
+
                 <div class="action-buttons">
                     <button type="submit" class="btn btn-primary" id="saveButton"><i class="fas fa-save"></i> Save Changes</button>
                     <a href="profile.php" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</a>

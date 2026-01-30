@@ -1,6 +1,5 @@
-
 document.addEventListener('DOMContentLoaded', function () {
-    // 1. Password display toggle (keep original logic unchanged)
+    // 1. Password display toggle(Show/Hide Function)
     const setupToggle = (btnId, inputId) => {
         const btn = document.getElementById(btnId);
         const input = document.getElementById(inputId);
@@ -28,13 +27,11 @@ document.addEventListener('DOMContentLoaded', function () {
     if (nameInput) {
         nameInput.addEventListener('input', function() {
             const val = this.value;
-            
             const namePattern = /^[a-zA-Z\s]*$/;
             
             if (val === "") {
                 clearNameError();
             } else if (!namePattern.test(val)) {
-                
                 nameError.textContent = "* Name can only contain letters and spaces.";
                 this.classList.add('input-error');
             } else if (val.trim().length < 2) {
@@ -51,17 +48,22 @@ document.addEventListener('DOMContentLoaded', function () {
         if (nameInput) nameInput.classList.remove('input-error');
     }
 
-    // 4. Real-time Email Check Logic 
+    // 4. Real-time Email Check Logic (support multiple domains)
     if (emailInput) {
         emailInput.addEventListener('input', function() {
             const val = this.value.trim().toLowerCase();
+            const allowedDomains = ['gmail.com', 'student.mmu.edu.my', 'yahoo.com', 'hotmail.com'];
             if (val === "") {
                 clearEmailError();
-            } else if (!val.endsWith('@gmail.com')) {
-                emailError.textContent = "* Please use a valid @gmail.com address.";
-                this.classList.add('input-error');
             } else {
-                clearEmailError();
+                const domain = val.split('@')[1];
+                
+                if (!domain || !allowedDomains.includes(domain)) {
+                    emailError.textContent = "* Please use @gmail.com, @student.mmu.edu.my, @yahoo.com or @hotmail.com";
+                    this.classList.add('input-error');
+                } else {
+                    clearEmailError();
+                }
             }
         });
     }
@@ -96,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 6. Modal pop-up logic 
+    // 6. 模态框弹出逻辑
     const modal = document.getElementById('policyModal');
     const title = document.getElementById('policyTitle');
     const body = document.getElementById('policyBody');
