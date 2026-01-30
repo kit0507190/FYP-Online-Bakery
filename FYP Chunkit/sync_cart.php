@@ -44,11 +44,12 @@ try {
                 p.name, 
                 p.price, 
                 COALESCE(CONCAT('product_images/', p.image), 'images/placeholder.jpg') AS image,
-                c.quantity 
+                c.quantity,
+                p.stock AS maxStock          -- ← add this
             FROM cart_items c 
             JOIN products p ON c.product_id = p.id 
             WHERE c.user_id = :uid
-              AND p.deleted_at IS NULL
+            AND p.deleted_at IS NULL
             ORDER BY c.id ASC
         ");
         $stmt->execute([':uid' => $user_id]);
@@ -104,6 +105,37 @@ try {
 
             $validItems[] = ['product_id' => $prodId, 'quantity' => $qty];
         }
+
+        // Inside the 'update' block, after validating $validItems
+
+        $pdo->commit();
+
+        $adjustedItems = [];
+        foreach ($incomingCart as $item) {
+            $prodId = (int)($item['id'] ?? 0);
+            $requestedQty = (int)($item['quantity'] ?? 0);
+            $finalQty = 0;
+
+            if ($prodId > 0 && $requestedQty > 0) {
+                $available = $stocks[$prodId] ?? 0;
+                $finalQty = min($requestedQty, max(0, $available));
+                if ($finalQty != $requestedQty) {
+                    $adjustedItems[] = [
+                        'id' => $prodId,
+                        'name' => $item['name'] ?? 'Product #' . $prodId, // optional: fetch name if needed
+                        'requested' => $requestedQty,
+                        'available' => $available,
+                        'set_to' => $finalQty
+                    ];
+                }
+            }
+        }
+
+        $response = [
+            'status' => 'success',
+            'adjusted' => $adjustedItems,           // ← new
+            'message' => $adjustedItems ? 'Some items were adjusted due to stock limits' : null
+        ];
 
         // 3. Clear old cart items for this user
         $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")

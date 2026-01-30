@@ -9,7 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $userEmail = $_SESSION['user_email'] ?? ''; 
 
-// Handle rating submission
+// ────────────────────────────────────────────────
+//  Handle rating submission (unchanged)
+// ────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_rating') {
     $productId = intval($_POST['product_id']);
     $rating = intval($_POST['rating']);
@@ -62,8 +64,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit();
 }
 
+// ────────────────────────────────────────────────
+//  NEW: Handle quick stock check for "Buy Again"
+// ────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'check_stock') {
+    header('Content-Type: application/json');
+    
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
+
+    if (!isset($data['product_ids']) || !is_array($data['product_ids'])) {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
+        exit;
+    }
+
+    $ids = array_filter($data['product_ids'], 'is_numeric');
+    if (empty($ids)) {
+        echo json_encode(['status' => 'success', 'stocks' => []]);
+        exit;
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $stmt = $pdo->prepare("
+        SELECT id, name, stock 
+        FROM products 
+        WHERE id IN ($placeholders) 
+          AND deleted_at IS NULL
+    ");
+    $stmt->execute($ids);
+
+    $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    echo json_encode([
+        'status' => 'success',
+        'stocks' => $stocks
+    ]);
+    exit;
+}
+
 try {
-    // 1. 获取订单数据（包含 status）
+    // 1. Get order data (including status)
     $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status, o.status,
                      d.id as order_detail_id, d.product_id, d.product_name, d.price as item_price, d.quantity,
                      p.image as product_image 
@@ -118,25 +158,25 @@ try {
 
     <div class="purchase-container">
         <div class="header-card history-toolbar">
-    <div class="toolbar-left">
-        <h2 class="page-title">Purchase History</h2>
-        <p class="page-subtitle">Track and manage your delicious orders</p>
-        <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 15px auto; border-radius: 10px;">
-    </div>
-    
-    <div class="filter-container">
-        <div class="filter-box">
-            <i class="fas fa-filter filter-icon"></i>
-            <select id="statusFilter" class="modern-select" onchange="filterOrders()">
-                <option value="all">All Orders</option>
-                <option value="preparing">Preparing</option>
-                <option value="ready">Ready</option>
-                <option value="delivered">Delivered</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
+            <div class="toolbar-left">
+                <h2 class="page-title">Purchase History</h2>
+                <p class="page-subtitle">Track and manage your delicious orders</p>
+                <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 15px auto; border-radius: 10px;">
+            </div>
+            
+            <div class="filter-container">
+                <div class="filter-box">
+                    <i class="fas fa-filter filter-icon"></i>
+                    <select id="statusFilter" class="modern-select" onchange="filterOrders()">
+                        <option value="all">All Orders</option>
+                        <option value="preparing">Preparing</option>
+                        <option value="ready">Ready</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <?php if (empty($orders)): ?>
             <div class="shopee-card empty-state">
@@ -225,7 +265,7 @@ try {
     </div>
 
     <script>
-    // 🚀 JS 过滤逻辑
+    // Filter orders (unchanged)
     function filterOrders() {
         const filterValue = document.getElementById('statusFilter').value;
         const cards = document.querySelectorAll('.shopee-card');
@@ -240,142 +280,217 @@ try {
         });
     }
 
-    // Rating JS
-    // Rating JS - auto-submit version
-document.querySelectorAll('.rating-section').forEach(section => {
-    const stars = section.querySelectorAll('.fa-star');
-    let selectedRating = 0;
+    // Rating stars logic (unchanged)
+    document.querySelectorAll('.rating-section').forEach(section => {
+        const stars = section.querySelectorAll('.fa-star');
+        let selectedRating = 0;
 
-    // Highlight stars on hover & click
-    stars.forEach(star => {
-        // Hover preview
-        star.addEventListener('mouseover', () => {
-            const rating = star.dataset.rating;
-            stars.forEach(s => {
-                s.classList.toggle('fas', s.dataset.rating <= rating);
-                s.classList.toggle('far', s.dataset.rating > rating);
-                s.style.color = s.dataset.rating <= rating ? '#d4a76a' : '#ccc';
-            });
-        });
-
-        // Reset on mouse out (unless clicked)
-        star.addEventListener('mouseout', () => {
-            if (selectedRating === 0) {
+        stars.forEach(star => {
+            star.addEventListener('mouseover', () => {
+                const rating = star.dataset.rating;
                 stars.forEach(s => {
-                    s.classList.remove('fas');
-                    s.classList.add('far');
-                    s.style.color = '#ccc';
+                    s.classList.toggle('fas', s.dataset.rating <= rating);
+                    s.classList.toggle('far', s.dataset.rating > rating);
+                    s.style.color = s.dataset.rating <= rating ? '#d4a76a' : '#ccc';
                 });
-            }
-        });
-
-        // Click to select & submit
-        star.addEventListener('click', async () => {
-            selectedRating = star.dataset.rating;
-
-            // Final highlight
-            stars.forEach(s => {
-                s.classList.toggle('fas', s.dataset.rating <= selectedRating);
-                s.classList.toggle('far', s.dataset.rating > selectedRating);
-                s.style.color = s.dataset.rating <= selectedRating ? '#d4a76a' : '#ccc';
             });
 
-            // Disable stars during submit
-            stars.forEach(s => s.style.pointerEvents = 'none');
-
-            const productId = section.dataset.productId;
-            const orderDetailId = section.dataset.orderDetailId;
-            const orderId = section.dataset.orderId;
-
-            try {
-                // Show brief loading state (optional)
-                section.innerHTML += '<span class="rating-loading">Sending...</span>';
-
-                const response = await fetch(window.location.href, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: new URLSearchParams({
-                        action: 'submit_rating',
-                        product_id: productId,
-                        rating: selectedRating,
-                        order_detail_id: orderDetailId,
-                        order_id: orderId
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    section.innerHTML = '<span class="rated-message">Thank you! ★</span>';
-                } else {
-                    alert(result.message || 'Error submitting rating');
-                    // Reset stars if failed
+            star.addEventListener('mouseout', () => {
+                if (selectedRating === 0) {
                     stars.forEach(s => {
                         s.classList.remove('fas');
                         s.classList.add('far');
                         s.style.color = '#ccc';
                     });
                 }
-            } catch (e) {
-                console.error(e);
-                alert('Network error');
-                // Reset on error
+            });
+
+            star.addEventListener('click', async () => {
+                selectedRating = star.dataset.rating;
+
                 stars.forEach(s => {
-                    s.classList.remove('fas');
-                    s.classList.add('far');
-                    s.style.color = '#ccc';
+                    s.classList.toggle('fas', s.dataset.rating <= selectedRating);
+                    s.classList.toggle('far', s.dataset.rating > selectedRating);
+                    s.style.color = s.dataset.rating <= selectedRating ? '#d4a76a' : '#ccc';
                 });
-            } finally {
-                stars.forEach(s => s.style.pointerEvents = 'auto');
-            }
+
+                stars.forEach(s => s.style.pointerEvents = 'none');
+
+                const productId = section.dataset.productId;
+                const orderDetailId = section.dataset.orderDetailId;
+                const orderId = section.dataset.orderId;
+
+                try {
+                    section.innerHTML += '<span class="rating-loading">Sending...</span>';
+
+                    const response = await fetch(window.location.href, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            action: 'submit_rating',
+                            product_id: productId,
+                            rating: selectedRating,
+                            order_detail_id: orderDetailId,
+                            order_id: orderId
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        section.innerHTML = '<span class="rated-message">Thank you! ★</span>';
+                    } else {
+                        alert(result.message || 'Error submitting rating');
+                        stars.forEach(s => {
+                            s.classList.remove('fas');
+                            s.classList.add('far');
+                            s.style.color = '#ccc';
+                        });
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert('Network error');
+                    stars.forEach(s => {
+                        s.classList.remove('fas');
+                        s.classList.add('far');
+                        s.style.color = '#ccc';
+                    });
+                } finally {
+                    stars.forEach(s => s.style.pointerEvents = 'auto');
+                }
+            });
         });
     });
-});
 
+    // ────────────────────────────────────────────────
+    //  IMPROVED Buy Again – with stock checking
+    // ────────────────────────────────────────────────
     async function handleBuyAgain(items) {
-    let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
+        if (!items || items.length === 0) return;
 
-    items.forEach(item => {
-        let pid = item.product_id;
+        // 1. Collect product IDs to check stock
+        const productIds = items.map(item => item.product_id);
 
-        // ────────────────────────────────────────────────
-        // Most important fix: add the 'product_images/' prefix
-        // ────────────────────────────────────────────────
-        let imagePath = item.product_image 
-            ? 'product_images/' + item.product_image 
-            : 'product_images/placeholder.jpg';   // better fallback
+        let stockData = null;
+        try {
+            const resp = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'check_stock',
+                    product_ids: productIds
+                })
+            });
 
-        let existingIndex = cart.findIndex(c => c.id == pid);
-        let currentQty = 0;
-
-        if (existingIndex > -1) {
-            currentQty = cart[existingIndex].quantity;
-            cart.splice(existingIndex, 1); 
+            const result = await resp.json();
+            if (result.status === 'success') {
+                stockData = result.stocks;
+            } else {
+                console.warn("Stock check failed:", result.message);
+            }
+        } catch (err) {
+            console.error("Stock check network error:", err);
         }
 
-        cart.push({
-            id: pid,
-            name: item.product_name,
-            price: parseFloat(item.item_price),
-            image: imagePath,                     // ← now correct
-            quantity: currentQty + parseInt(item.quantity)
+        // Build stock lookup map
+        const stockMap = {};
+        (stockData || []).forEach(p => {
+            stockMap[p.id] = {
+                name: p.name,
+                stock: parseInt(p.stock) || 0
+            };
         });
-    });
 
-    localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
+        // 2. Classify items: can add vs cannot add
+        const canAdd = [];
+        const cannotAdd = [];
 
-    try {
-        await fetch('sync_cart.php?action=update', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart: cart })
+        items.forEach(item => {
+            const pid = item.product_id;
+            const requestedQty = parseInt(item.quantity) || 1;
+            const stockInfo = stockMap[pid] || { stock: 0, name: item.product_name || `Item #${pid}` };
+
+            if (stockInfo.stock >= 1) {
+                const safeQty = Math.min(requestedQty, stockInfo.stock);
+                canAdd.push({
+                    id: pid,
+                    name: item.product_name,
+                    price: parseFloat(item.item_price),
+                    image: item.product_image 
+                        ? 'product_images/' + item.product_image 
+                        : 'product_images/placeholder.jpg',
+                    quantity: safeQty,
+                    note: safeQty < requestedQty ? `(only ${safeQty} available)` : ''
+                });
+            } else {
+                cannotAdd.push({
+                    name: stockInfo.name || item.product_name || `Item #${pid}`,
+                    requested: requestedQty
+                });
+            }
         });
-        window.location.href = 'cart.php'; 
-    } catch (e) {
-        console.error("Sync error:", e);
+
+        // 3. Show feedback for unavailable items
+        if (cannotAdd.length > 0) {
+            let msg = "The following items are currently out of stock and cannot be added:\n\n";
+            cannotAdd.forEach(it => {
+                msg += `• ${it.name} (wanted ×${it.requested})\n`;
+            });
+            alert(msg.trim());
+        }
+
+        if (canAdd.length === 0) {
+            alert("None of the items from this order are currently in stock.");
+            return;
+        }
+
+        // Optional: confirm partial add
+        if (canAdd.length < items.length) {
+            const proceed = confirm(
+                `Only ${canAdd.length} of ${items.length} items are available right now.\n\nAdd the available ones to your cart?`
+            );
+            if (!proceed) return;
+        }
+
+        // 4. Update local cart – prepend updated/new items
+        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+
+        canAdd.forEach(newItem => {
+            const existingIndex = cart.findIndex(c => c.id == newItem.id);
+            let currentQty = 0;
+
+            if (existingIndex > -1) {
+                currentQty = parseInt(cart[existingIndex].quantity) || 0;
+                cart.splice(existingIndex, 1); // remove old version
+            }
+
+            cart.unshift({
+                id: newItem.id,
+                name: newItem.name,
+                price: newItem.price,
+                image: newItem.image,
+                quantity: currentQty + newItem.quantity,
+                // optional: you can store note if you want to show it in cart later
+            });
+        });
+
+        localStorage.setItem('bakeryCart', JSON.stringify(cart));
+
+        // 5. Sync to server (server will still enforce final stock limits)
+        try {
+            await fetch('sync_cart.php?action=update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart: cart })
+            });
+        } catch (e) {
+            console.error("Cart sync failed:", e);
+            // still proceed to cart page – sync will retry on next load
+        }
+
+        // 6. Redirect to cart
         window.location.href = 'cart.php';
     }
-}
     </script>
 </body>
 </html>

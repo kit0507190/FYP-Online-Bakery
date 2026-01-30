@@ -68,21 +68,40 @@ function showToast(msg) {
 
 // --- 同步本地 cart 到数据库 ---
 async function syncCartToDB() {
-    if (!window.isLoggedIn) return; 
+    if (!window.isLoggedIn) return;
+
     try {
         const response = await fetch('sync_cart.php?action=update', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cart: cart })
         });
-        if (!response.ok) throw new Error('Sync failed');
+
+        const result = await response.json();
+
+        if (!response.ok || result.status !== 'success') {
+            throw new Error(result.message || 'Sync failed');
+        }
+
+        // ── New: handle stock adjustments ──
+        if (result.adjusted && result.adjusted.length > 0) {
+            let msg = "The following items were adjusted due to low stock:\n";
+            result.adjusted.forEach(adj => {
+                msg += `• ${adj.name || 'Item'} (wanted ${adj.requested}, only ${adj.available} left) → set to ${adj.set_to}\n`;
+            });
+            showToast(msg.trim());
+            
+            // Optional: reload from server to be in sync
+            initPage();
+            return;
+        }
+
         console.log("Database sync successful.");
     } catch (e) {
         console.error("Sync error:", e);
-        showToast("Failed to save cart — changes may be lost on refresh");
+        showToast("Failed to save cart — some changes may be lost");
     }
 }
-
 // --- 页面初始化：总是优先从服务器加载购物车 ---
 async function initPage() {
     if (!window.isLoggedIn) {
@@ -205,10 +224,13 @@ function updateQty(id, change) {
         return;
     }
 
-    // 防止超过库存（如果前端有 maxStock 字段）
-    if (change > 0 && item.maxStock !== undefined && newQty > item.maxStock) {
-        showToast(`Only ${item.maxStock} available in stock`);
-        return;
+    // ── Improved stock check ──
+    if (change > 0) {
+        const maxStock = item.maxStock ?? item.stock ?? 9999; // fallback
+        if (newQty > maxStock) {
+            showToast(`Only ${maxStock} available in stock`);
+            return;
+        }
     }
 
     item.quantity = newQty;
