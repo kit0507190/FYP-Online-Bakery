@@ -79,6 +79,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception("Your cart is empty or invalid.");
         }
 
+        // ── 新增：银行卡真实性验证逻辑 ──────────────────────────────────
+if ($paymentMethod === 'debitCard') {
+    // 1. 获取并清理用户输入的数据（去除空格）
+    $inputCardNum = str_replace(' ', '', $_POST['card_number'] ?? '');
+    $inputExpiry  = $_POST['card_expiry'] ?? '';
+    $inputCVV     = $_POST['card_cvv'] ?? '';
+
+    // 2. 到数据库查询该卡是否存在
+    $checkCardStmt = $pdo->prepare("
+        SELECT id FROM bank_cards 
+        WHERE card_number = ? AND expiry_date = ? AND cvv = ? 
+        LIMIT 1
+    ");
+    $checkCardStmt->execute([$inputCardNum, $inputExpiry, $inputCVV]);
+    
+    if (!$checkCardStmt->fetch()) {
+        // 如果数据库里没有这张卡，抛出异常
+        // 这会直接跳到底部的 catch 块，执行 rollBack() 还原库存，且不会生成订单
+        throw new Exception("Invalid Card: The card details entered do not exist in our banking records.");
+    }
+}
+
         // ── Handle credit payment ────────────────────────────────
         $payment_status = 'pending';
 
@@ -200,7 +222,7 @@ function parseAddr($raw) {
     <?php include 'header.php'; ?>
 
     <div class="container">
-        <form id="paymentForm" method="post" onsubmit="return validateCheckout()">
+        <form id="paymentForm" method="post" onsubmit="event.preventDefault(); validateCheckout();">
             <div class="flex-layout">
                 <div class="left-column">
                     <div class="card">
@@ -279,24 +301,58 @@ function parseAddr($raw) {
                         </label>
 
                         <div id="cardDetailsSection" style="display:none;">
-                            <div class="form-group">
-                                <label>Card Number (16 Digits)</label>
-                                <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
-                                <div id="cardError" class="error-msg"></div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group" style="flex:2;">
-                                    <label>Expiry Date</label>
-                                    <input type="text" id="expiryInput" class="form-input" placeholder="MM/YY" maxlength="5">
-                                    <div id="expiryError" class="error-msg"></div>
-                                </div>
-                                <div class="form-group" style="flex:1;">
-                                    <label>CVV</label>
-                                    <input type="password" id="cvvInput" class="form-input" placeholder="123" maxlength="3">
-                                    <div id="cvvError" class="error-msg"></div>
-                                </div>
-                            </div>
-                        </div>
+    <div class="form-group">
+        <label>Card Number (16 Digits)</label>
+        <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+        <div id="cardError" class="error-msg"></div>
+    </div>
+    <div class="form-row">
+        <div class="form-group" style="flex:2;">
+            <label>Expiry Date</label>
+            <input type="text" id="expiryInput" name="card_expiry" class="form-input" placeholder="MM/YY" maxlength="5">
+            <div id="expiryError" class="error-msg"></div>
+        </div>
+        <div class="form-group" style="flex:1;">
+            <label>CVV</label>
+            <input type="password" id="cvvInput" name="card_cvv" class="form-input" placeholder="123" maxlength="3">
+            <div id="cvvError" class="error-msg"></div>
+        </div>
+    </div>
+</div>
+
+                        <div id="invalidCardModal" class="force-modal-overlay">
+    <div class="force-modal-content">
+        <div class="modal-icon" style="color: #e74c3c;">❌</div> 
+        <h2 style="color: #e74c3c;">Invalid Card Details</h2>
+        <p id="cardErrorMessage">The card details entered do not exist in our records. Please check your card number, expiry date, and CVV.</p>
+        <div class="modal-actions">
+            <div class="btn-go-address" style="background-color: #e74c3c; cursor:pointer;" onclick="closeCardModal()">Try Again</div>
+        </div>
+    </div>
+</div>
+
+<div id="insufficientCreditsModal" class="force-modal-overlay">
+    <div class="force-modal-content">
+        <div class="modal-icon" style="color: #e74c3c;">⚠️</div> 
+        <h2 style="color: #e74c3c;">Insufficient Credits</h2>
+        <p id="insufficientMessage">You do not have enough credits to complete this purchase.</p>
+        <div class="modal-actions">
+            <div class="btn-go-address" style="background-color: #e74c3c; cursor:pointer;" onclick="closeCreditsModal('insufficientCreditsModal')">Check Balance</div>
+        </div>
+    </div>
+</div>
+
+<div id="confirmCreditsModal" class="force-modal-overlay">
+    <div class="force-modal-content">
+        <div class="modal-icon" style="color: #d4a76a;">💰</div> 
+        <h2 style="color: #5a3921;">Confirm Payment</h2>
+        <p id="confirmMessage">Are you sure you want to deduct the amount from your credits?</p>
+        <div class="modal-actions">
+            <div class="btn-go-address" style="background-color: #5a3921; cursor:pointer; margin-bottom: 10px;" onclick="proceedWithCredits()">Confirm & Pay</div>
+            <div class="btn-maybe-later" onclick="closeCreditsModal('confirmCreditsModal')">Cancel</div>
+        </div>
+    </div>
+</div>
 
                         <label class="method-item" id="label-tng">
                             <input type="radio" name="paymentMethod" value="tng" onclick="toggleCardFields(false)">
@@ -394,78 +450,132 @@ function parseAddr($raw) {
         }, 100);
     };
 
-    function validateCheckout() {
-        clearErrors();
+    // 定义一个全局变量来存错误类型
+// 1. 将变量改为数组，用于存储多个错误代码
+// 全局变量存储状态
+window.pendingCardErrors = []; 
+window.currentTotalAmount = 0; // 存储当前订单总额
 
-        if (userAddressCount === 0) {
-            document.getElementById('addressRequiredModal').style.display = 'flex';
-            return false;
-        }
+async function validateCheckout() {
+    clearErrors();
+    window.pendingCardErrors = []; 
 
-        const checked = document.querySelector('input[name="paymentMethod"]:checked');
-        if (!checked) {
-            alert("Please select a payment method.");
-            return false;
-        }
-
-        let isValid = true;
-
-        if (checked.value === 'credits') {
-            const totalStr = document.getElementById('totalPriceDisplay').innerText.replace('RM ', '').replace(',', '');
-            const totalAmount = parseFloat(totalStr);
-
-            if (userCredit < totalAmount) {
-                alert(`Insufficient credits!\n\nYou have: RM ${userCredit.toFixed(2)}\nNeeded: RM ${totalAmount.toFixed(2)}`);
-                return false;
-            }
-
-            if (!confirm(`Deduct RM ${totalAmount.toFixed(2)} from your credits?\nNew balance: RM ${(userCredit - totalAmount).toFixed(2)}`)) {
-                return false;
-            }
-        }
-        else if (checked.value === 'debitCard') {
-            const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
-            const expiry  = document.getElementById('expiryInput').value;
-            const cvv     = document.getElementById('cvvInput').value;
-
-            if (cardNum.length !== 16 || isNaN(cardNum)) {
-                showError('cardNumberInput', 'cardError', 'Please enter a valid 16-digit card number.');
-                isValid = false;
-            }
-
-            if (!/^\d{2}\/\d{2}$/.test(expiry)) {
-                showError('expiryInput', 'expiryError', 'Use MM/YY format.');
-                isValid = false;
-            } else {
-                const [m, y] = expiry.split('/').map(n => parseInt(n));
-                const currYear  = 26;
-                const currMonth = 1;
-                if (m < 1 || m > 12) {
-                    showError('expiryInput', 'expiryError', 'Invalid month (01-12).');
-                    isValid = false;
-                } else if (y < currYear || (y === currYear && m < currMonth)) {
-                    showError('expiryInput', 'expiryError', 'Card has expired.');
-                    isValid = false;
-                }
-            }
-
-            if (cvv.length !== 3 || isNaN(cvv)) {
-                showError('cvvInput', 'cvvError', 'Enter 3-digit CVV.');
-                isValid = false;
-            }
-        }
-
-        if (isValid && cart.length === 0) {
-            alert("Your cart is empty!");
-            return false;
-        }
-
-        if (isValid) {
-            document.getElementById('cartDataInput').value = JSON.stringify(cart);
-        }
-
-        return isValid;
+    // 1. 地址检查
+    if (userAddressCount === 0) {
+        document.getElementById('addressRequiredModal').style.display = 'flex';
+        return false;
     }
+
+    // 2. 支付方式检查
+    const checked = document.querySelector('input[name="paymentMethod"]:checked');
+    if (!checked) {
+        alert("Please select a payment method.");
+        return false;
+    }
+
+    // 获取当前订单总额（用于后续判断）
+    const totalStr = document.getElementById('totalPriceDisplay').innerText.replace('RM ', '').replace(',', '');
+    window.currentTotalAmount = parseFloat(totalStr);
+
+    // ── 情况 A：Debit Card 验证 ──────────────────────────────────
+    if (checked.value === 'debitCard') {
+        const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
+        const expiry  = document.getElementById('expiryInput').value;
+        const cvv     = document.getElementById('cvvInput').value;
+
+        let isLocalValid = true;
+        if (cardNum.length !== 16 || isNaN(cardNum)) {
+            showError('cardNumberInput', 'cardError', 'Please enter a valid 16-digit card number.');
+            isLocalValid = false;
+        }
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+            showError('expiryInput', 'expiryError', 'Use MM/YY format.');
+            isLocalValid = false;
+        }
+        if (cvv.length !== 3 || isNaN(cvv)) {
+            showError('cvvInput', 'cvvError', 'Enter 3-digit CVV.');
+            isLocalValid = false;
+        }
+        if (!isLocalValid) return false;
+
+        try {
+            const response = await fetch('check_card_ajax.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ card_number: cardNum, card_expiry: expiry, card_cvv: cvv })
+            });
+            const result = await response.json();
+
+            if (result.status === 'error') {
+                window.pendingCardErrors = result.codes; 
+                document.getElementById('invalidCardModal').style.display = 'flex'; //
+                return false; 
+            }
+        } catch (err) {
+            console.error("Payment error:", err);
+            return false;
+        }
+        
+        // 如果卡号验证通过，执行提交
+        submitFinalOrder();
+    } 
+    
+    // ── 情况 B：Pay with Credits 验证 (使用 Modal 替换 Ugly Alert) ──────
+    else if (checked.value === 'credits') {
+        if (userCredit < window.currentTotalAmount) {
+            // 显示“余额不足”弹窗
+            document.getElementById('insufficientMessage').innerHTML = 
+                `You have: <b>RM ${userCredit.toFixed(2)}</b><br>Needed: <b>RM ${window.currentTotalAmount.toFixed(2)}</b>`;
+            document.getElementById('insufficientCreditsModal').style.display = 'flex';
+            return false;
+        } else {
+            // 显示“确认支付”弹窗
+            document.getElementById('confirmMessage').innerHTML = 
+                `Deduct <b>RM ${window.currentTotalAmount.toFixed(2)}</b> from your credits?<br>New balance: <b>RM ${(userCredit - window.currentTotalAmount).toFixed(2)}</b>`;
+            document.getElementById('confirmCreditsModal').style.display = 'flex';
+            return false; // 等待用户在 Modal 里确认
+        }
+    } 
+    
+    // ── 情况 C：其他支付方式 (TNG / FPX) ─────────────────────────
+    else {
+        submitFinalOrder();
+    }
+}
+
+// 最终提交函数：所有检查通过后运行
+function submitFinalOrder() {
+    if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+    }
+    document.getElementById('cartDataInput').value = JSON.stringify(cart);
+    document.getElementById('paymentForm').submit(); 
+}
+
+// 用户在 Credits 确认弹窗点击“Confirm”时运行
+function proceedWithCredits() {
+    document.getElementById('confirmCreditsModal').style.display = 'none';
+    submitFinalOrder();
+}
+
+// 关闭银行卡错误弹窗并显示具体红字提示
+function closeCardModal() {
+    document.getElementById('invalidCardModal').style.display = 'none';
+    if (window.pendingCardErrors && window.pendingCardErrors.length > 0) {
+        window.pendingCardErrors.forEach(code => {
+            if (code === 'card') showError('cardNumberInput', 'cardError', 'Invalid card number.');
+            else if (code === 'expiry') showError('expiryInput', 'expiryError', 'Incorrect expiry date.');
+            else if (code === 'cvv') showError('cvvInput', 'cvvError', 'Incorrect CVV code.');
+        });
+        window.pendingCardErrors = [];
+    }
+}
+
+// 通用：关闭 Credits 相关弹窗
+function closeCreditsModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
 
     function showError(inputId, errorId, msg) {
         const input = document.getElementById(inputId);
