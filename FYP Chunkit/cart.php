@@ -61,6 +61,22 @@ if (isset($_SESSION['checkout_error'])) {
 <button class="back-to-top" id="backToTop">↑</button>
 <div class="toast" id="toast"></div>
 
+<div id="customClearModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+        <div class="modal-icon-wrapper">
+    <span style="font-size: 40px; font-weight: bold; font-family: Arial, sans-serif;">!</span> 
+</div>
+        <h2 class="modal-title-custom">Clear Your Cart?</h2>
+        <p class="modal-message-custom">
+            Are you sure you want to remove all items from your cart? <br>This action cannot be undone.
+        </p>
+        <div class="modal-actions-custom">
+            <button id="confirmClearBtn" class="btn-confirm-delete">Yes, Clear Cart</button>
+            <button id="cancelClearBtn" class="btn-cancel-delete">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <?php include 'footer.php'; ?>
 
 <script>
@@ -220,15 +236,11 @@ function clearCart() {
         return;
     }
 
-    if (!confirm("Are you sure you want to clear all items from your cart? This action cannot be undone.")) {
-        return;
+    // 以前是 confirm()，现在改成让弹窗显示
+    const modal = document.getElementById('customClearModal');
+    if (modal) {
+        modal.classList.add('active');
     }
-
-    cart = [];
-    localStorage.setItem('bakeryCart', JSON.stringify(cart));
-    loadCartItems();
-    syncCartToDB();
-    showToast("Cart has been cleared");
 }
 
 // --- 修改数量 / 删除 ---
@@ -261,10 +273,16 @@ function removeItem(id) {
     finalizeChange();
 }
 
+// --- cart.php 里的修改 ---
 function finalizeChange() {
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     loadCartItems();
     syncCartToDB();
+    
+    // 🟢 关键：手动触发 Header 的更新函数
+    if (typeof window.updateHeaderCartCount === 'function') {
+        window.updateHeaderCartCount();
+    }
 }
 
 function updateHeaderCount() {
@@ -286,8 +304,34 @@ function clearCartOnLogout() {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
-    // 延迟一小段时间，确保 session 和 isLoggedIn 变量准备好
     setTimeout(initPage, 100);
+
+    // --- 新增：处理自定义弹窗的按钮点击 ---
+    const modal = document.getElementById('customClearModal');
+    const confirmBtn = document.getElementById('confirmClearBtn');
+    const cancelBtn = document.getElementById('cancelClearBtn');
+
+    // 如果用户点 "Yes, Clear Cart"
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', () => {
+            // 执行真正的清空逻辑
+            cart = [];
+            localStorage.setItem('bakeryCart', JSON.stringify(cart));
+            loadCartItems();
+            syncCartToDB();
+            showToast("Cart has been cleared");
+            
+            // 关闭弹窗
+            modal.classList.remove('active');
+        });
+    }
+
+    // 如果用户点 "Cancel"
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+    }
 });
 </script>
 </body>

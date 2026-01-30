@@ -57,12 +57,14 @@ window.isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
 
 function updateHeaderCartCount() {
     const cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-    const itemCount = cart.length;  // number of different products (types)
+    
+    // 🟢 修改这里：不再用 cart.length，改用累加数量
+    const totalItems = cart.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
 
     const cartCountElement = document.querySelector('.cart-count');
     if (cartCountElement) {
-        cartCountElement.textContent = itemCount;
-        cartCountElement.style.display = itemCount > 0 ? 'flex' : 'none';
+        cartCountElement.textContent = totalItems;
+        cartCountElement.style.display = totalItems > 0 ? 'flex' : 'none';
     }
 }
 
