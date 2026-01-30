@@ -15,33 +15,47 @@ try {
     $stmt = $pdo->query("
         SELECT * FROM user_db 
         WHERE deleted_at IS NULL 
-        ORDER BY created_at DESC
+        ORDER BY status ASC, created_at DESC
     ");
-    $users = $stmt->fetchAll();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $_SESSION['error_message'] = "Error fetching users. Please try again later.";
+    $_SESSION['error_message'] = "Error fetching users.";
 }
 
-// Handle delete request
-// Handle SOFT delete request
-if (isset($_GET['delete'])) {
-    $id = (int)$_GET['delete'];
+// Handle Deactivate
+if (isset($_GET['deactivate'])) {
+    $id = (int)$_GET['deactivate'];
     if ($id > 0) {
         try {
-            $stmt = $pdo->prepare("
-                UPDATE user_db 
-                SET deleted_at = NOW()
-                -- , deleted_by = ?    ← uncomment if you add the column
-                WHERE id = ? 
-                  AND deleted_at IS NULL
-            ");
-            // $stmt->execute([$current_admin['id'], $id]);   ← if using deleted_by
+            $stmt = $pdo->prepare("UPDATE user_db SET status = 'inactive' WHERE id = ? AND status = 'active'");
             $stmt->execute([$id]);
-
-            header("Location: user_accounts.php?success=1");
+            
+            if ($stmt->rowCount() > 0) {
+                $_SESSION['success_message'] = "User account deactivated successfully.";
+            }
+            header("Location: user_accounts.php");
             exit();
         } catch (PDOException $e) {
-            $_SESSION['error_message'] = "Error deleting user: " . $e->getMessage();
+            $_SESSION['error_message'] = "Error deactivating user.";
+        }
+    }
+}
+
+// Handle Reactivate
+if (isset($_GET['reactivate'])) {
+    $id = (int)$_GET['reactivate'];
+    if ($id > 0) {
+        try {
+            $stmt = $pdo->prepare("UPDATE user_db SET status = 'active' WHERE id = ? AND status = 'inactive'");
+            $stmt->execute([$id]);
+            
+            if ($stmt->rowCount() > 0) {
+                $_SESSION['success_message'] = "User account reactivated successfully.";
+            }
+            header("Location: user_accounts.php");
+            exit();
+        } catch (PDOException $e) {
+            $_SESSION['error_message'] = "Error reactivating user.";
         }
     }
 }
@@ -93,42 +107,55 @@ if (isset($_GET['delete'])) {
     <div class="table-card">
         <h2>Customer User Accounts</h2>
         <table id="userTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Created At</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if (empty($users)): ?>
+            <tr>
+                <td colspan="6" style="text-align:center; padding:6rem; color:#999;">
+                    <i class="fas fa-users fa-3x" style="color:#ddd; margin-bottom:1rem;"></i><br>
+                    No registered customers found.
+                </td>
+            </tr>
+        <?php else: ?>
+            <?php foreach ($users as $user): ?>
+                <tr class="<?= $user['status'] === 'inactive' ? 'inactive-row' : '' ?>">
+                    <td><?= htmlspecialchars($user['id']) ?></td>
+                    <td><?= htmlspecialchars($user['name']) ?></td>
+                    <td><?= htmlspecialchars($user['email']) ?></td>
+                    <td><?= date('d M Y, H:i', strtotime($user['created_at'])) ?></td>
+                    <td class="<?= $user['status'] === 'inactive' ? 'inactive' : 'active' ?>">
+                        <?= ucfirst($user['status']) ?>
+                    </td>
+                    <td>
+                        <?php if ($user['status'] === 'active'): ?>
+                            <a href="?deactivate=<?= $user['id'] ?>" 
+                               class="action-btn delete-btn"
+                               onclick="return confirm('Deactivate <?= htmlspecialchars(addslashes($user['name'])) ?>?\nThey will no longer be able to log in or place orders.')">
+                                Deactivate
+                            </a>
+                        <?php else: ?>
+                            <a href="?reactivate=<?= $user['id'] ?>" 
+                               class="action-btn" 
+                               style="background:#28a745; color:white;"
+                               onclick="return confirm('Reactivate <?= htmlspecialchars(addslashes($user['name'])) ?>?')">
+                                Reactivate
+                            </a>
+                        <?php endif; ?>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($users)): ?>
-                    <tr>
-                        <td colspan="5" style="text-align:center; padding:6rem; color:#999;">
-                            <i class="fas fa-users fa-3x" style="color:#ddd; margin-bottom:1rem;"></i><br>
-                            No active registered customers found.
-                        </td>
-                    </tr>
-                <?php else: ?>
-                    <?php foreach ($users as $user): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($user['id']) ?></td>
-                            <td><?= htmlspecialchars($user['name']) ?></td>
-                            <td><?= htmlspecialchars($user['email']) ?></td>
-                            <td><?= date('d M Y, H:i', strtotime($user['created_at'])) ?></td>
-                            <td>
-                                <a href="?delete=<?= $user['id'] ?>" 
-                                   class="action-btn delete-btn" 
-                                   onclick="return confirm('Are you sure you want to delete <?= htmlspecialchars(addslashes($user['name'])) ?>?\nThis user can be restored later if needed.')">
-                                    Delete
-                                </a>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </tbody>
+</table>
     </div>
 </main>
 

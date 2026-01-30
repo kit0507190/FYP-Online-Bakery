@@ -637,3 +637,88 @@ footer p {
     font-weight: 500;
     text-transform: uppercase;
 }
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    z-index: 10000;
+    font-size: 16px;
+    min-width: 180px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.clear-cart-btn {
+    background-color: #e74c3c;          /* red / danger color */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.clear-cart-btn:hover {
+    background-color: #c0392b;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.stock-error-alert {
+    background: #ffebee;           /* Soft red background */
+    border: 1px solid #ef9a9a;
+    border-left: 5px solid #c62828; /* Red accent bar */
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    color: #333;
+    font-size: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.stock-error-alert i {
+    font-size: 28px;
+    color: #c62828;  /* Red warning icon */
+    margin-top: 5px;
+}
+
+.alert-content strong {
+    color: #c62828;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.alert-content p {
+    margin: 6px 0;
+    line-height: 1.5;
+}
+
+.btn-retry {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 20px;
+    background: var(--primary);  /* #5a3921 */
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.btn-retry:hover {
+    background: #452c1a;
+}
