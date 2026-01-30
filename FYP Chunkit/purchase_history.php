@@ -333,36 +333,49 @@ document.querySelectorAll('.rating-section').forEach(section => {
 });
 
     async function handleBuyAgain(items) {
-        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
-        items.forEach(item => {
-            let pid = item.product_id;
-            let existingIndex = cart.findIndex(c => c.id == pid);
-            let currentQty = 0;
-            if (existingIndex > -1) {
-                currentQty = cart[existingIndex].quantity;
-                cart.splice(existingIndex, 1); 
-            }
-            cart.push({
-                id: pid,
-                name: item.product_name,
-                price: parseFloat(item.item_price),
-                image: item.product_image || "cake/A_Little_Sweet.jpg",
-                quantity: currentQty + parseInt(item.quantity)
-            });
-        });
-        localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
-        try {
-            await fetch('sync_cart.php?action=update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart: cart })
-            });
-            window.location.href = 'cart.php'; 
-        } catch (e) {
-            console.error("Sync error:", e);
-            window.location.href = 'cart.php';
+    let cart = JSON.parse(localStorage.getItem('bakeryCart')) || []; 
+
+    items.forEach(item => {
+        let pid = item.product_id;
+
+        // ────────────────────────────────────────────────
+        // Most important fix: add the 'product_images/' prefix
+        // ────────────────────────────────────────────────
+        let imagePath = item.product_image 
+            ? 'product_images/' + item.product_image 
+            : 'product_images/placeholder.jpg';   // better fallback
+
+        let existingIndex = cart.findIndex(c => c.id == pid);
+        let currentQty = 0;
+
+        if (existingIndex > -1) {
+            currentQty = cart[existingIndex].quantity;
+            cart.splice(existingIndex, 1); 
         }
+
+        cart.push({
+            id: pid,
+            name: item.product_name,
+            price: parseFloat(item.item_price),
+            image: imagePath,                     // ← now correct
+            quantity: currentQty + parseInt(item.quantity)
+        });
+    });
+
+    localStorage.setItem('bakeryCart', JSON.stringify(cart)); 
+
+    try {
+        await fetch('sync_cart.php?action=update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart: cart })
+        });
+        window.location.href = 'cart.php'; 
+    } catch (e) {
+        console.error("Sync error:", e);
+        window.location.href = 'cart.php';
     }
+}
     </script>
 </body>
 </html>
