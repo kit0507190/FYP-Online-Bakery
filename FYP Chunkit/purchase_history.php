@@ -10,13 +10,13 @@ if (!isset($_SESSION['user_id'])) {
 $userEmail = $_SESSION['user_email'] ?? ''; 
 
 // ────────────────────────────────────────────────
-//  Handle rating submission (unchanged)
+//  Handle rating submission
 // ────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'submit_rating') {
-    $productId = intval($_POST['product_id']);
-    $rating = intval($_POST['rating']);
-    $orderDetailId = intval($_POST['order_detail_id']);
-    $orderId = intval($_POST['order_id']);
+    $productId     = (int) ($_POST['product_id']     ?? 0);
+    $rating        = (int) ($_POST['rating']        ?? 0);
+    $orderDetailId = (int) ($_POST['order_detail_id'] ?? 0);
+    $orderId       = (int) ($_POST['order_id']       ?? 0);
 
     if ($rating < 1 || $rating > 5) {
         echo json_encode(['success' => false, 'message' => 'Invalid rating']);
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     try {
         // Check if already rated
-        $checkStmt = $pdo->prepare("SELECT id FROM product_ratings WHERE product_id = ? AND customer_email = ?");
+        $checkStmt = $pdo->prepare("SELECT 1 FROM product_ratings WHERE product_id = ? AND customer_email = ?");
         $checkStmt->execute([$productId, $userEmail]);
         if ($checkStmt->fetch()) {
             echo json_encode(['success' => false, 'message' => 'Already rated']);
@@ -34,112 +34,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         // Insert rating
         $insertStmt = $pdo->prepare("
-            INSERT INTO product_ratings (product_id, customer_email, rating, order_detail_id, order_id)
+            INSERT INTO product_ratings 
+            (product_id, customer_email, rating, order_detail_id, order_id)
             VALUES (?, ?, ?, ?, ?)
         ");
         $insertStmt->execute([$productId, $userEmail, $rating, $orderDetailId, $orderId]);
 
-        // Recalculate average and count
+        // Update product stats
         $updateStmt = $pdo->prepare("
-            UPDATE products p
+            UPDATE products 
             SET 
-                p.rating = (
-                    SELECT AVG(r.rating) 
-                    FROM product_ratings r 
-                    WHERE r.product_id = p.id
+                rating = (
+                    SELECT AVG(rating) 
+                    FROM product_ratings 
+                    WHERE product_id = ?
                 ),
-                p.review_count = (
+                review_count = (
                     SELECT COUNT(*) 
-                    FROM product_ratings r 
-                    WHERE r.product_id = p.id
+                    FROM product_ratings 
+                    WHERE product_id = ?
                 )
-            WHERE p.id = ?
+            WHERE id = ?
         ");
-        $updateStmt->execute([$productId]);
+        $updateStmt->execute([$productId, $productId, $productId]);
 
         echo json_encode(['success' => true]);
     } catch (PDOException $e) {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        echo json_encode(['success' => false, 'message' => 'Database error']);
     }
     exit();
 }
 
-// ────────────────────────────────────────────────
-//  NEW: Handle quick stock check for "Buy Again"
-// ────────────────────────────────────────────────
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'check_stock') {
-    header('Content-Type: application/json');
-    
-    $raw = file_get_contents('php://input');
-    $data = json_decode($raw, true);
-
-    if (!isset($data['product_ids']) || !is_array($data['product_ids'])) {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid request']);
-        exit;
-    }
-
-    $ids = array_filter($data['product_ids'], 'is_numeric');
-    if (empty($ids)) {
-        echo json_encode(['status' => 'success', 'stocks' => []]);
-        exit;
-    }
-
-    $placeholders = implode(',', array_fill(0, count($ids), '?'));
-    $stmt = $pdo->prepare("
-        SELECT id, name, stock 
-        FROM products 
-        WHERE id IN ($placeholders) 
-          AND deleted_at IS NULL
-    ");
-    $stmt->execute($ids);
-
-    $stocks = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    echo json_encode([
-        'status' => 'success',
-        'stocks' => $stocks
-    ]);
-    exit;
-}
-
 try {
-    // 1. Get order data (including status)
-    $query = "SELECT o.id as order_id, o.total, o.created_at, o.payment_status, o.status,
-                     d.id as order_detail_id, d.product_id, d.product_name, d.price as item_price, d.quantity,
-                     p.image as product_image 
-              FROM orders o 
-              JOIN orders_detail d ON o.id = d.order_id 
-              LEFT JOIN products p ON d.product_id = p.id 
-              WHERE o.customer_email = ? 
-              AND deleted_at IS NULL 
-              AND o.payment_status = 'paid' 
-              ORDER BY o.id DESC";
+    // Get paid orders + items (filter deleted products)
+    $query = "
+        SELECT 
+            o.id as order_id, o.total, o.created_at, o.payment_status, o.status,
+            d.id as order_detail_id, d.product_id, d.product_name, d.price as item_price, d.quantity,
+            p.image as product_image 
+        FROM orders o 
+        JOIN orders_detail d ON o.id = d.order_id 
+        LEFT JOIN products p ON d.product_id = p.id AND p.deleted_at IS NULL
+        WHERE o.customer_email = ? 
+          AND o.payment_status = 'paid' 
+        ORDER BY o.id DESC
+    ";
     
     $stmt = $pdo->prepare($query);
     $stmt->execute([$userEmail]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Fetch all user's ratings in one query for efficiency
+    // Get all products user already rated
     $ratingsStmt = $pdo->prepare("SELECT product_id FROM product_ratings WHERE customer_email = ?");
     $ratingsStmt->execute([$userEmail]);
-    $userRatings = $ratingsStmt->fetchAll(PDO::FETCH_COLUMN); // Array of rated product_ids
+    $userRatings = $ratingsStmt->fetchAll(PDO::FETCH_COLUMN);
 
+    // Group items by order
     $orders = [];
     foreach ($results as $row) {
         $oid = $row['order_id'];
         if (!isset($orders[$oid])) {
             $orders[$oid] = [
-                'id' => $oid,
-                'total' => $row['total'],
-                'date' => $row['created_at'],
+                'id'     => $oid,
+                'total'  => $row['total'],
+                'date'   => $row['created_at'],
                 'status' => $row['status'],
-                'items' => []
+                'items'  => []
             ];
         }
         $orders[$oid]['items'][] = $row;
     }
 } catch (PDOException $e) {
-    die("Database Error: " . $e->getMessage());
+    die("Database Error: " . htmlspecialchars($e->getMessage()));
 }
 ?>
 
@@ -149,7 +115,7 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase History - Bakery House</title>
-    <link rel="stylesheet" href="purchase_history.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="purchase_history.css?v=<?= time() ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
@@ -161,7 +127,7 @@ try {
             <div class="toolbar-left">
                 <h2 class="page-title">Purchase History</h2>
                 <p class="page-subtitle">Track and manage your delicious orders</p>
-                <hr style="width: 60px; border: none; border-top: 3px solid #d4a76a; margin: 15px auto; border-radius: 10px;">
+                <hr style="width: 60px; border:none; border-top:3px solid #d4a76a; margin:15px auto; border-radius:10px;">
             </div>
             
             <div class="filter-container">
@@ -186,30 +152,30 @@ try {
             </div>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>
-                <div class="shopee-card" data-status="<?php echo htmlspecialchars($order['status']); ?>">
+                <div class="shopee-card" data-status="<?= htmlspecialchars($order['status']) ?>">
                     <div class="card-header">
                         <div class="shop-info">
                             <span class="shop-brand"><i class="fas fa-store"></i> Bakery House</span>
-                            <span class="order-id-tag">Order ID: #<?php echo $order['id']; ?></span>
+                            <span class="order-id-tag">Order ID: #<?= $order['id'] ?></span>
                         </div>
                         <div class="order-meta">
                             <?php
                                 $status = $order['status'];
-                                $icon = "fa-clock"; 
-                                if($status == 'preparing') $icon = "fa-spinner fa-spin"; 
-                                if($status == 'ready')     $icon = "fa-cookie-bite";
-                                if($status == 'delivered') $icon = "fa-truck-fast";
-                                if($status == 'cancelled') $icon = "fa-circle-xmark";
+                                $icon = match($status) {
+                                    'preparing' => 'fa-spinner fa-spin',
+                                    'ready'     => 'fa-cookie-bite',
+                                    'delivered' => 'fa-truck-fast',
+                                    'cancelled' => 'fa-circle-xmark',
+                                    default     => 'fa-clock'
+                                };
                             ?>
-
-                            <span class="status-badge status-<?php echo htmlspecialchars($status); ?>">
-                                <i class="fas <?php echo $icon; ?>"></i>
-                                <?php echo htmlspecialchars($status); ?>
+                            <span class="status-badge status-<?= htmlspecialchars($status) ?>">
+                                <i class="fas <?= $icon ?>"></i>
+                                <?= htmlspecialchars($status) ?>
                             </span>
-                            
                             <span class="order-date">
                                 <i class="far fa-calendar-alt"></i> 
-                                <?php echo date('d M Y, h:i A', strtotime($order['date'])); ?>
+                                <?= date('d M Y, h:i A', strtotime($order['date'])) ?>
                             </span>
                         </div>
                     </div>
@@ -217,21 +183,21 @@ try {
                     <?php foreach ($order['items'] as $item): ?>
                         <div class="product-item">
                             <?php 
-                                $imgSrc = !empty($item['product_image']) 
-                                ? 'product_images/' . $item['product_image'] 
-                                : 'product_images/placeholder.jpg';  
+                                $imgSrc = $item['product_image'] 
+                                    ? 'product_images/' . $item['product_image'] 
+                                    : 'product_images/placeholder.jpg';  
                             ?>
-                            <img src="<?php echo htmlspecialchars($imgSrc); ?>" class="product-img" alt="Product">
+                            <img src="<?= htmlspecialchars($imgSrc) ?>" class="product-img" alt="Product">
                             
                             <div class="product-details">
-                                <div class="name"><?php echo htmlspecialchars($item['product_name']); ?></div>
-                                <div class="qty">Quantity: x<?php echo $item['quantity']; ?></div>
+                                <div class="name"><?= htmlspecialchars($item['product_name']) ?></div>
+                                <div class="qty">Quantity: ×<?= $item['quantity'] ?></div>
                                 
                                 <?php if ($order['status'] === 'delivered'): ?>
                                     <div class="rating-section" 
-                                        data-product-id="<?php echo $item['product_id']; ?>"
-                                        data-order-detail-id="<?php echo $item['order_detail_id']; ?>"
-                                        data-order-id="<?php echo $order['id']; ?>">
+                                         data-product-id="<?= $item['product_id'] ?>"
+                                         data-order-detail-id="<?= $item['order_detail_id'] ?>"
+                                         data-order-id="<?= $order['id'] ?>">
                                         <?php if (in_array($item['product_id'], $userRatings)): ?>
                                             <span class="rated-message">Rated!</span>
                                         <?php else: ?>
@@ -246,16 +212,17 @@ try {
                                     </div>
                                 <?php endif; ?>
                             </div>
-                            <div class="price">RM <?php echo number_format($item['item_price'], 2); ?></div>
+                            <div class="price">RM <?= number_format($item['item_price'], 2) ?></div>
                         </div>
                     <?php endforeach; ?>
 
                     <div class="card-footer">
                         <div class="total-row">
                             <span class="label">Total Amount:</span>
-                            <span class="amount">RM <?php echo number_format($order['total'], 2); ?></span>
+                            <span class="amount">RM <?= number_format($order['total'], 2) ?></span>
                         </div>
-                        <button class="buy-again-btn" onclick='handleBuyAgain(<?php echo htmlspecialchars(json_encode($order['items']), ENT_QUOTES, 'UTF-8'); ?>)'>
+                        <button class="buy-again-btn" 
+                                onclick='handleBuyAgain(<?= htmlspecialchars(json_encode($order['items'], JSON_NUMERIC_CHECK), ENT_QUOTES, 'UTF-8') ?>)'>
                             <i class="fas fa-redo"></i> Buy Again
                         </button>
                     </div>
@@ -265,38 +232,32 @@ try {
     </div>
 
     <script>
-    // Filter orders (unchanged)
     function filterOrders() {
-        const filterValue = document.getElementById('statusFilter').value;
-        const cards = document.querySelectorAll('.shopee-card');
-        
-        cards.forEach(card => {
-            const orderStatus = card.getAttribute('data-status');
-            if (filterValue === 'all' || orderStatus === filterValue) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
+        const filter = document.getElementById('statusFilter').value;
+        document.querySelectorAll('.shopee-card').forEach(card => {
+            const status = card.dataset.status;
+            card.style.display = (filter === 'all' || status === filter) ? 'block' : 'none';
         });
     }
 
-    // Rating stars logic (unchanged)
+    // Rating stars (unchanged – keeping original logic)
     document.querySelectorAll('.rating-section').forEach(section => {
         const stars = section.querySelectorAll('.fa-star');
-        let selectedRating = 0;
+        let selected = 0;
 
         stars.forEach(star => {
             star.addEventListener('mouseover', () => {
-                const rating = star.dataset.rating;
+                const r = +star.dataset.rating;
                 stars.forEach(s => {
-                    s.classList.toggle('fas', s.dataset.rating <= rating);
-                    s.classList.toggle('far', s.dataset.rating > rating);
-                    s.style.color = s.dataset.rating <= rating ? '#d4a76a' : '#ccc';
+                    const sr = +s.dataset.rating;
+                    s.classList.toggle('fas', sr <= r);
+                    s.classList.toggle('far', sr > r);
+                    s.style.color = sr <= r ? '#d4a76a' : '#ccc';
                 });
             });
 
             star.addEventListener('mouseout', () => {
-                if (selectedRating === 0) {
+                if (selected === 0) {
                     stars.forEach(s => {
                         s.classList.remove('fas');
                         s.classList.add('far');
@@ -306,139 +267,132 @@ try {
             });
 
             star.addEventListener('click', async () => {
-                selectedRating = star.dataset.rating;
+                selected = +star.dataset.rating;
 
                 stars.forEach(s => {
-                    s.classList.toggle('fas', s.dataset.rating <= selectedRating);
-                    s.classList.toggle('far', s.dataset.rating > selectedRating);
-                    s.style.color = s.dataset.rating <= selectedRating ? '#d4a76a' : '#ccc';
+                    const sr = +s.dataset.rating;
+                    s.classList.toggle('fas', sr <= selected);
+                    s.classList.toggle('far', sr > selected);
+                    s.style.color = sr <= selected ? '#d4a76a' : '#ccc';
                 });
 
                 stars.forEach(s => s.style.pointerEvents = 'none');
 
-                const productId = section.dataset.productId;
-                const orderDetailId = section.dataset.orderDetailId;
-                const orderId = section.dataset.orderId;
-
                 try {
-                    section.innerHTML += '<span class="rating-loading">Sending...</span>';
+                    section.insertAdjacentHTML('beforeend', '<span class="rating-loading">Sending...</span>');
 
-                    const response = await fetch(window.location.href, {
+                    const res = await fetch(location.href, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                         body: new URLSearchParams({
                             action: 'submit_rating',
-                            product_id: productId,
-                            rating: selectedRating,
-                            order_detail_id: orderDetailId,
-                            order_id: orderId
+                            product_id: section.dataset.productId,
+                            rating: selected,
+                            order_detail_id: section.dataset.orderDetailId,
+                            order_id: section.dataset.orderId
                         })
                     });
 
-                    const result = await response.json();
+                    const data = await res.json();
 
-                    if (result.success) {
+                    if (data.success) {
                         section.innerHTML = '<span class="rated-message">Thank you! ★</span>';
                     } else {
-                        alert(result.message || 'Error submitting rating');
-                        stars.forEach(s => {
-                            s.classList.remove('fas');
-                            s.classList.add('far');
-                            s.style.color = '#ccc';
-                        });
+                        alert(data.message || 'Error submitting rating');
+                        resetStars();
                     }
-                } catch (e) {
-                    console.error(e);
+                } catch (err) {
+                    console.error(err);
                     alert('Network error');
-                    stars.forEach(s => {
-                        s.classList.remove('fas');
-                        s.classList.add('far');
-                        s.style.color = '#ccc';
-                    });
+                    resetStars();
                 } finally {
                     stars.forEach(s => s.style.pointerEvents = 'auto');
                 }
             });
         });
+
+        function resetStars() {
+            stars.forEach(s => {
+                s.classList.remove('fas');
+                s.classList.add('far');
+                s.style.color = '#ccc';
+            });
+        }
     });
 
     // ────────────────────────────────────────────────
-    //  IMPROVED Buy Again – with stock checking
+    //  Buy Again – with client-side stock check from get_products.php
     // ────────────────────────────────────────────────
     async function handleBuyAgain(items) {
-        if (!items || items.length === 0) return;
+        if (!Array.isArray(items) || items.length === 0) return;
 
-        // 1. Collect product IDs to check stock
-        const productIds = items.map(item => item.product_id);
+        const productIds = items.map(item => Number(item.product_id)).filter(id => id > 0);
+
+        console.log('Buy Again: Sent product_ids for stock check', productIds);  // DEBUG
 
         let stockData = null;
         try {
-            const resp = await fetch(window.location.href, {
-                method: 'POST',
+            const res = await fetch('get_products.php', {
+                method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'check_stock',
-                    product_ids: productIds
-                })
+                credentials: 'same-origin'  // Include cookies if needed
             });
 
-            const result = await resp.json();
-            if (result.status === 'success') {
-                stockData = result.stocks;
-            } else {
-                console.warn("Stock check failed:", result.message);
-            }
+            stockData = await res.json();
+
+            console.log('Buy Again: Products data', stockData);  // DEBUG: see full products
         } catch (err) {
-            console.error("Stock check network error:", err);
+            console.error('Products fetch error:', err);
+            alert('Error loading product data. Please try again.');
+            return;
         }
 
-        // Build stock lookup map
+        // Build stockMap from all products
         const stockMap = {};
-        (stockData || []).forEach(p => {
+        stockData.forEach(p => {
             stockMap[p.id] = {
                 name: p.name,
-                stock: parseInt(p.stock) || 0
+                stock: Number(p.stock) || 0
             };
         });
 
-        // 2. Classify items: can add vs cannot add
         const canAdd = [];
         const cannotAdd = [];
 
         items.forEach(item => {
-            const pid = item.product_id;
-            const requestedQty = parseInt(item.quantity) || 1;
-            const stockInfo = stockMap[pid] || { stock: 0, name: item.product_name || `Item #${pid}` };
+            const pid = Number(item.product_id);
+            const want = Number(item.quantity) || 1;
+            const info = stockMap[pid] || { stock: 0, name: item.product_name || `Product #${pid}` };
 
-            if (stockInfo.stock >= 1) {
-                const safeQty = Math.min(requestedQty, stockInfo.stock);
+            if (info.stock >= 1) {
+                const take = Math.min(want, info.stock);
                 canAdd.push({
                     id: pid,
                     name: item.product_name,
-                    price: parseFloat(item.item_price),
-                    image: item.product_image 
-                        ? 'product_images/' + item.product_image 
-                        : 'product_images/placeholder.jpg',
-                    quantity: safeQty,
-                    note: safeQty < requestedQty ? `(only ${safeQty} available)` : ''
+                    price: Number(item.item_price),
+                    image: item.product_image ? `product_images/${item.product_image}` : 'product_images/placeholder.jpg',
+                    quantity: take,
+                    note: take < want ? `(only ${take} left)` : ''
                 });
             } else {
                 cannotAdd.push({
-                    name: stockInfo.name || item.product_name || `Item #${pid}`,
-                    requested: requestedQty
+                    name: item.product_name,
+                    requested: want,
+                    reason: stockMap.hasOwnProperty(pid) ? 'out of stock' : 'product not found (deleted or invalid ID)'
                 });
             }
         });
 
-        // 3. Show feedback for unavailable items
+        // Show feedback for unavailable items
         if (cannotAdd.length > 0) {
-            let msg = "The following items are currently out of stock and cannot be added:\n\n";
+            let msg = "The following items are currently unavailable and were skipped:\n\n";
             cannotAdd.forEach(it => {
-                msg += `• ${it.name} (wanted ×${it.requested})\n`;
+                msg += `• ${it.name} (wanted ×${it.requested}) - ${it.reason}\n`;
             });
             alert(msg.trim());
         }
 
+        // If nothing can be added → early exit
         if (canAdd.length === 0) {
             alert("None of the items from this order are currently in stock.");
             return;
@@ -452,44 +406,37 @@ try {
             if (!proceed) return;
         }
 
-        // 4. Update local cart – prepend updated/new items
+        // Update local cart
         let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
 
         canAdd.forEach(newItem => {
-            const existingIndex = cart.findIndex(c => c.id == newItem.id);
-            let currentQty = 0;
-
-            if (existingIndex > -1) {
-                currentQty = parseInt(cart[existingIndex].quantity) || 0;
-                cart.splice(existingIndex, 1); // remove old version
+            const idx = cart.findIndex(c => c.id === newItem.id);
+            let current = 0;
+            if (idx !== -1) {
+                current = Number(cart[idx].quantity) || 0;
+                cart.splice(idx, 1);
             }
-
             cart.unshift({
-                id: newItem.id,
-                name: newItem.name,
-                price: newItem.price,
-                image: newItem.image,
-                quantity: currentQty + newItem.quantity,
-                // optional: you can store note if you want to show it in cart later
+                id:       newItem.id,
+                name:     newItem.name,
+                price:    newItem.price,
+                image:    newItem.image,
+                quantity: current + newItem.quantity
             });
         });
 
         localStorage.setItem('bakeryCart', JSON.stringify(cart));
 
-        // 5. Sync to server (server will still enforce final stock limits)
-        try {
-            await fetch('sync_cart.php?action=update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cart: cart })
-            });
-        } catch (e) {
-            console.error("Cart sync failed:", e);
-            // still proceed to cart page – sync will retry on next load
-        }
+        // Sync to server (non-blocking)
+        fetch('sync_cart.php?action=update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart: cart }),
+            credentials: 'same-origin'
+        }).catch(err => console.error('Cart sync failed:', err));
 
-        // 6. Redirect to cart
-        window.location.href = 'cart.php';
+        // Redirect to cart
+        location.href = 'cart.php';
     }
     </script>
 </body>
