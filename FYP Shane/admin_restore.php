@@ -1,9 +1,9 @@
-<DOCUMENT>
 <?php
 require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
-
-
 require_once 'admin_config.php';
+
+// Get current script name once (used for redirects)
+$current_page = basename(__FILE__);  // will be "admin_restore.php"
 
 // Messages
 $success = $error = '';
@@ -13,20 +13,19 @@ if (isset($_GET['restore'])) {
     $type = $_GET['type'] ?? '';
     $id = (int)$_GET['restore'];
     
-    if ($id > 0 && in_array($type, ['product', 'category', 'subcategory', 'user'])) {
+    if ($id > 0 && in_array($type, ['product', 'category', 'subcategory'])) {
         $table = match($type) {
-            'product' => 'products',
-            'category' => 'categories',
+            'product'     => 'products',
+            'category'    => 'categories',
             'subcategory' => 'subcategories',
-            'user' => 'user_db',
-            default => ''
+            default       => ''
         };
         
         if ($table) {
             try {
                 $stmt = $pdo->prepare("UPDATE $table SET deleted_at = NULL WHERE id = ? AND deleted_at IS NOT NULL");
                 $stmt->execute([$id]);
-                header("Location: restore_deleted.php?success=restore");
+                header("Location: $current_page?success=restore");
                 exit();
             } catch (PDOException $e) {
                 $error = "Restore failed: " . $e->getMessage();
@@ -40,19 +39,18 @@ if (isset($_GET['perm_delete'])) {
     $type = $_GET['type'] ?? '';
     $id = (int)$_GET['perm_delete'];
     
-    if ($id > 0 && in_array($type, ['product', 'category', 'subcategory', 'user'])) {
+    if ($id > 0 && in_array($type, ['product', 'category', 'subcategory'])) {
         $table = match($type) {
-            'product' => 'products',
-            'category' => 'categories',
+            'product'     => 'products',
+            'category'    => 'categories',
             'subcategory' => 'subcategories',
-            'user' => 'user_db',
-            default => ''
+            default       => ''
         };
         
         if ($table) {
             try {
                 if ($type === 'product') {
-                    // Special: delete image file
+                    // Special: delete image file if exists
                     $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
                     $stmt->execute([$id]);
                     $image = $stmt->fetchColumn();
@@ -61,11 +59,10 @@ if (isset($_GET['perm_delete'])) {
                     }
                 }
                 
-                // For category: optional check for subs, but since it's permanent, we force delete
                 $stmt = $pdo->prepare("DELETE FROM $table WHERE id = ?");
                 $stmt->execute([$id]);
                 
-                header("Location: restore_deleted.php?success=perm_delete");
+                header("Location: $current_page?success=perm_delete");
                 exit();
             } catch (PDOException $e) {
                 $error = "Permanent delete failed: " . $e->getMessage();
@@ -74,7 +71,7 @@ if (isset($_GET['perm_delete'])) {
     }
 }
 
-// Fetch all deleted items
+// Fetch deleted items
 $deleted_products = $pdo->query("
     SELECT p.*, c.name AS cat_name, s.name AS subcat_name 
     FROM products p 
@@ -98,12 +95,6 @@ $deleted_subcategories = $pdo->query("
     ORDER BY s.deleted_at DESC
 ")->fetchAll();
 
-$deleted_users = $pdo->query("
-    SELECT * FROM user_db 
-    WHERE deleted_at IS NOT NULL 
-    ORDER BY deleted_at DESC
-")->fetchAll();
-
 ?>
 
 <!DOCTYPE html>
@@ -113,7 +104,7 @@ $deleted_users = $pdo->query("
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BakeryHouse | Restore Deleted Items</title>
     <link rel="stylesheet" href="css/admin_style.css">
-    <link rel="stylesheet" href="css/admin_restore.css">  <!-- New CSS for tab styles -->
+    <link rel="stylesheet" href="css/admin_restore.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
@@ -156,7 +147,6 @@ $deleted_users = $pdo->query("
             <button class="tab-btn active" data-tab="products">Products (<?= count($deleted_products) ?>)</button>
             <button class="tab-btn" data-tab="categories">Categories (<?= count($deleted_categories) ?>)</button>
             <button class="tab-btn" data-tab="subcategories">Subcategories (<?= count($deleted_subcategories) ?>)</button>
-            <button class="tab-btn" data-tab="users">Users (<?= count($deleted_users) ?>)</button>
         </div>
 
         <!-- Products Tab -->
@@ -169,19 +159,21 @@ $deleted_users = $pdo->query("
                             <th>ID</th>
                             <th>Name</th>
                             <th>Category</th>
+                            <th>Subcategory</th>
                             <th>Deleted At</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (empty($deleted_products)): ?>
-                            <tr><td colspan="5" style="text-align:center; padding:3rem; color:#888;">No deleted products.</td></tr>
+                            <tr><td colspan="6" style="text-align:center; padding:3rem; color:#888;">No deleted products.</td></tr>
                         <?php else: ?>
                             <?php foreach ($deleted_products as $row): ?>
                                 <tr>
                                     <td><?= $row['id'] ?></td>
                                     <td><?= htmlspecialchars($row['name']) ?></td>
                                     <td><?= htmlspecialchars($row['cat_name'] ?? '—') ?></td>
+                                    <td><?= htmlspecialchars($row['subcat_name'] ?? '—') ?></td>
                                     <td><?= date('d M Y H:i', strtotime($row['deleted_at'])) ?></td>
                                     <td>
                                         <a href="?restore=<?= $row['id'] ?>&type=product" class="action-btn edit-btn" onclick="return confirm('Restore this product?');">Restore</a>
@@ -264,42 +256,6 @@ $deleted_users = $pdo->query("
                 </table>
             </div>
         </div>
-
-        <!-- Users Tab -->
-        <div id="users" class="tab-content">
-            <div class="table-card">
-                <h2>Deleted Users</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Deleted At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if (empty($deleted_users)): ?>
-                            <tr><td colspan="5" style="text-align:center; padding:3rem; color:#888;">No deleted users.</td></tr>
-                        <?php else: ?>
-                            <?php foreach ($deleted_users as $row): ?>
-                                <tr>
-                                    <td><?= $row['id'] ?></td>
-                                    <td><?= htmlspecialchars($row['name']) ?></td>
-                                    <td><?= htmlspecialchars($row['email']) ?></td>
-                                    <td><?= date('d M Y H:i', strtotime($row['deleted_at'])) ?></td>
-                                    <td>
-                                        <a href="?restore=<?= $row['id'] ?>&type=user" class="action-btn edit-btn" onclick="return confirm('Restore this user?');">Restore</a>
-                                        <a href="?perm_delete=<?= $row['id'] ?>&type=user" class="action-btn delete-btn" onclick="return confirm('Permanently delete this user? This cannot be undone.');">Permanent Delete</a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
     </div>
 </main>
 
@@ -318,4 +274,3 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 </body>
 </html>
-</DOCUMENT>
