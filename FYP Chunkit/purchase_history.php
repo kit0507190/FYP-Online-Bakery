@@ -331,17 +331,29 @@ try {
     });
 
     // 新增：控制弹窗显示的辅助函数
+// 修改后的辅助函数：支持动态按钮文字
 function showMyModal(title, message, showCancel = false) {
     return new Promise((resolve) => {
         const modal = document.getElementById('stockModal');
+        const iconContainer = modal.querySelector('.modal-icon-container'); 
+        const confirmBtn = document.getElementById('modalConfirmBtn'); // 获取确认按钮
+        
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalMessage').innerText = message;
-        const cancelBtn = document.getElementById('modalCancelBtn');
         
+        // 保持红色警告样式
+        iconContainer.classList.add('warning'); 
+        
+        // 🚀 核心修改：根据模式切换按钮文字
+        // 如果 showCancel 是 false (图1模式) -> 显示 "OK"
+        // 如果 showCancel 是 true  (图2模式) -> 显示 "Yes"
+        confirmBtn.innerText = showCancel ? "Yes" : "OK"; 
+        
+        const cancelBtn = document.getElementById('modalCancelBtn');
         cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
         modal.style.display = 'flex';
 
-        document.getElementById('modalConfirmBtn').onclick = () => {
+        confirmBtn.onclick = () => {
             modal.style.display = 'none';
             resolve(true);
         };
@@ -477,7 +489,7 @@ function showMyModal(title, message, showCancel = false) {
             <h3 id="modalTitle">Stock Update</h3>
             <p id="modalMessage"></p>
             <div class="modal-buttons">
-                <button id="modalConfirmBtn" class="modal-btn-primary">Done</button>
+                <button id="modalConfirmBtn" class="modal-btn-primary">Yes</button>
                 <button id="modalCancelBtn" class="modal-btn-secondary" style="display:none;">Cancel</button>
             </div>
         </div>

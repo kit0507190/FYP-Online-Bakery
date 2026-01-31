@@ -447,6 +447,7 @@ body {
     to { transform: scale(1); opacity: 1; }
 }
 
+/* 1. 图标容器基础样式 */
 .modal-icon-container {
     width: 85px;
     height: 85px;
@@ -460,10 +461,10 @@ body {
     font-size: 45px;
 }
 
-/* 警告色风格（当库存不足时使用） */
+/* 🚀 修改：感叹号警告色风格改为红色主题 */
 .modal-icon-container.warning {
-    background-color: #fff3e0;
-    color: #ff9800;
+    background-color: #ffebee; /* 浅红色背景 */
+    color: #f44336;           /* 鲜红色图标 */
 }
 
 .custom-modal-content h3 {
@@ -481,8 +482,9 @@ body {
     white-space: pre-line;
 }
 
+/* 2. Done 按钮（保持金色主题） */
 .modal-btn-primary {
-    background-color: #d4a76a; /* 你的金色主题 */
+    background-color: #d4a76a; 
     color: white;
     border: none;
     padding: 14px 0;
@@ -498,4 +500,34 @@ body {
 .modal-btn-primary:hover {
     background-color: #c2955a;
     transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212, 167, 106, 0.4);
+}
+
+/* 🚀 新增/修改：Cancel 按钮，样式完全对标 Done 按钮，但颜色改为红色 */
+.modal-btn-secondary {
+    background-color: #f44336; /* 红色背景 */
+    color: white;
+    border: none;
+    padding: 14px 0;
+    width: 180px;           /* 宽度与 Done 一致 */
+    border-radius: 30px;    /* 圆角与 Done 一致 */
+    font-weight: 700;
+    font-size: 17px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3); /* 红色阴影 */
+}
+
+.modal-btn-secondary:hover {
+    background-color: #d32f2f; /* 悬停时深红色 */
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(244, 67, 54, 0.4);
+}
+
+/* 按钮布局容器，确保两个按钮排列美观 */
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
 }
