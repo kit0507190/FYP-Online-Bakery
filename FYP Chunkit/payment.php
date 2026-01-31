@@ -52,151 +52,149 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $grandTotal = $subtotal + 5.00;
 
     try {
-        $pdo->beginTransaction();
+    $pdo->beginTransaction();
 
-        // ── Stock check & reservation (deduct temporarily) ────────────────────────────────
-        if (is_array($cartData) && !empty($cartData)) {
-            foreach ($cartData as $item) {
-                $productId = (int)$item['id'];
-                $requestedQty = (int)$item['quantity'];
-
-                $stockStmt = $pdo->prepare("SELECT stock FROM products WHERE id = ? AND deleted_at IS NULL FOR UPDATE");
-                $stockStmt->execute([$productId]);
-                $currentStock = (int)$stockStmt->fetchColumn();
-
-                if ($currentStock === false) {
-                    throw new Exception("Product ID {$productId} not found or deleted.");
-                }
-
-                if ($currentStock < $requestedQty) {
-                    throw new Exception("Sorry, only {$currentStock} left in stock for '{$item['name']}'. Please update your cart.");
-                }
-
-                $updateStmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
-                $updateStmt->execute([$requestedQty, $productId]);
-            }
-        } else {
-            throw new Exception("Your cart is empty or invalid.");
-        }
-
-        // ── 新增：银行卡真实性验证逻辑 ──────────────────────────────────
-if ($paymentMethod === 'debitCard') {
-    // 1. 获取并清理用户输入的数据（去除空格）
-    $inputCardNum = str_replace(' ', '', $_POST['card_number'] ?? '');
-    $inputExpiry  = $_POST['card_expiry'] ?? '';
-    $inputCVV     = $_POST['card_cvv'] ?? '';
-
-    // 2. 到数据库查询该卡是否存在
-    $checkCardStmt = $pdo->prepare("
-        SELECT id FROM bank_cards 
-        WHERE card_number = ? AND expiry_date = ? AND cvv = ? 
-        LIMIT 1
-    ");
-    $checkCardStmt->execute([$inputCardNum, $inputExpiry, $inputCVV]);
-    
-    if (!$checkCardStmt->fetch()) {
-        // 如果数据库里没有这张卡，抛出异常
-        // 这会直接跳到底部的 catch 块，执行 rollBack() 还原库存，且不会生成订单
-        throw new Exception("Invalid Card: The card details entered do not exist in our banking records.");
-    }
-}
-
-        // ── Handle credit payment ────────────────────────────────
-        $payment_status = 'pending';
-
-        if ($paymentMethod === 'credits') {
-            // Lock and check credit again inside transaction
-            $creditStmt = $pdo->prepare("SELECT credit FROM user_db WHERE id = ? FOR UPDATE");
-            $creditStmt->execute([$userId]);
-            $currentCredit = (float) $creditStmt->fetchColumn();
-
-            if ($currentCredit < $grandTotal) {
-                throw new Exception("Insufficient credits. Current balance: RM " . number_format($currentCredit, 2));
-            }
-
-            // Deduct credits
-            $deductStmt = $pdo->prepare("UPDATE user_db SET credit = credit - ? WHERE id = ?");
-            $deductStmt->execute([$grandTotal, $userId]);
-
-            $payment_status = 'paid';  // instant success
-        }
-        // ──────────────────────────────────────────────────────────
-
-        // Create main order record
-        $stmt = $pdo->prepare("
-            INSERT INTO orders 
-            (customer_name, customer_email, customer_phone, delivery_address, city, postcode, 
-             total, payment_method, payment_status, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
-        ");
-        $stmt->execute([
-            $customerName, $email, $phone, $address, $city, $postcode,
-            $grandTotal, $paymentMethod, $payment_status
-        ]);
-        $orderId = $pdo->lastInsertId();
-
-        // Order details
-        $stmtDetail = $pdo->prepare("
-            INSERT INTO orders_detail (order_id, product_id, product_name, price, quantity, subtotal)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ");
+    // ── Stock check & reservation (deduct temporarily) ────────────────────────────────
+    if (is_array($cartData) && !empty($cartData)) {
         foreach ($cartData as $item) {
-            $stmtDetail->execute([
-                $orderId,
-                $item['id'],
-                $item['name'],
-                $item['price'],
-                $item['quantity'],
-                $item['price'] * $item['quantity']
-            ]);
+            $productId = (int)$item['id'];
+            $requestedQty = (int)$item['quantity'];
+
+            $stockStmt = $pdo->prepare("SELECT stock FROM products WHERE id = ? AND deleted_at IS NULL FOR UPDATE");
+            $stockStmt->execute([$productId]);
+            $currentStock = (int)$stockStmt->fetchColumn();
+
+            if ($currentStock === false) {
+                throw new Exception("Product ID {$productId} not found or deleted.");
+            }
+
+            if ($currentStock < $requestedQty) {
+                throw new Exception("Sorry, only {$currentStock} left in stock for '{$item['name']}'. Please update your cart.");
+            }
+
+            $updateStmt = $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ?");
+            $updateStmt->execute([$requestedQty, $productId]);
+        }
+    } else {
+        throw new Exception("Your cart is empty or invalid.");
+    }
+
+    // ── Bank card validation ──────────────────────────────────
+    if ($paymentMethod === 'debitCard') {
+        $inputCardNum = str_replace(' ', '', $_POST['card_number'] ?? '');
+        $inputExpiry  = $_POST['card_expiry'] ?? '';
+        $inputCVV     = $_POST['card_cvv'] ?? '';
+
+        $checkCardStmt = $pdo->prepare("
+            SELECT id FROM bank_cards 
+            WHERE card_number = ? AND expiry_date = ? AND cvv = ? 
+            LIMIT 1
+        ");
+        $checkCardStmt->execute([$inputCardNum, $inputExpiry, $inputCVV]);
+        
+        if (!$checkCardStmt->fetch()) {
+            throw new Exception("Invalid Card: The card details entered do not exist in our banking records.");
+        }
+    }
+
+    // ── Handle credit payment ────────────────────────────────
+    $payment_status = 'pending';
+
+    if ($paymentMethod === 'credits') {
+        $creditStmt = $pdo->prepare("SELECT credit FROM user_db WHERE id = ? FOR UPDATE");
+        $creditStmt->execute([$userId]);
+        $currentCredit = (float) $creditStmt->fetchColumn();
+
+        if ($currentCredit < $grandTotal) {
+            throw new Exception("Insufficient credits. Current balance: RM " . number_format($currentCredit, 2));
         }
 
-        // NOTE: Cart is NOT cleared here anymore – handled on success only
+        $deductStmt = $pdo->prepare("UPDATE user_db SET credit = credit - ? WHERE id = ?");
+        $deductStmt->execute([$grandTotal, $userId]);
 
-        $pdo->commit();
+        $payment_status = 'paid';  // instant success
+    }
 
-        // ── Post-commit actions ─────────────────────────
-        if ($paymentMethod === 'credits') {
-    // For credits: instant success – clear cart now
-    $clearCartStmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
-    $clearCartStmt->execute([$userId]);
-
-    // Also update sold_count (since paid)
-    $updateSoldStmt = $pdo->prepare("
-        UPDATE products p 
-        JOIN orders_detail od ON p.id = od.product_id 
-        SET p.sold_count = p.sold_count + od.quantity 
-        WHERE od.order_id = ?
+    // Create main order record ── NO user_id column ────────────────────────────────
+    $stmt = $pdo->prepare("
+        INSERT INTO orders 
+        (customer_name, customer_email, customer_phone, delivery_address, city, postcode, 
+         total, payment_method, payment_status, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
     ");
-    $updateSoldStmt->execute([$orderId]);
+    $stmt->execute([
+        $customerName, $email, $phone, $address, $city, $postcode,
+        $grandTotal, $paymentMethod, $payment_status
+    ]);
+    $orderId = $pdo->lastInsertId();
 
-    $_SESSION['order_success'] = true;
-    $_SESSION['new_order_id']  = $orderId;
-    header("Location: process_credits.php?order_id={$orderId}");  // <-- Change to this
+    if (!$orderId || $orderId <= 0) {
+        throw new Exception("Failed to create order record - no ID returned");
+    }
+
+    // Order details
+    $stmtDetail = $pdo->prepare("
+        INSERT INTO orders_detail (order_id, product_id, product_name, price, quantity, subtotal)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ");
+    foreach ($cartData as $item) {
+        $stmtDetail->execute([
+            $orderId,
+            $item['id'],
+            $item['name'],
+            $item['price'],
+            $item['quantity'],
+            $item['price'] * $item['quantity']
+        ]);
+    }
+
+    $pdo->commit();
+
+    // ── Post-commit actions (only after successful commit) ─────────────────────────
+    if ($paymentMethod === 'credits') {
+        // Clear cart
+        $clearCartStmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
+        $clearCartStmt->execute([$userId]);
+
+        // Update sold_count
+        $updateSoldStmt = $pdo->prepare("
+            UPDATE products p 
+            JOIN orders_detail od ON p.id = od.product_id 
+            SET p.sold_count = p.sold_count + od.quantity 
+            WHERE od.order_id = ?
+        ");
+        $updateSoldStmt->execute([$orderId]);
+
+        // Set session flags
+        $_SESSION['order_success'] = true;
+        $_SESSION['new_order_id']  = $orderId;
+
+        // Redirect
+        header("Location: process_credits.php?order_id=" . $orderId);
+        exit;
+    }
+    elseif ($paymentMethod === 'debitCard') {
+        header("Location: process_debit.php?order_id={$orderId}");
+    } 
+    elseif ($paymentMethod === 'tng') {
+        header("Location: process_tng.php?order_id={$orderId}");
+    } 
+    elseif ($paymentMethod === 'fpx') {
+        header("Location: process_fpx.php?order_id={$orderId}");
+    } 
+    else {
+        header("Location: simulate_gateway.php?order_id={$orderId}&method=" . urlencode($paymentMethod));
+    }
+    exit;
+
+} catch (Exception $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+    $_SESSION['checkout_error'] = $e->getMessage();
+    header("Location: cart.php");
     exit;
 }
-        elseif ($paymentMethod === 'debitCard') {
-            header("Location: process_debit.php?order_id={$orderId}");
-        } 
-        elseif ($paymentMethod === 'tng') {
-            header("Location: process_tng.php?order_id={$orderId}");
-        } 
-        elseif ($paymentMethod === 'fpx') {
-            header("Location: process_fpx.php?order_id={$orderId}");
-        } 
-        else {
-            header("Location: simulate_gateway.php?order_id={$orderId}&method=" . urlencode($paymentMethod));
-        }
-        exit;
-
-    } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();  // Restores stock on error
-        }
-        $_SESSION['checkout_error'] = $e->getMessage();
-        header("Location: cart.php");
-        exit;
-    }
 }
 
 function parseAddr($raw) {
@@ -301,24 +299,24 @@ function parseAddr($raw) {
                         </label>
 
                         <div id="cardDetailsSection" style="display:none;">
-    <div class="form-group">
-        <label>Card Number (16 Digits)</label>
-        <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
-        <div id="cardError" class="error-msg"></div>
-    </div>
-    <div class="form-row">
-        <div class="form-group" style="flex:2;">
-            <label>Expiry Date</label>
-            <input type="text" id="expiryInput" name="card_expiry" class="form-input" placeholder="MM/YY" maxlength="5">
-            <div id="expiryError" class="error-msg"></div>
-        </div>
-        <div class="form-group" style="flex:1;">
-            <label>CVV</label>
-            <input type="password" id="cvvInput" name="card_cvv" class="form-input" placeholder="123" maxlength="3">
-            <div id="cvvError" class="error-msg"></div>
-        </div>
-    </div>
-</div>
+                            <div class="form-group">
+                                <label>Card Number (16 Digits)</label>
+                                <input type="text" id="cardNumberInput" name="card_number" class="form-input" placeholder="0000 0000 0000 0000" maxlength="19">
+                                <div id="cardError" class="error-msg"></div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group" style="flex:2;">
+                                    <label>Expiry Date</label>
+                                    <input type="text" id="expiryInput" name="card_expiry" class="form-input" placeholder="MM/YY" maxlength="5">
+                                    <div id="expiryError" class="error-msg"></div>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label>CVV</label>
+                                    <input type="password" id="cvvInput" name="card_cvv" class="form-input" placeholder="123" maxlength="3">
+                                    <div id="cvvError" class="error-msg"></div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div id="invalidCardModal" class="force-modal-overlay">
     <div class="force-modal-content">

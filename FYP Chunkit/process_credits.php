@@ -3,17 +3,29 @@ session_start();
 require_once 'config.php';
 
 $orderId = $_GET['order_id'] ?? null;
-if (!$orderId) {
+
+if (!$orderId || !is_numeric($orderId) || $orderId <= 0) {
+    $_SESSION['checkout_error'] = "Invalid order ID.";
     header('Location: payment.php');
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
-$stmt->execute([$orderId]);
-$order = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
+    $stmt->execute([$orderId]);
+    $order = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$order || $order['payment_method'] !== 'credits') {
-    echo "Invalid order.";
+    if (!$order) {
+        throw new Exception("Order not found.");
+    }
+
+    if ($order['payment_method'] !== 'credits' || $order['payment_status'] !== 'paid') {
+        throw new Exception("This order was not paid with credits.");
+    }
+
+} catch (Exception $e) {
+    $_SESSION['checkout_error'] = $e->getMessage();
+    header('Location: cart.php');
     exit;
 }
 
@@ -31,7 +43,7 @@ include 'header.php';
 
 <div class="auth-wrapper">
     <div class="auth-card">
-        <img src="payment logo/credits_logo.png" alt="Credits Logo" class="tng-logo" style="width: 120px; margin-bottom: 15px;"> <!-- Replace with your credits logo if you have one -->
+        <img src="payment logo/credits_logo.png" alt="Credits Logo" class="tng-logo" style="width: 120px; margin-bottom: 15px;">
         <div class="auth-icon-section">
             <i id="success-tick" class="fas fa-check-circle success-icon" style="display: block; font-size: 60px;"></i>
         </div>
@@ -47,7 +59,7 @@ include 'header.php';
     </div>
 </div>
 
-<div id="paymentSuccessModal" class="success-modal-overlay" style="display: flex;"> <!-- Show modal immediately -->
+<div id="paymentSuccessModal" class="success-modal-overlay" style="display: flex;">
     <div class="success-modal-content">
         <div class="modal-icon-circle">
             <svg viewBox="0 0 24 24" width="50" height="50" fill="none" xmlns="http://www.w3.org/2000/svg">

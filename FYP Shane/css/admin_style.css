@@ -746,4 +746,18 @@ td.inactive {
     color: #dc3545; 
     font-style: italic; 
 }
+.final-status-badge {
+    padding: 0.5rem 1rem;
+    background: #f8d7da;
+    color: #721c24;
+    border-radius: 6px;
+    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.ajax-status-select:disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+}
 }

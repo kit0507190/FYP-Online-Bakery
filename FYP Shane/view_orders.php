@@ -23,8 +23,130 @@ function isValidTransition($old_status, $new_status) {
     return in_array($new, $rules[$old] ?? []);
 }
 
+// ───────────────────────────────────────────────
+// AJAX endpoint for status change
+// ───────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'], $_POST['order_id'], $_POST['new_status'])) {
+    header('Content-Type: application/json; charset=utf-8');
+
+    $response = [
+        'success'     => false,
+        'message'     => '',
+        'new_status'  => '',
+        'stock_restored' => false,
+        'credit_added'   => 0.00,
+        'no_credit_reason' => ''
+    ];
+
+    $order_id   = (int)$_POST['order_id'];
+    $new_status = trim($_POST['new_status'] ?? '');
+
+    $valid_statuses = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
+    if ($order_id < 1 || !in_array($new_status, $valid_statuses)) {
+        $response['message'] = 'Invalid request';
+        echo json_encode($response);
+        exit;
+    }
+
+    $pdo->beginTransaction();
+    try {
+        // Get current order
+        $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
+        $stmt->execute([$order_id]);
+        $order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$order) {
+            $response['message'] = 'Order not found';
+            echo json_encode($response);
+            exit;
+        }
+
+        $old_status = strtolower($order['status'] ?? 'pending');
+
+        if (!isValidTransition($old_status, $new_status)) {
+            $response['message'] = "Invalid transition: $old_status → $new_status not allowed";
+            echo json_encode($response);
+            exit;
+        }
+
+        // Update status
+        $stmt = $pdo->prepare("UPDATE orders SET status = ? WHERE id = ?");
+        $stmt->execute([$new_status, $order_id]);
+
+        $stock_restored = false;
+        $credit_added   = 0.00;
+        $no_credit_reason = '';
+
+        // Handle cancellation logic
+        if ($new_status === 'cancelled' && $old_status !== 'cancelled') {
+            // Restore stock
+            $items_stmt = $pdo->prepare("SELECT product_id, quantity FROM orders_detail WHERE order_id = ?");
+            $items_stmt->execute([$order_id]);
+            $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($items as $item) {
+                $qty = (int)($item['quantity'] ?? 0);
+                $pid = (int)($item['product_id'] ?? 0);
+                if ($qty > 0 && $pid > 0) {
+                    $pdo->prepare("UPDATE products SET stock = stock + ? WHERE id = ?")
+                        ->execute([$qty, $pid]);
+                    $stock_restored = true;
+                }
+            }
+
+            // Add credit
+            $email = trim($order['customer_email'] ?? '');
+            if ($email && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $user_stmt = $pdo->prepare("
+                    SELECT id FROM user_db 
+                    WHERE email = ? AND status = 'active' 
+                    LIMIT 2
+                ");
+                $user_stmt->execute([$email]);
+                $users = $user_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                if (count($users) === 1) {
+                    $uid = $users[0];
+                    $credit_amount = (float)$order['total'];
+
+                    $pdo->prepare("UPDATE user_db SET credit = credit + ?, updated_at = NOW() WHERE id = ?")
+                        ->execute([$credit_amount, $uid]);
+
+                    $credit_added = $credit_amount;
+                } else if (count($users) === 0) {
+                    $no_credit_reason = 'no matching active user';
+                } else {
+                    $no_credit_reason = 'multiple accounts with same email';
+                }
+            } else if ($email) {
+                $no_credit_reason = 'invalid email format';
+            } else {
+                $no_credit_reason = 'no email on order';
+            }
+        }
+
+        $pdo->commit();
+
+        $response = [
+            'success'          => true,
+            'message'          => 'Status updated',
+            'new_status'       => $new_status,
+            'stock_restored'   => $stock_restored,
+            'credit_added'     => $credit_added,
+            'no_credit_reason' => $no_credit_reason
+        ];
+
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $response['message'] = 'Database error: ' . $e->getMessage();
+    }
+
+    echo json_encode($response);
+    exit;
+}
+
 // =============================================
-// HANDLE STATUS UPDATE (POST) → then REDIRECT
+// HANDLE STATUS UPDATE (POST) → then REDIRECT (fallback for no JS)
 // =============================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
     $order_id   = (int)$_POST['order_id'];
@@ -191,6 +313,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
             color: #721c24 !important;
             font-weight: bold !important;
         }
+        .final-status-badge {
+            padding: 0.5rem 1rem;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 6px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .mini-toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 12px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -335,27 +481,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                             <td><strong>RM <?= number_format($order['total'], 2) ?></strong></td>
                             <td><span class="<?= $statusClass ?>"><?= ucfirst($status) ?></span></td>
                             <td class="date-time-col"><?= $dateTimeDisplay ?></td>
-                            <td>
+                            <td class="status-control-cell">
                                 <?php if (in_array($status, ['delivered', 'cancelled'])): ?>
-                                    <span class="status-select" style="padding:0.5rem; font-size:0.9rem; width:130px; display:inline-block;">
+                                    <span class="final-status-badge">
                                         <i class="fas fa-lock"></i> <?= ucfirst($status) ?> (Final)
                                     </span>
                                 <?php else: ?>
-                                    <form method="POST" style="display:inline;" onsubmit="return confirmStatusChange(this)">
-                                        <input type="hidden" name="order_id" value="<?= $order['id'] ?>">
-                                        <select name="new_status" class="filter-select status-select" onchange="this.form.submit()" style="padding:0.5rem; font-size:0.9rem; width:130px;">
-                                            <?php
-                                            $all_statuses = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
-                                            foreach ($all_statuses as $opt_status): 
-                                                $selected = ($status === $opt_status) ? 'selected' : '';
-                                                $disabled = !isset($valid_options[$opt_status]) ? 'disabled' : '';
-                                            ?>
-                                                <option value="<?= $opt_status ?>" <?= $selected ?> <?= $disabled ?>>
-                                                    <?= ucfirst($opt_status) ?>
-                                                </option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </form>
+                                    <select class="status-select filter-select ajax-status-select" 
+                                            data-order-id="<?= $order['id'] ?>" 
+                                            data-current="<?= $status ?>">
+                                        <?php
+                                        $all_statuses = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
+                                        foreach ($all_statuses as $opt):
+                                            $sel = ($status === $opt) ? 'selected' : '';
+                                            $dis = !isset($valid_options[$opt]) ? 'disabled' : '';
+                                        ?>
+                                            <option value="<?= $opt ?>" <?= $sel ?> <?= $dis ?>>
+                                                <?= ucfirst($opt) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -385,20 +530,156 @@ function filterStatus(status) {
     });
 }
 
-// ✅ CONFIRM BEFORE CRITICAL CHANGES
-function confirmStatusChange(form) {
-    const select = form.querySelector('select[name="new_status"]');
-    const newStatus = select.value;
-    const currentStatus = select.querySelector('option:checked').textContent.trim();
-    
+function showToast(message, bg = '#28a745') {
+    const toast = document.createElement('div');
+    toast.className = 'mini-toast';
+    toast.textContent = message;
+    toast.style.background = bg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.style.opacity = '1', 50);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 500);
+    }, 2200);
+}
+
+function getStatusClass(status) {
+    const classes = {
+        'pending': 'status pending',
+        'preparing': 'status preparing',
+        'ready': 'status ready',
+        'delivered': 'status delivered final-status',
+        'cancelled': 'status cancelled final-status'
+    };
+    return classes[status] || 'status';
+}
+
+const statusRules = {
+    'pending': ['preparing', 'cancelled'],
+    'preparing': ['ready', 'cancelled'],
+    'ready': ['delivered', 'cancelled'],
+    'delivered': [],
+    'cancelled': []
+};
+
+function getValidOptions(current) {
+    const all = ['pending', 'preparing', 'ready', 'delivered', 'cancelled'];
+    const allowed = [current, ...(statusRules[current] || [])];
+    return all.map(opt => ({
+        value: opt,
+        disabled: !allowed.includes(opt)
+    }));
+}
+
+function updateRowStatus(row, newStatus, stockRestored = false, credit = 0, noCreditReason = '') {
+    const statusCell = row.querySelector('td:nth-child(5) span'); // Status badge
+    const controlCell = row.querySelector('.status-control-cell');
+
+    // Update badge
+    if (statusCell) {
+        statusCell.className = getStatusClass(newStatus);
+        statusCell.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+    }
+
+    // Update or lock control
+    if (['delivered', 'cancelled'].includes(newStatus)) {
+        controlCell.innerHTML = `
+            <span class="final-status-badge">
+                <i class="fas fa-lock"></i> ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)} (Final)
+            </span>
+        `;
+    } else {
+        // Rebuild select with new valid options
+        const orderId = row.querySelector('.ajax-status-select')?.dataset.orderId || '';
+        controlCell.innerHTML = `
+            <select class="status-select filter-select ajax-status-select" 
+                    data-order-id="${orderId}" 
+                    data-current="${newStatus}">
+                ${getValidOptions(newStatus).map(opt => `
+                    <option value="${opt.value}" ${opt.value === newStatus ? 'selected' : ''} ${opt.disabled ? 'disabled' : ''}>
+                        ${opt.value.charAt(0).toUpperCase() + opt.value.slice(1)}
+                    </option>
+                `).join('')}
+            </select>
+        `;
+    }
+
+    row.dataset.status = newStatus;
+
+    // Feedback message
+    let msg = `Order #${row.querySelector('td:first-child strong').textContent.trim()} → ${newStatus.charAt(0).toUpperCase() + newStatus.slice(1)}`;
+    if (stockRestored) msg += ' (stock restored)';
+    if (credit > 0) msg += ` (+RM ${credit.toFixed(2)} credit)`;
+    if (noCreditReason) msg += ` (credit skipped: ${noCreditReason})`;
+
+    showToast(msg, (newStatus === 'cancelled') ? '#dc3545' : '#28a745');
+}
+
+function confirmStatusChange(select, newStatus) {
     if (newStatus === 'cancelled') {
-        return confirm('Are you sure? This will cancel the order and RESTORE STOCK for all items.');
+        return confirm('Cancel order? This will restore stock and attempt to add credit.');
     }
     if (newStatus === 'delivered') {
-        return confirm('Mark as Delivered? This is FINAL and cannot be changed.');
+        return confirm('Mark as Delivered? This is FINAL — cannot be changed later.');
     }
     return true;
 }
+
+document.addEventListener('change', async function(e) {
+    if (e.target.classList.contains('ajax-status-select')) {
+        const select = e.target;
+        const newStatus = select.value;
+        const row = select.closest('tr');
+        const current = select.dataset.current;
+
+        if (newStatus === current) return; // No change
+
+        if (!confirmStatusChange(select, newStatus)) {
+            select.value = current;
+            return;
+        }
+
+        select.disabled = true;
+
+        try {
+            const formData = new URLSearchParams();
+            formData.append('ajax', '1');
+            formData.append('order_id', select.dataset.orderId);
+            formData.append('new_status', newStatus);
+
+            const res = await fetch('view_orders.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData
+            });
+
+            if (!res.ok) throw new Error('Network error');
+
+            const data = await res.json();
+
+            if (data.success) {
+                updateRowStatus(
+                    row,
+                    data.new_status,
+                    data.stock_restored,
+                    data.credit_added,
+                    data.no_credit_reason
+                );
+            } else {
+                throw new Error(data.message || 'Update failed');
+            }
+        } catch (err) {
+            console.error(err);
+            showToast(err.message || 'Connection error', '#dc3545');
+            select.value = current;
+        } finally {
+            // Only enable if the select still exists (not replaced for final status)
+            if (document.body.contains(select)) {
+                select.disabled = false;
+            }
+        }
+    }
+});
 </script>
 
 </body>

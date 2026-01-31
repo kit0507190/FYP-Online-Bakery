@@ -24,11 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 
     try {
-        // Check if already rated
-        $checkStmt = $pdo->prepare("SELECT 1 FROM product_ratings WHERE product_id = ? AND customer_email = ?");
-        $checkStmt->execute([$productId, $userEmail]);
+        // Prevent duplicate rating for the same order item
+        $checkStmt = $pdo->prepare("
+            SELECT 1 FROM product_ratings 
+            WHERE product_id = ? 
+              AND customer_email = ? 
+              AND order_detail_id = ?
+        ");
+        $checkStmt->execute([$productId, $userEmail, $orderDetailId]);
+
         if ($checkStmt->fetch()) {
-            echo json_encode(['success' => false, 'message' => 'Already rated']);
+            echo json_encode(['success' => false, 'message' => 'You have already rated this item from this order']);
             exit();
         }
 
@@ -58,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         ");
         $updateStmt->execute([$productId, $productId, $productId]);
 
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'message' => 'Rating submitted']);
     } catch (PDOException $e) {
         echo json_encode(['success' => false, 'message' => 'Database error']);
     }
@@ -84,10 +90,14 @@ try {
     $stmt->execute([$userEmail]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Get all products user already rated
-    $ratingsStmt = $pdo->prepare("SELECT product_id FROM product_ratings WHERE customer_email = ?");
-    $ratingsStmt->execute([$userEmail]);
-    $userRatings = $ratingsStmt->fetchAll(PDO::FETCH_COLUMN);
+    // ─── Get already rated ORDER DETAILS by this user ───────────────────────
+    $ratedStmt = $pdo->prepare("
+        SELECT order_detail_id 
+        FROM product_ratings 
+        WHERE customer_email = ?
+    ");
+    $ratedStmt->execute([$userEmail]);
+    $ratedOrderDetails = $ratedStmt->fetchAll(PDO::FETCH_COLUMN);
 
     // Group items by order
     $orders = [];
@@ -171,7 +181,7 @@ try {
                             ?>
                             <span class="status-badge status-<?= htmlspecialchars($status) ?>">
                                 <i class="fas <?= $icon ?>"></i>
-                                <?= htmlspecialchars($status) ?>
+                                <?= ucfirst(htmlspecialchars($status)) ?>
                             </span>
                             <span class="order-date">
                                 <i class="far fa-calendar-alt"></i> 
@@ -198,8 +208,8 @@ try {
                                          data-product-id="<?= $item['product_id'] ?>"
                                          data-order-detail-id="<?= $item['order_detail_id'] ?>"
                                          data-order-id="<?= $order['id'] ?>">
-                                        <?php if (in_array($item['product_id'], $userRatings)): ?>
-                                            <span class="rated-message">Rated!</span>
+                                        <?php if (in_array($item['order_detail_id'], $ratedOrderDetails)): ?>
+                                            <span class="rated-message">Rated ✓</span>
                                         <?php else: ?>
                                             <div class="stars">
                                                 <i class="far fa-star" data-rating="1"></i>
@@ -240,7 +250,7 @@ try {
         });
     }
 
-    // Rating stars (unchanged – keeping original logic)
+    // Rating stars logic
     document.querySelectorAll('.rating-section').forEach(section => {
         const stars = section.querySelectorAll('.fa-star');
         let selected = 0;
@@ -296,7 +306,7 @@ try {
                     const data = await res.json();
 
                     if (data.success) {
-                        section.innerHTML = '<span class="rated-message">Thank you! ★</span>';
+                        section.innerHTML = '<span class="rated-message">Rated ✓ Thank you!</span>';
                     } else {
                         alert(data.message || 'Error submitting rating');
                         resetStars();

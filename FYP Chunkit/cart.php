@@ -25,7 +25,7 @@ if (isset($_SESSION['checkout_error'])) {
             <strong>Oops! Not Enough Stock</strong>
             <p><?php echo htmlspecialchars($errorMsg); ?></p>
             <p>Please reduce the quantity or remove the item(s) shown above, then try checking out again.</p>
-            <a href="checkout.php" class="btn-retry">Back to Checkout</a>  <!-- Or whatever your checkout page is -->
+            <a href="payment.php" class="btn-retry">Back to Checkout</a>  <!-- Or whatever your checkout page is -->
         </div>
     </div>
 <?php } ?>
