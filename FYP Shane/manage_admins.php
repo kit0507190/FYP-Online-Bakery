@@ -41,21 +41,20 @@ if (isset($_POST['add_admin'])) {
     }
 }
 
-// Handle Update Admin
+// Handle Update Admin (only username + email)
 if (isset($_POST['update_admin'])) {
     $id = (int)$_POST['id'];
     $username = trim($_POST['username']);
-    $email = trim($_POST['email']);
-    $role = $_POST['role'];
-    $status = $_POST['status'];
+    $email    = trim($_POST['email']);
 
+    // Optional: prevent changing your own account (still good practice)
     if ($id == $current_admin['id']) {
-        $error_message = "You cannot modify your own role or status here.";
+        $error_message = "You cannot modify your own account here.";
     } else {
         try {
-            $stmt = $pdo->prepare("UPDATE admins SET username = ?, email = ?, role = ?, status = ? WHERE id = ?");
-            $stmt->execute([$username, $email, $role, $status, $id]);
-            $success_message = "Admin updated successfully!";
+            $stmt = $pdo->prepare("UPDATE admins SET username = ?, email = ? WHERE id = ?");
+            $stmt->execute([$username, $email, $id]);
+            $success_message = "Username and email updated successfully!";
         } catch (PDOException $e) {
             $error_message = "Error updating admin.";
         }
@@ -227,17 +226,11 @@ $admins = $pdo->query("SELECT * FROM admins ORDER BY status ASC, created_at DESC
                                     <div class="edit-form">
                                         <form method="POST">
                                             <input type="hidden" name="id" value="<?= $admin['id'] ?>">
-                                            <input type="text" name="username" value="<?= htmlspecialchars($admin['username']) ?>" required style="width:100%; margin-bottom:0.5rem;">
-                                            <input type="email" name="email" value="<?= htmlspecialchars($admin['email']) ?>" required style="width:100%; margin-bottom:0.5rem;">
-                                            <select name="role" style="width:100%; margin-bottom:0.5rem;">
-                                                <option value="admin" <?= $admin['role'] === 'admin' ? 'selected' : '' ?>>Normal Admin</option>
-                                                <option value="super_admin" <?= $admin['role'] === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
-                                            </select>
-                                            <select name="status" style="width:100%; margin-bottom:0.5rem;">
-                                                <option value="active" <?= $admin['status'] === 'active' ? 'selected' : '' ?>>Active</option>
-                                                <option value="inactive" <?= $admin['status'] === 'inactive' ? 'selected' : '' ?>>Inactive</option>
-                                            </select>
-                                            <button type="submit" name="update_admin" class="action-btn" style="background:#28a745;">Save Changes</button>
+                                            <input type="text"   name="username" value="<?= htmlspecialchars($admin['username']) ?>" required style="width:100%; margin-bottom:0.5rem;">
+                                            <input type="email"  name="email"    value="<?= htmlspecialchars($admin['email']) ?>"    required style="width:100%; margin-bottom:0.5rem;">
+                                            <button type="submit" name="update_admin" class="action-btn" style="background:#28a745; margin-top:0.8rem;">
+                                                Save Username & Email
+                                            </button>
                                         </form>
 
                                         <!-- Password Reset -->
