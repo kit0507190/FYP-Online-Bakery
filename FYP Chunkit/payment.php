@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // ── Handle credit payment ────────────────────────────────
-    $payment_status = 'pending';
+    $payment_status = 'preparing';
 
     if ($paymentMethod === 'credits') {
         $creditStmt = $pdo->prepare("SELECT credit FROM user_db WHERE id = ? FOR UPDATE");
