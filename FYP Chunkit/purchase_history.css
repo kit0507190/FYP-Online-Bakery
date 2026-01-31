@@ -415,3 +415,87 @@ body {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(90, 57, 33, 0.12);
 }
+
+/* --- 自定义库存弹窗样式 (模拟图4) --- */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* 暗色半透明背景 */
+    display: none; /* 初始隐藏 */
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(3px); /* 背景模糊效果 */
+}
+
+.custom-modal-content {
+    background: white;
+    width: 90%;
+    max-width: 420px;
+    padding: 40px 30px;
+    border-radius: 40px; /* 超大圆角，匹配图4 */
+    text-align: center;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    animation: modalBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalBounce {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-icon-container {
+    width: 85px;
+    height: 85px;
+    background-color: #e8f5e9; /* 默认绿色背景 */
+    color: #4caf50; /* 默认绿色图标 */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 45px;
+}
+
+/* 警告色风格（当库存不足时使用） */
+.modal-icon-container.warning {
+    background-color: #fff3e0;
+    color: #ff9800;
+}
+
+.custom-modal-content h3 {
+    font-size: 24px;
+    color: #333;
+    margin: 0 0 10px 0;
+    font-weight: 800;
+}
+
+.custom-modal-content p {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    white-space: pre-line;
+}
+
+.modal-btn-primary {
+    background-color: #d4a76a; /* 你的金色主题 */
+    color: white;
+    border: none;
+    padding: 14px 0;
+    width: 180px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 17px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(212, 167, 106, 0.3);
+}
+
+.modal-btn-primary:hover {
+    background-color: #c2955a;
+    transform: translateY(-2px);
+}

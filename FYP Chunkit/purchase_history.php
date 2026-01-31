@@ -330,124 +330,158 @@ try {
         }
     });
 
+    // 新增：控制弹窗显示的辅助函数
+function showMyModal(title, message, showCancel = false) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('stockModal');
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalMessage').innerText = message;
+        const cancelBtn = document.getElementById('modalCancelBtn');
+        
+        cancelBtn.style.display = showCancel ? 'inline-block' : 'none';
+        modal.style.display = 'flex';
+
+        document.getElementById('modalConfirmBtn').onclick = () => {
+            modal.style.display = 'none';
+            resolve(true);
+        };
+        cancelBtn.onclick = () => {
+            modal.style.display = 'none';
+            resolve(false);
+        };
+    });
+}
+
     // ────────────────────────────────────────────────
     //  Buy Again – with client-side stock check from get_products.php
     // ────────────────────────────────────────────────
     async function handleBuyAgain(items) {
-        if (!Array.isArray(items) || items.length === 0) return;
+    if (!Array.isArray(items) || items.length === 0) return;
 
-        const productIds = items.map(item => Number(item.product_id)).filter(id => id > 0);
+    // 【保持原样】检查库存的准备工作
+    const productIds = items.map(item => Number(item.product_id)).filter(id => id > 0);
+    console.log('Buy Again: Sent product_ids for stock check', productIds);
 
-        console.log('Buy Again: Sent product_ids for stock check', productIds);  // DEBUG
-
-        let stockData = null;
-        try {
-            const res = await fetch('get_products.php', {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin'  // Include cookies if needed
-            });
-
-            stockData = await res.json();
-
-            console.log('Buy Again: Products data', stockData);  // DEBUG: see full products
-        } catch (err) {
-            console.error('Products fetch error:', err);
-            alert('Error loading product data. Please try again.');
-            return;
-        }
-
-        // Build stockMap from all products
-        const stockMap = {};
-        stockData.forEach(p => {
-            stockMap[p.id] = {
-                name: p.name,
-                stock: Number(p.stock) || 0
-            };
-        });
-
-        const canAdd = [];
-        const cannotAdd = [];
-
-        items.forEach(item => {
-            const pid = Number(item.product_id);
-            const want = Number(item.quantity) || 1;
-            const info = stockMap[pid] || { stock: 0, name: item.product_name || `Product #${pid}` };
-
-            if (info.stock >= 1) {
-                const take = Math.min(want, info.stock);
-                canAdd.push({
-                    id: pid,
-                    name: item.product_name,
-                    price: Number(item.item_price),
-                    image: item.product_image ? `product_images/${item.product_image}` : 'product_images/placeholder.jpg',
-                    quantity: take,
-                    note: take < want ? `(only ${take} left)` : ''
-                });
-            } else {
-                cannotAdd.push({
-                    name: item.product_name,
-                    requested: want,
-                    reason: stockMap.hasOwnProperty(pid) ? 'out of stock' : 'product not found (deleted or invalid ID)'
-                });
-            }
-        });
-
-        // Show feedback for unavailable items
-        if (cannotAdd.length > 0) {
-            let msg = "The following items are currently unavailable and were skipped:\n\n";
-            cannotAdd.forEach(it => {
-                msg += `• ${it.name} (wanted ×${it.requested}) - ${it.reason}\n`;
-            });
-            alert(msg.trim());
-        }
-
-        // If nothing can be added → early exit
-        if (canAdd.length === 0) {
-            alert("None of the items from this order are currently in stock.");
-            return;
-        }
-
-        // Optional: confirm partial add
-        if (canAdd.length < items.length) {
-            const proceed = confirm(
-                `Only ${canAdd.length} of ${items.length} items are available right now.\n\nAdd the available ones to your cart?`
-            );
-            if (!proceed) return;
-        }
-
-        // Update local cart
-        let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-
-        canAdd.forEach(newItem => {
-            const idx = cart.findIndex(c => c.id === newItem.id);
-            let current = 0;
-            if (idx !== -1) {
-                current = Number(cart[idx].quantity) || 0;
-                cart.splice(idx, 1);
-            }
-            cart.unshift({
-                id:       newItem.id,
-                name:     newItem.name,
-                price:    newItem.price,
-                image:    newItem.image,
-                quantity: current + newItem.quantity
-            });
-        });
-
-        localStorage.setItem('bakeryCart', JSON.stringify(cart));
-
-        // Sync to server (non-blocking)
-        fetch('sync_cart.php?action=update', {
-            method: 'POST',
+    let stockData = null;
+    try {
+        const res = await fetch('get_products.php', {
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cart: cart }),
             credentials: 'same-origin'
-        }).catch(err => console.error('Cart sync failed:', err));
-
-        // Redirect to cart
-        location.href = 'cart.php';
+        });
+        stockData = await res.json();
+    } catch (err) {
+        console.error('Products fetch error:', err);
+        // 【仅更改设计】把原来的 alert 换掉
+        await showMyModal("Error", "Error loading product data. Please try again.");
+        return;
     }
+
+    // 【保持原样】建立库存映射图
+    const stockMap = {};
+    stockData.forEach(p => {
+        stockMap[p.id] = { name: p.name, stock: Number(p.stock) || 0 };
+    });
+
+    const canAdd = [];
+    const cannotAdd = [];
+
+    // 【保持原样】逐一对比库存
+    items.forEach(item => {
+        const pid = Number(item.product_id);
+        const want = Number(item.quantity) || 1;
+        const info = stockMap[pid] || { stock: 0, name: item.product_name || `Product #${pid}` };
+
+        if (info.stock >= 1) {
+            const take = Math.min(want, info.stock);
+            canAdd.push({
+                id: pid,
+                name: item.product_name,
+                price: Number(item.item_price),
+                image: item.product_image ? `product_images/${item.product_image}` : 'product_images/placeholder.jpg',
+                quantity: take,
+                note: take < want ? `(only ${take} left)` : ''
+            });
+        } else {
+            cannotAdd.push({
+                name: item.product_name,
+                requested: want,
+                reason: stockMap.hasOwnProperty(pid) ? 'out of stock' : 'not found'
+            });
+        }
+    });
+
+    // 【仅更改设计 1】显示缺货提示（原 alert）
+    if (cannotAdd.length > 0) {
+        let msg = "The following items are currently unavailable:\n\n";
+        cannotAdd.forEach(it => {
+            msg += `• ${it.name} (wanted ×${it.requested}) - ${it.reason}\n`;
+        });
+        await showMyModal("Stock Update", msg.trim());
+    }
+
+    // 【仅更改设计 2】如果完全没货（原 alert）
+    if (canAdd.length === 0) {
+        await showMyModal("Empty Order", "None of the items from this order are currently in stock.");
+        return;
+    }
+
+    // 【仅更改设计 3】部分有货时的询问（原 confirm）
+    if (canAdd.length < items.length) {
+        const proceed = await showMyModal(
+            "Partial Availability", 
+            `Only ${canAdd.length} of ${items.length} items are available.\n\nAdd the available ones to your cart?`,
+            true // 这里会显示 Cancel 按钮
+        );
+        if (!proceed) return;
+    }
+
+    // 【保持原样】更新本地购物车 localStorage
+    let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
+
+    canAdd.forEach(newItem => {
+        const idx = cart.findIndex(c => c.id === newItem.id);
+        let current = 0;
+        if (idx !== -1) {
+            current = Number(cart[idx].quantity) || 0;
+            cart.splice(idx, 1);
+        }
+        cart.unshift({
+            id:       newItem.id,
+            name:     newItem.name,
+            price:    newItem.price,
+            image:    newItem.image,
+            quantity: current + newItem.quantity
+        });
+    });
+
+    localStorage.setItem('bakeryCart', JSON.stringify(cart));
+
+    // 【保持原样】同步到服务器并跳转
+    fetch('sync_cart.php?action=update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cart: cart }),
+        credentials: 'same-origin'
+    }).catch(err => console.error('Cart sync failed:', err));
+
+    location.href = 'cart.php';
+}
     </script>
+
+    <div id="stockModal" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <div class="modal-icon-container">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 id="modalTitle">Stock Update</h3>
+            <p id="modalMessage"></p>
+            <div class="modal-buttons">
+                <button id="modalConfirmBtn" class="modal-btn-primary">Done</button>
+                <button id="modalCancelBtn" class="modal-btn-secondary" style="display:none;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
