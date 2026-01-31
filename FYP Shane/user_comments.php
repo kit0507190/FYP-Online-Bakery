@@ -36,25 +36,6 @@ if (isset($_GET['mark_read'])) {
         }
     }
 }
-
-// Handle Mark as Replied
-if (isset($_GET['mark_replied'])) {
-    $id = (int)$_GET['mark_replied'];
-    if ($id > 0) {
-        try {
-            $stmt = $pdo->prepare("UPDATE contact_messages SET status = 'replied' WHERE id = ?");
-            $stmt->execute([$id]);
-            
-            if ($stmt->rowCount() > 0) {
-                $_SESSION['success_message'] = "Message marked as replied.";
-            }
-            header("Location: user_comments.php");
-            exit();
-        } catch (PDOException $e) {
-            $_SESSION['error_message'] = "Error updating message status.";
-        }
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -160,15 +141,6 @@ if (isset($_GET['mark_replied'])) {
                                        style="background:#1976d2; color:white;"
                                        onclick="return confirm('Mark this message as read?')">
                                         Mark Read
-                                    </a>
-                                <?php endif; ?>
-                                
-                                <?php if ($msg['status'] !== 'replied'): ?>
-                                    <a href="?mark_replied=<?= $msg['id'] ?>" 
-                                       class="action-btn" 
-                                       style="background:#388e3c; color:white;"
-                                       onclick="return confirm('Mark this message as replied?')">
-                                        Mark Replied
                                     </a>
                                 <?php endif; ?>
                             </td>
