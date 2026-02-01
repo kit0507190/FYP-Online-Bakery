@@ -448,34 +448,36 @@ function parseAddr($raw) {
         }, 100);
     };
 
-    // 定义一个全局变量来存错误类型
-// 1. 将变量改为数组，用于存储多个错误代码
-// 全局变量存储状态
+    // Define a global variable to store error types
+
+// 1. Change the variable to an array to store multiple error codes
+
+// Global variable storage state
 window.pendingCardErrors = []; 
-window.currentTotalAmount = 0; // 存储当前订单总额
+window.currentTotalAmount = 0; // Store current order total amount
 
 async function validateCheckout() {
     clearErrors();
     window.pendingCardErrors = []; 
 
-    // 1. 地址检查
+    // 1. Address check
     if (userAddressCount === 0) {
         document.getElementById('addressRequiredModal').style.display = 'flex';
         return false;
     }
 
-    // 2. 支付方式检查
+    // 2. Payment method check
     const checked = document.querySelector('input[name="paymentMethod"]:checked');
     if (!checked) {
         alert("Please select a payment method.");
         return false;
     }
 
-    // 获取当前订单总额（用于后续判断）
+    // Get current order total amount (for subsequent checks)
     const totalStr = document.getElementById('totalPriceDisplay').innerText.replace('RM ', '').replace(',', '');
     window.currentTotalAmount = parseFloat(totalStr);
 
-    // ── 情况 A：Debit Card 验证 ──────────────────────────────────
+    // ── Case A: Debit Card validation ──────────────────────────────────
     if (checked.value === 'debitCard') {
         const cardNum = document.getElementById('cardNumberInput').value.replace(/\s+/g, '');
         const expiry  = document.getElementById('expiryInput').value;
@@ -514,34 +516,34 @@ async function validateCheckout() {
             return false;
         }
         
-        // 如果卡号验证通过，执行提交
+        // If card validation passes, proceed to submit
         submitFinalOrder();
     } 
     
-    // ── 情况 B：Pay with Credits 验证 (使用 Modal 替换 Ugly Alert) ──────
+    // ── Case B: Pay with Credits validation (using Modal instead of Ugly Alert) ──────
     else if (checked.value === 'credits') {
         if (userCredit < window.currentTotalAmount) {
-            // 显示“余额不足”弹窗
+            // Show "Insufficient balance" modal
             document.getElementById('insufficientMessage').innerHTML = 
                 `You have: <b>RM ${userCredit.toFixed(2)}</b><br>Needed: <b>RM ${window.currentTotalAmount.toFixed(2)}</b>`;
             document.getElementById('insufficientCreditsModal').style.display = 'flex';
             return false;
         } else {
-            // 显示“确认支付”弹窗
+            // Show "Confirm payment" modal
             document.getElementById('confirmMessage').innerHTML = 
                 `Deduct <b>RM ${window.currentTotalAmount.toFixed(2)}</b> from your credits?<br>New balance: <b>RM ${(userCredit - window.currentTotalAmount).toFixed(2)}</b>`;
             document.getElementById('confirmCreditsModal').style.display = 'flex';
-            return false; // 等待用户在 Modal 里确认
+            return false; // Wait for user confirmation in the Modal
         }
     } 
     
-    // ── 情况 C：其他支付方式 (TNG / FPX) ─────────────────────────
+    // ── Case C: Other payment methods (TNG / FPX) ─────────────────────────
     else {
         submitFinalOrder();
     }
 }
 
-// 最终提交函数：所有检查通过后运行
+// Final submit function: runs after all checks pass
 function submitFinalOrder() {
     if (cart.length === 0) {
         alert("Your cart is empty!");
@@ -551,13 +553,13 @@ function submitFinalOrder() {
     document.getElementById('paymentForm').submit(); 
 }
 
-// 用户在 Credits 确认弹窗点击“Confirm”时运行
+// Runs when the user clicks "Confirm" in the Credits confirmation pop-up.
 function proceedWithCredits() {
     document.getElementById('confirmCreditsModal').style.display = 'none';
     submitFinalOrder();
 }
 
-// 关闭银行卡错误弹窗并显示具体红字提示
+// Close the invalid card modal and show specific red error messages
 function closeCardModal() {
     document.getElementById('invalidCardModal').style.display = 'none';
     if (window.pendingCardErrors && window.pendingCardErrors.length > 0) {
@@ -570,7 +572,7 @@ function closeCardModal() {
     }
 }
 
-// 通用：关闭 Credits 相关弹窗
+// General: Close Credits-related modals
 function closeCreditsModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
 }

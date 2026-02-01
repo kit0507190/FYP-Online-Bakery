@@ -1,12 +1,12 @@
 /**
- * mainpage.js - 控制主页动画和数据加载
+ * mainpage.js - Control homepage animations and data loading
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
     /**
-     * 1. 触发 Hero 板块动画
-     * 延迟执行，给用户一点加载缓冲的时间
+     * 1. Trigger Hero section animations
+     * Delay execution to give users a bit of loading buffer time
      */
     setTimeout(() => {
         const title = document.getElementById('heroTitle');
@@ -19,8 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 300);
 
     /**
-     * 2. 滚动检测核心逻辑：
-     * 当用户滚动页面，板块进入屏幕视野 85% 位置时，添加 .active 类触发动画
+     * 2. Core scroll detection logic:
+     * When the user scrolls the page and a section enters 85% of the viewport height, add the .active class to trigger animations
      */
     function checkScroll() {
         const sections = document.querySelectorAll('.section');
@@ -30,14 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const sectionTop = section.getBoundingClientRect().top;
             
             if (sectionTop < triggerPoint) {
-                // 激活大板块
+                // Activate major sectors
                 section.classList.add('active');
                 
-                // 激活该板块内所有卡片的渐显
+                // Activate fade-in for all cards within this section
                 const cards = section.querySelectorAll('.category-card, .product-card, .testimonial-card');
                 cards.forEach(card => card.classList.add('fade-in'));
 
-                // 处理关于我们的特有动画
+                // Handle special animations for the About Us section
                 if (section.id === 'about') {
                     const img = section.querySelector('.about-image');
                     const txt = section.querySelector('.about-text');
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (txt) txt.classList.add('slide-in-right');
                 }
 
-                // 处理 CTA 动作区的渐显
+                // Handle fade-in for the CTA section
                 if (section.id === 'cta') {
                     const cta = section.querySelector('.cta-content');
                     if (cta) cta.classList.add('fade-in');
@@ -54,13 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 页面加载时立即运行一次检查，防止首屏内容无法显示
+    // Run a check immediately when the page loads to prevent the first screen content from not displaying
     checkScroll();
-    // 监听滚动事件
+    // Listen for scroll events
     window.addEventListener('scroll', checkScroll);
 
     /**
-     * 3. 购物车按钮点击逻辑
+     * 3. Cart button click logic
      */
     const cartBtn = document.getElementById('cartIcon');
     if (cartBtn) {

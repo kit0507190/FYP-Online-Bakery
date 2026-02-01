@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- 主机： 127.0.0.1
--- 生成日期： 2025-12-13 11:35:24
--- 服务器版本： 10.4.32-MariaDB
--- PHP 版本： 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: 2025-12-13 11:35:24
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 数据库： `bakeryhouse`
+-- Database: `bakeryhouse`
 --
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `user_db`
+-- Table structure for `user_db`
 --
 
 CREATE TABLE `user_db` (
@@ -39,7 +39,7 @@ CREATE TABLE `user_db` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- 转存表中的数据 `user_db`
+-- Dumping data for table `user_db`
 --
 
 INSERT INTO `user_db` (`id`, `name`, `email`, `password`, `phone`, `address`, `created_at`, `updated_at`) VALUES
@@ -54,22 +54,22 @@ INSERT INTO `user_db` (`id`, `name`, `email`, `password`, `phone`, `address`, `c
 (15, 'test', 'test@gmail.com', '$2y$10$fGpZQ15B3SQqXtrWh77rh.TNDZyfdR/zPaLeJSxlfV5Q9FwoRsySm', NULL, NULL, '2025-12-13 10:22:04', '2025-12-13 10:33:59');
 
 --
--- 转储表的索引
+-- Dumping indexes for table `user_db`
 --
 
 --
--- 表的索引 `user_db`
+-- Indexes for table `user_db`
 --
 ALTER TABLE `user_db`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`);
 
 --
--- 在导出的表使用AUTO_INCREMENT
+-- Using AUTO_INCREMENT for dumped tables
 --
 
 --
--- 使用表AUTO_INCREMENT `user_db`
+-- Using AUTO_INCREMENT for table `user_db`
 --
 ALTER TABLE `user_db`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;

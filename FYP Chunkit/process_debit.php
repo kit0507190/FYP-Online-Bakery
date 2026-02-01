@@ -4,14 +4,14 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 require_once 'config.php';
 
-// 获取订单 ID
+// Get Order ID
 $orderId = $_GET['order_id'] ?? null;
 if (!$orderId) {
     header('Location: payment.php');
     exit;
 }
 
-// 从数据库获取订单详情
+// Get order details from the database
 $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
 $stmt->execute([$orderId]);
 $order = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -102,7 +102,7 @@ include 'header.php';
 </div>
 
 <script>
-    // 页面模拟加载逻辑
+    // Page simulated loading logic
     setTimeout(() => {
         const spinner = document.getElementById('loading-spinner');
         const tick = document.getElementById('success-tick');
@@ -117,14 +117,14 @@ include 'header.php';
         }
     }, 2200);
 
-    // 成功处理
+    // Success handling
     function showSuccessModal() { document.getElementById('paymentSuccessModal').style.display = 'flex'; }
     function submitFinalPayment() {
         try { localStorage.removeItem('bakeryCart'); } catch(e) {}
         document.getElementById('approveForm').submit();
     }
 
-    // 取消处理
+    // Cancel handling
     function showCancelModal() { document.getElementById('paymentCancelModal').style.display = 'flex'; }
     function submitCancel() { document.getElementById('cancelForm').submit(); }
 </script>

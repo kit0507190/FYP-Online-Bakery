@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    // --- 1. 变量定义 ---
+    // --- 1. Variable Definition ---
     let products = []; 
     let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
-    let favorites = []; // 初始为空，稍后从数据库同步
+    let favorites = []; // Initially empty, will sync from database later
     let recentlyViewed = JSON.parse(localStorage.getItem('bakeryRecentlyViewed')) || [];
 
-    // --- 2. 获取 DOM 元素 ---
+    // --- 2. Get DOM Elements ---
     const productsGrid = document.getElementById('productsGrid');
     const cartIcon = document.getElementById('cartIcon');
     const cartCount = document.querySelector('.cart-count');
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentPage = 1;
     const productsPerPage = 9;
 
-    // --- 3. 核心初始化 ---
+    // --- 3. Core Initialization ---
     async function initPage() {
     // 1. Set default filter values
     currentCategory    = 'all';
@@ -137,7 +137,7 @@ if (window.isLoggedIn === true) {
     }
 }
 
-    // --- 4. 监听器 (保持不变) ---
+    // --- 4. Listener (remains unchanged) ---
     function setupEventListeners() {
         document.querySelectorAll('.category-main').forEach(btn => {
             btn.addEventListener('click', function() {
@@ -210,7 +210,7 @@ if (window.isLoggedIn === true) {
         window.addEventListener('scroll', () => { if (backToTop) backToTop.style.display = window.pageYOffset > 300 ? 'block' : 'none'; });
     }
 
-    // --- 5. 渲染逻辑 ---
+    // --- 5. Rendering Logic ---
     function renderProducts() {
         if (!productsGrid) return;
         productsGrid.innerHTML = '';
@@ -231,21 +231,21 @@ if (window.isLoggedIn === true) {
         }
         updateResultsInfo(total);
 
-        // 1. 更新页码文字（改为大写 PAGE 更有设计感）
+        // 1. Update page number text (changed to uppercase PAGE for better design)
         if (pageIndicator) {
             pageIndicator.textContent = `PAGE ${currentPage} / ${maxPage}`;
         }
 
-        // 2. 优化 Prev 按钮：添加图标并自动处理禁用状态
+        // 2. Optimize Prev button: add icon and automatically handle disabled state
         if (prevPageBtn) {
             prevPageBtn.innerHTML = `<span>←</span> Prev`;
-            prevPageBtn.disabled = (currentPage === 1); // 如果是第一页，按钮变灰不可点
+            prevPageBtn.disabled = (currentPage === 1); // If it's the first page, button is greyed out and unclickable
         }
 
-        // 3. 优化 Next 按钮：添加图标并自动处理禁用状态
+        // 3. Optimize Next button: add icon and automatically handle disabled state
         if (nextPageBtn) {
             nextPageBtn.innerHTML = `Next <span>→</span>`;
-            nextPageBtn.disabled = (currentPage === maxPage); // 如果是最后一页，按钮变灰不可点
+            nextPageBtn.disabled = (currentPage === maxPage); // If it's the last page, button is greyed out and unclickable
         }
 
         setupProductEventListeners();
@@ -336,7 +336,7 @@ if (window.isLoggedIn === true) {
 });
     }
 
-    // --- 6. 核心收藏逻辑 ---
+    // --- 6. Core Collection Logic ---
     async function toggleFavorite(productId) {
     if (!window.isLoggedIn) {
         showLoginPrompt();
@@ -385,15 +385,15 @@ if (window.isLoggedIn === true) {
     }
 }
 
-// --- 7. 优化后的 Quick View (同步 Favorites 的高级设计 + 补全销量信息) ---
-// --- 7. 优化后的 Quick View (完全同步 Favorites 页面设计) ---
+// --- 7. Optimized Quick View (Advanced design syncing with Favorites + complete sales info) ---
+// --- 7. Optimized Quick View (Fully synced with Favorites page design) ---
 function quickViewProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
     
     addToRecentlyViewed(productId);
     
-    // 检查当前产品是否在收藏夹中
+    // Check if the current product is in the favorites
     const isFavorite = favorites.includes(parseInt(product.id));
     
 
@@ -452,13 +452,13 @@ function quickViewProduct(productId) {
         </div>
     `;
 
-    // 显示弹窗
+    // Show modal
     quickViewModal.style.display = 'flex';
     
-    // 绑定关闭事件
+    // Bind close event
     document.getElementById('closeModal').onclick = () => quickViewModal.style.display = 'none';
     
-    // 绑定加入购物车事件
+    // Bind add to cart event
     document.getElementById('modalAddToCartBtn').onclick = () => { 
     const success = addToCart(product.id, 1);   // ← capture return value
     
@@ -468,27 +468,27 @@ function quickViewProduct(productId) {
     // else → keep modal open so user sees the toast / error
 };
 
-    // 绑定收藏切换事件
+    // Bind favorite toggle event
     const modalFavBtn = document.getElementById('modalFavBtn');
     modalFavBtn.onclick = () => {
         if (window.isLoggedIn !== true) { showProLoginmpt(); return; }
         
-        // 视觉上立即反馈
+        // Visual immediate feedback
         const isNowActive = modalFavBtn.classList.toggle('active');
         modalFavBtn.innerHTML = isNowActive ? '❤️' : '🤍';
         
-        // 调用原有的收藏逻辑
+        // Call original favorite logic
         toggleFavorite(parseInt(product.id));
     };
 }
 
-    // --- 7. 全能逻辑搜索 (包含所有子分类名称匹配) ---
+    // --- 7. Comprehensive logic search (including all subcategory name matches) ---
     function filterProducts() {
         const searchTerm = currentSearch.trim().toLowerCase();
 
         // ── A. Search mode (when user typed something) ──
         if (searchTerm) {
-            // 完整子分类名字映射表
+            // Complete subcategory name mapping
             const subNameMapping = {
                 // Cakes Subcategories
                 '5 inch': '5 inch Cake',
@@ -518,21 +518,21 @@ function quickViewProduct(productId) {
             };
 
             return products.filter(p => {
-                // 1. 匹配产品名称 (例如: Red Velvet)
+                // 1. Match product name (e.g., Red Velvet)
                 const nameMatch = p.name.toLowerCase().includes(searchTerm);
                 
-                // 2. 匹配大分类 (例如: cake, bread, pastry)
+                // 2. Match main category (e.g., cake, bread, pastry)
                 const catMatch = p.category && p.category.toLowerCase().includes(searchTerm);
                 
-                // 3. 匹配子分类
+                // 3. Match subcategory
                 const rawSub = p.subcategory ? p.subcategory.replace(/['"]+/g, '').toLowerCase() : '';
-                // 匹配原始代号 (例如: "artisan")
+                // Match raw code (e.g., "artisan")
                 const subRawMatch = rawSub.includes(searchTerm);
-                // 匹配完整显示名称 (例如: "Artisan Bread")
+                // Match complete display name (e.g., "Artisan Bread")
                 const displaySubName = subNameMapping[rawSub] || '';
                 const subDisplayMatch = displaySubName.toLowerCase().includes(searchTerm);
                 
-                // 只要满足任意一个条件，就搜出来
+                // Return true if any condition is met
                 return nameMatch || catMatch || subRawMatch || subDisplayMatch;
             });
         }
@@ -571,7 +571,7 @@ function quickViewProduct(productId) {
 }
 
     function updateActiveCategory() {
-        // 如果正在搜索，标题显示搜索关键词
+        // If searching, display the search keyword in the title
         if (currentSearch.trim()) {
             activeCategory.textContent = `Search Results for "${currentSearch}"`;
             return;
@@ -613,11 +613,11 @@ function quickViewProduct(productId) {
 
     
 
-    // menu.js 约第 262 行
+    // menu.js around line 262
 function loadRecentlyViewed() {
     if (!recentlyViewedSection) return;
     
-    // 如果没有最近浏览的数据，隐藏该区域；否则显示
+    // If there is no recently viewed data, hide the section; otherwise, show it
     if (recentlyViewed.length === 0) {
         recentlyViewedSection.style.display = 'none';
         return;
@@ -629,7 +629,7 @@ function loadRecentlyViewed() {
     recentlyViewed.forEach(pid => {
         const p = products.find(x => x.id === pid);
         if (p) {
-            // 只保留图片和名字，移除了价格
+            // Only the image and name are kept; the price has been removed.
             recentProductsContainer.innerHTML += `
                 <div class="recent-product-card" data-id="${p.id}">
                     <img src="${p.image}" alt="${p.name}" class="recent-product-image">
@@ -638,7 +638,7 @@ function loadRecentlyViewed() {
         }
     });
 
-    // 绑定点击事件：点击最近浏览的产品，弹出对应的信息弹窗
+    // Bind click event: Clicking on a recently viewed product will pop up a corresponding information pop-up window.
     document.querySelectorAll('.recent-product-card').forEach(card => {
         card.addEventListener('click', function() {
             quickViewProduct(parseInt(this.getAttribute('data-id')));
@@ -700,16 +700,16 @@ const existingIndex = cart.findIndex(item => item.id == productId);
 let finalQuantity = quantity; 
 
 if (existingIndex > -1) {
-    // 【关键修改点】：如果产品已在购物车，先把它从数组里“抠”出来
+    // 【Key modification point】: If the product is already in the cart, first "pluck" it out of the array
     const existingItem = cart.splice(existingIndex, 1)[0];
     
-    // 更新数量
+    // Update quantity
     existingItem.quantity += finalQuantity;
     
-    // 重新放回到数组的最前面（这样它就变回第一名了）
+    // Put it back at the front of the array (so it becomes the first item again)
     cart.unshift(existingItem);
 } else {
-    // 如果是全新产品，直接放最前面
+    // If it's a new product, put it at the front directly
     cart.unshift({ 
         id: product.id, 
         name: product.name, 
@@ -740,16 +740,16 @@ if (existingIndex > -1) {
 
 // --- menu.js 里的修改 ---
 function updateCartCount() {
-    // 1. 重新从本地读取最新的 cart
+    // 1. Reload the latest cart from local storage
     const currentCart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
     
-    // 🟢 关键修改：计算总件数 (e.g. 4个蛋糕 + 4个面包 = 8)
+    // 🟢 Key modification: Calculate total item count (e.g., 4 cakes + 4 breads = 8)
     const totalCount = currentCart.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
     
-    // 2. 将总数存入本地存储供其他页面参考
+    // 2. Store the total in local storage for reference by other pages.
     localStorage.setItem('cartItemCount', totalCount.toString());
     
-    // 3. 更新当前 Menu 页面 Header 里的数字标签
+    // 3. Update the number label in the current Menu page Header
     const localCount = document.querySelector('.cart-count'); 
     if (localCount) {
         localCount.textContent = totalCount;
@@ -760,21 +760,21 @@ function updateCartCount() {
     function showToast(msg) { if (toast) { toast.textContent = msg; toast.style.display = 'block'; setTimeout(() => { toast.style.display = 'none'; }, 2500); } }
 
     /**
-     * 根据当前的 currentCategory 和 currentSubCategory 同步侧边栏视觉效果
+     * Synchronize the sidebar visual effects based on the current currentCategory and currentSubCategory
      */
     function syncSidebarUI() {
-        // 1. 清除所有旧状态
+        // 1. Clear all old states
         document.querySelectorAll('.category-main').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.category-arrow').forEach(a => a.classList.remove('active'));
         document.querySelectorAll('.subcategories').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.subcategory-item').forEach(i => i.classList.remove('active'));
 
-        // 2. 激活对应的父分类
+        // 2. Activate the corresponding parent category
         const targetMain = document.querySelector(`.category-main[data-category="${currentCategory}"]`);
         if (targetMain) {
             targetMain.classList.add('active');
             
-            // 展开子菜单
+            // Expand the submenu
             const arrow = targetMain.querySelector('.category-arrow');
             if (arrow) arrow.classList.add('active');
             
@@ -782,7 +782,7 @@ function updateCartCount() {
             if (subContainer && subContainer.classList.contains('subcategories')) {
                 subContainer.classList.add('active');
                 
-                // 3. 激活对应的子分类项
+                // 3. Activate the corresponding subcategory item
                 const targetSub = subContainer.querySelector(`.subcategory-item[data-subcategory="${currentSubCategory}"]`);
                 if (targetSub) {
                     targetSub.classList.add('active');

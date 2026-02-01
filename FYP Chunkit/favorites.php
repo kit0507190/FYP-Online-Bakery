@@ -11,7 +11,7 @@ if (!$isLoggedIn) {
 $user_id = $_SESSION['user_id'];
 
 // Use PDO to fetch favorites (latest first)
-// favorites.php 核心查询修改
+// favorites.php Core query modification
 // Use PDO to fetch favorites (latest first)
 $sql = "SELECT 
     p.id,
@@ -34,7 +34,7 @@ $sql = "SELECT
 FROM products p 
 JOIN user_favorites f ON p.id = f.product_id 
 WHERE f.user_id = :user_id 
-ORDER BY f.id DESC"; // 🚀 关键：按收藏记录的 ID 降序，最新的排在最前
+ORDER BY f.id DESC"; // 🚀 Key: Order by favorite record ID descending, newest first
 
 try {
     $stmt = $pdo->prepare($sql);
@@ -59,7 +59,7 @@ try {
 <link rel="stylesheet" href="menu.css">
 
 <style>
-/* --- 1. UI 视觉优化 --- */
+/* --- 1. UI Visual Optimization --- */
 .product-card {
     background: white; 
     border-radius: 15px; 
@@ -101,8 +101,8 @@ try {
     transform: scale(1.1);
 }
 
-/* 弹窗遮罩层优化 */
-/* --- 统一弹窗样式：匹配 Menu 页面 --- */
+/* Modal overlay optimization */
+/* --- Unified modal style: match Menu page --- */
 #quickViewModal {
     position: fixed !important;
     top: 0;
@@ -123,7 +123,7 @@ try {
     max-width: 850px;
     border-radius: 15px;
     position: relative;
-    /* 使用和 Menu 一致的弹出动画 */
+    /* Use the same pop-up animation as Menu */
     animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     overflow: hidden;
 }
@@ -133,7 +133,7 @@ try {
     to { opacity: 1; transform: scale(1); }
 }
 
-/* 适配移动端布局 */
+/* Adapt for mobile layout */
 @media (max-width: 768px) {
     .modal-body-flex {
         flex-direction: column !important;
@@ -145,7 +145,7 @@ try {
     }
 }
 
-/* Toast 样式优化 */
+/* Toast style optimization */
 .toast {
     position: fixed;
     bottom: 30px;
@@ -156,10 +156,10 @@ try {
     padding: 12px 30px;
     border-radius: 50px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    z-index: 100000 !important; /* 确保在弹窗之上 */
+    z-index: 100000 !important; /* Ensure above modals */
 }
 
-/* --- 🌟 收藏页标题专属：心跳动效 --- */
+/* --- 🌟 Favorites Page Title Exclusive: Heartbeat Animation --- */
 .heart-pulse {
     animation: heartbeat 1.5s ease-in-out infinite;
     filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.3));
@@ -173,7 +173,7 @@ try {
     100% { transform: scale(1); }
 }
 
-/* 确保标题下方的原本边框消失 */
+/* Ensure the original border below the title disappears */
 .menu-header-box h1 {
     border-bottom: none !important;
 }
@@ -256,7 +256,7 @@ function openQuickView(productId) {
     const modal = document.getElementById('quickViewModal');
     const content = document.getElementById('quickViewContent');
 
-    // 结构完全同步 Menu.js 的 quickViewProduct 逻辑
+    // Structure fully synchronized with Menu.js's quickViewProduct logic
     content.innerHTML = `
         <button class="close-modal" onclick="closeModal()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 28px; cursor: pointer; color: #888; z-index: 10;">×</button>
         
@@ -322,7 +322,7 @@ window.onclick = function(event) {
     if (event.target == document.getElementById('quickViewModal')) closeModal();
 }
 
-// --- favorites.php 中的 addToCart 函数修改 ---
+// --- Modification of addToCart function in favorites.php ---
 function addToCart(productId) {
     const product = products.find(p => p.id == productId);
     if (!product) return;
@@ -337,20 +337,20 @@ function addToCart(productId) {
     let finalQuantity = 1;
 
     if (existingIndex > -1) {
-        // 【关键修改】：获取旧数量并从数组中移除该产品
+        // 【Key modification】: Get the old quantity and remove the product from the array
         finalQuantity = Number(cart[existingIndex].quantity) + 1;
         cart.splice(existingIndex, 1);
     }
 
-    // 【关键修改】：使用 unshift 将产品插入到数组最前面（索引 0）
-    // 同时补全了 maxStock 以确保与 menu.js 的逻辑兼容
+    // 【Key modification】: Use unshift to insert the product at the beginning of the array (index 0)
+    // Also complete maxStock to ensure compatibility with menu.js logic
     cart.unshift({ 
         id: product.id, 
         name: product.name, 
         price: parseFloat(product.price), 
         image: product.image, 
         quantity: finalQuantity,
-        maxStock: available // 建议同步这个字段
+        maxStock: available // Suggest synchronizing this field
     });
     
     localStorage.setItem('bakeryCart', JSON.stringify(cart));

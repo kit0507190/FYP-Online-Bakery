@@ -176,10 +176,10 @@ header {
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-    height: 75vh;              /* ✅ 固定高度 */
+    height: 75vh;              /* ✅ Fixed height */
     position: sticky;
     top: 100px;
-    overflow-y: auto;         /* ✅ 开启内部滚动 */
+    overflow-y: auto;         /* ✅ Enable internal scrolling */
 }
 
 .categories-sidebar::-webkit-scrollbar {
@@ -253,7 +253,7 @@ header {
     background-color: #f9f9f9;
 }
 
-/* ✅ 已修复这里：不会再挡住 Full Moon 后面的 category */
+/* ✅ Fixed here: will no longer block the category behind Full Moon */
 .subcategories.active {
     max-height: 3000px;
 }
@@ -403,7 +403,7 @@ header {
     margin-bottom: 8px;
 }
 
-/* 添加产品尺寸样式 */
+/* Add product size styles */
 .product-size {
     color: #7a6a5a;
     font-size: 12px;
@@ -456,7 +456,7 @@ header {
 }
 
 /* Quick View Modal */
-/* --- 优化后的弹窗遮罩层 --- */
+/* --- Optimized modal overlay --- */
 .modal {
     display: none;
     position: fixed;
@@ -464,15 +464,15 @@ header {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* 加深背景 */
-    backdrop-filter: blur(5px);           /* 背景模糊效果，和 Favorite 一致 */
+    background-color: rgba(0, 0, 0, 0.7); /* Darken background */
+    backdrop-filter: blur(5px);           /* Background blur effect, consistent with Favorite */
     z-index: 1000;
     justify-content: center;
     align-items: center;
     padding: 20px;
 }
 
-/* --- 弹窗内容容器：添加和 Favorite 一致的弹出动画 --- */
+/* --- Modal content container: add pop-up animation consistent with Favorite --- */
 .modal-content {
     background: white;
     border-radius: 15px;
@@ -480,11 +480,11 @@ header {
     width: 95%;
     position: relative;
     overflow: hidden;
-    /* 核心动画：cubic-bezier 让弹出更有弹性感 */
+    /* Core animation: cubic-bezier makes the pop-up more elastic */
     animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* --- 动画关键帧 --- */
+/* --- Keyframes for animation --- */
 @keyframes modalPop {
     from { 
         opacity: 0; 
@@ -496,7 +496,7 @@ header {
     }
 }
 
-/* 适配手机端 */
+/* Adapt for mobile */
 @media (max-width: 768px) {
     .modal-content {
         max-height: 90vh;
@@ -544,16 +544,16 @@ header {
 }
 
 /* Recently Viewed */
-/* menu.css 约第 425 行开始 */
+/* menu.css around line 425 */
 .recently-viewed {
     margin: 50px 0 30px;
     padding-top: 30px;
-    border-top: 1px solid #eee; /* 添加一条分割线，区分主产品区 */
+    border-top: 1px solid #eee; /* Add a divider line to separate from main product area */
 }
 
 .recent-products {
     display: grid;
-    /* 设置为固定 4 或 5 列的小卡片，具体视你的喜好 */
+    /* Set fixed 4 or 5 columns of small cards, depending on your preference */
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
     gap: 15px;
     margin-top: 20px;
@@ -576,7 +576,7 @@ header {
 
 .recent-product-image {
     width: 100%;
-    height: 120px; /* 固定高度，确保对齐 */
+    height: 120px; /* Fixed height to ensure alignment */
     object-fit: cover;
     border-radius: 6px;
     margin-bottom: 8px;
@@ -586,7 +586,7 @@ header {
     font-size: 13px;
     color: #5a3921;
     font-weight: 500;
-    /* 如果名字太长，显示省略号 */
+    /* If the name is too long, show ellipsis */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -617,7 +617,7 @@ header {
 }
 
 /* Toast Notification */
-/* --- menu.css 约第 478 行 --- */
+/* --- menu.css around line 478 --- */
 .toast {
     position: fixed;
     bottom: 20px;
@@ -628,7 +628,7 @@ header {
     padding: 15px 25px;
     border-radius: 5px;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-    /* 🚀 核心修改：将数值改大，确保在弹窗之上 */
+    /* 🚀 Core modification: increase value to ensure it is above pop-ups */
     z-index: 100000 !important; 
     display: none;
     max-width: 400px;
@@ -721,19 +721,19 @@ footer {
     }
 }
 
-/* ===== 真正修复 header 下第一个区块被贴住的问题 ===== */
+/* ===== Really fixes the issue of the first block under the header being pasted ===== */
 header + .container {
     padding-top: 30px;
 }
-/* ===== 修复 sticky header 顶住内容 ===== */
+/* ===== Fix sticky header overlapping content ===== */
 .page-content {
-    padding-top: 30px;   /* 可调 20–40px */
+    padding-top: 30px;   /* Adjustable 20–40px */
 }
 .page-content {
-    padding-top: 90px; /* 视你的 header 高度微调 */
+    padding-top: 90px; /* Adjust according to your header height */
 }
 
-/* --- 新的菜单头部白框容器 --- */
+/* --- New white border container for menu header --- */
 .menu-header-box {
     background-color: #fff;
     padding: 30px;
@@ -743,46 +743,46 @@ header + .container {
     margin-top: 20px;
 }
 
-/* 标题样式 */
-/* 标题样式 - 已调大以匹配 Favorites 页面 */
+/* Title styles */
+/* Title styles - enlarged to match Favorites page */
 .menu-title {
     text-align: center;
-    margin-bottom: 10px;        /* 稍微缩小底部间距 */
-    font-size: 2.6rem;          /* 从 32px 增加到 2.6rem */
-    font-weight: 800;           /* 增加字体权重，使其更粗 */
+    margin-bottom: 10px;        /* Slightly reduce bottom margin */
+    font-size: 2.6rem;          /* Increased from 32px to 2.6rem */
+    font-weight: 800;           /* Increased font weight to make it bolder */
     color: #5a3921;
-    display: flex;              /* 使用 flex 布局 */
+    display: flex;              /* Use flex layout */
     align-items: center;
     justify-content: center;
     gap: 15px;
 }
 
-/* 分隔线样式 */
+/* Divider styles */
 .menu-divider {
     border: none;
-    border-top: 1px solid #eee; /* 浅灰色线条 */
+    border-top: 1px solid #eee; /* Light gray line */
     margin-bottom: 25px;
 }
 
-/* 核心优化：去掉原本 search-filter-bar 的阴影和背景，因为它现在在白框里了 */
+/* Core optimization: remove the original shadow and background of search-filter-bar because it is now inside a white box */
 .search-filter-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
-    background: transparent; /* 改为透明 */
-    padding: 0;               /* 去掉内边距 */
-    box-shadow: none;        /* 去掉阴影 */
+    background: transparent; /* Changed to transparent */
+    padding: 0;               /* Removed padding */
+    box-shadow: none;        /* Removed shadow */
 }
 
-/* 适配手机端：在小屏幕上白框依然好看 */
+/* Adaptation for mobile: keep the white box looking good on small screens */
 @media (max-width: 768px) {
     .menu-header-box {
     background-color: #fff;
-    padding: 20px 30px;         /* 调整内边距 */
+    padding: 20px 30px;         /* Adjusted padding */
     border-radius: 15px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    margin-bottom: 25px;        /* 缩小与下方搜索栏的距离 */
+    margin-bottom: 25px;        /* Reduced distance to the search bar below */
     margin-top: 20px;
     }
     .search-filter-bar {
@@ -792,70 +792,70 @@ header + .container {
 }
 
 /* ============================================================
-   精准调整：压缩 "All Cakes" 与产品列表之间的间距
+   Precise adjustment: compress the spacing between "All Cakes" and the product list
    ============================================================ */
 
-/* 修改：增强分类标题的层次感 */
+/* Modification: enhance the hierarchy of the category title */
 #activeCategory {
     margin-top: 0 !important;
     padding-top: 5px !important;
     margin-bottom: 5px !important;
     font-size: 24px;               
     color: #5a3921;
-    font-weight: 700 !important;   /* 🚀 从 600 提升到 700，增加一点点厚度 */
-    letter-spacing: 0.5px;         /* 微调字间距，看起来更高级 */
+    font-weight: 700 !important;   /* 🚀 Increased from 600 to 700 for a bit more thickness */
+    letter-spacing: 0.5px;         /* Slightly adjusted letter spacing for a more premium look */
 }
 
-/* 辅助：调轻下方文字的视觉分量，形成对比 */
+/* Auxiliary: lighten the visual weight of the text below to create contrast */
 #resultsInfo {
     margin-top: 2px !important;
-    margin-bottom: 12px !important; /* 稍微拉开一点点跟网格的距离 */
+    margin-bottom: 12px !important; /* Slightly increase distance from the grid */
     font-size: 14px;
-    color: #8e735b;                /* 使用稍微浅一点的褐色 */
-    font-weight: 400;              /* 保持常规粗细，突出上方的 700 字重 */
+    color: #8e735b;                /* Use a slightly lighter brown */
+    font-weight: 400;              /* Keep regular weight to highlight the 700 weight above */
 }
 
-/* 3. 调小侧边栏和产品主区域顶部的对齐高度 */
+/* 3. Reduce the top alignment height of the sidebar and main product area */
 .menu-main {
-    padding-top: 0 !important;    /* 移除主区域顶部的内边距 */
+    padding-top: 0 !important;    /* Remove top padding of the main area */
 }
 
-/* 4. 调小产品网格顶部的间距 */
+/* 4. Reduce the top margin of the product grid */
 .products-grid {
-    margin-top: 5px !important;   /* 让第一排产品贴近上面的文字 */
+    margin-top: 5px !important;   /* Make the first row of products closer to the text above */
 }
 
 /* ============================================================
-   终极压缩：彻底消除搜索框下方的多余空白
+   Ultimate compression: completely eliminate the extra whitespace below the search box
    ============================================================ */
 
-/* 1. 压缩白框底部的内边距 */
+/* 1. Compress the bottom padding of the white box */
 .menu-header-box {
-    padding-bottom: 10px !important; /* 原本可能是 25px，现在缩减到 10px */
-    margin-bottom: 10px !important; /* 缩小整个白框与下方内容的距离 */
+    padding-bottom: 10px !important; /* Originally 25px, now reduced to 10px */
+    margin-bottom: 10px !important; /* Reduce the distance between the white box and the content below */
 }
 
-/* 2. 移除搜索栏本身自带的底部边距 */
+/* 2. Remove the bottom margin of the search bar itself */
 .search-filter-bar {
-    margin-bottom: 0 !important;    /* 确保搜索栏下面不留任何空隙 */
+    margin-bottom: 0 !important;    /* Ensure no gap below the search bar */
 }
 
-/* 3. 向上拉近 "All Cakes" 标题，消除与白框之间的间隙 */
+/* 3. Pull up the "All Cakes" title to eliminate the gap with the white box */
 .menu-main {
-    padding-top: 0 !important;      /* 移除主区域顶部的所有内边距 */
+    padding-top: 0 !important;      /* Remove all top padding of the main area */
 }
 
 #activeCategory {
-    margin-top: 0 !important;       /* 让分类标题直接贴着白框边缘 */
+    margin-top: 0 !important;       /* Make the category title directly touch the edge of the white box */
     padding-top: 5px !important;
 }
 
-/* 4. 再次压缩 "Showing..." 文字的边距 */
+/* 4. Further compress the margins of the "Showing..." text */
 #resultsInfo {
     margin-top: 2px !important;
     margin-bottom: 8px !important;
 }
-/* --- 优化后的分页控件样式 --- */
+/* --- Optimized pagination control styles --- */
 .pagination {
     margin: 40px 0;
     display: flex;
@@ -864,13 +864,13 @@ header + .container {
     justify-content: center;
 }
 
-/* 统一按钮样式 */
+/* Unified button styles */
 .pagination button {
     background-color: #fff;
     color: #5a3921;
-    border: 2px solid #d4a76a; /* 使用金色边框 */
+    border: 2px solid #d4a76a; /* Use gold border */
     padding: 10px 20px;
-    border-radius: 50px;       /* 圆润的胶囊形状 */
+    border-radius: 50px;       /* Rounded capsule shape */
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
@@ -881,7 +881,7 @@ header + .container {
     box-shadow: 0 4px 10px rgba(212, 167, 106, 0.1);
 }
 
-/* 悬停效果：背景变色，图标位移 */
+/* Hover effect: background color change, icon shift */
 .pagination button:hover:not(:disabled) {
     background-color: #d4a76a;
     color: white;
@@ -889,7 +889,7 @@ header + .container {
     box-shadow: 0 6px 15px rgba(212, 167, 106, 0.25);
 }
 
-/* 禁用状态：变灰 */
+/* Disabled state: greyed out */
 .pagination button:disabled {
     border-color: #eee;
     color: #ccc;
@@ -897,9 +897,9 @@ header + .container {
     box-shadow: none;
 }
 
-/* 中间页码文字 */
+/* Middle page number text */
 .page-indicator {
-    font-family: var(--main-font); /* 使用项目主字体 */
+    font-family: var(--main-font); /* Use the project's main font */
     color: #5a3921;
     font-size: 16px;
     font-weight: 600;
@@ -910,7 +910,7 @@ header + .container {
     display: flex;
     align-items: center;
     border-radius: 10px;
-    border: 1px dashed #d4a76a; /* 虚线增加精致感 */
+    border: 1px dashed #d4a76a; /* Dashed border adds a refined touch */
 }
 .product-card.out-of-stock {
     opacity: 0.65;

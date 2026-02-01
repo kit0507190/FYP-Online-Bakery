@@ -7,7 +7,7 @@ $cardNum = str_replace(' ', '', $data['card_number'] ?? '');
 $expiry  = $data['card_expiry'] ?? '';
 $cvv     = $data['card_cvv'] ?? '';
 
-// 1. 查询数据库获取该卡信息
+// 1. Query the database to retrieve the card information.
 $stmt = $pdo->prepare("SELECT expiry_date, cvv FROM bank_cards WHERE card_number = ? LIMIT 1");
 $stmt->execute([$cardNum]);
 $card = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -15,10 +15,10 @@ $card = $stmt->fetch(PDO::FETCH_ASSOC);
 $errors = [];
 
 if (!$card) {
-    // 如果卡号根本不存在，直接返回卡号错误
+    // If the card number does not exist at all, return card number error directly
     $errors[] = 'card';
 } else {
-    // 如果卡号存在，则【同时】检查有效期和 CVV
+    // If the card number exists, then check both expiry and CVV
     if ($card['expiry_date'] !== $expiry) {
         $errors[] = 'expiry';
     }
@@ -28,7 +28,7 @@ if (!$card) {
 }
 
 if (!empty($errors)) {
-    // 返回包含所有错误代码的数组
+    // Return an array containing all error codes
     echo json_encode(['status' => 'error', 'codes' => $errors]);
 } else {
     echo json_encode(['status' => 'success']);
