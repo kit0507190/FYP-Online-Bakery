@@ -103,11 +103,11 @@ session_start();
                     <p class="testimonial-author">- Kee Cheng Wei</p>
                 </div>
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"I ordered a custom birthday cake for my daughter, and it was both beautiful and delicious. Everyone raved about it! The attention to detail is incredible."</p>
+                    <p class="testimonial-text">"I ordered a birthday cake for my daughter, and it was both beautiful and delicious. Everyone raved about it! The attention to detail is incredible."</p>
                     <p class="testimonial-author">- Mandy Thoo Wei Xuen</p>
                 </div>
                 <div class="testimonial-card">
-                    <p class="testimonial-text">"Their sourdough bread is my weekly staple. Crusty on the outside, soft on the inside - perfection! I love supporting a local business with such high standards."</p>
+                    <p class="testimonial-text">"Their Traditional Artisan Sourdough bread is my weekly staple. Crusty on the outside, soft on the inside - perfection! I love supporting a local business with such high standards."</p>
                     <p class="testimonial-author">- Chuah Woon Long</p>
                 </div>
             </div>
