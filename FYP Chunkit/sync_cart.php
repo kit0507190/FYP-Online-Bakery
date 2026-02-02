@@ -37,7 +37,7 @@ if (!$user_id) {
 
 try {
     if ($action === 'fetch') {
-        // ── 1. 获取购物车：按 ID 倒序排列，保证最大的 ID（最新插入的）在最上方 ──
+        // ── 1. Get shopping cart: Sort by ID in descending order, ensuring the largest ID (most recently inserted) is at the top ──
         $stmt = $pdo->prepare("
             SELECT 
                 p.id, 
@@ -50,7 +50,7 @@ try {
             JOIN products p ON c.product_id = p.id 
             WHERE c.user_id = :uid
             AND p.deleted_at IS NULL
-            ORDER BY c.id DESC  /* 🟢 关键修改：改为 DESC */
+            ORDER BY c.id DESC  /* 🟢 Key change: changed to DESC */
         ");
         $stmt->execute([':uid' => $user_id]);
         $cartData = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -61,7 +61,7 @@ try {
         ];
     } 
     elseif ($action === 'update') {
-        // ── 2. 更新购物车：通过反转插入顺序来控制 ID 大小 ──
+        // ── 2. Update shopping cart: Control ID size by reversing insertion order ──
         $raw = file_get_contents('php://input');
         $input = json_decode($raw, true);
 
@@ -76,7 +76,7 @@ try {
 
         $incomingCart = $input['cart'];
 
-        // A. 验证库存逻辑 (保持不变)
+        // A. Validate stock logic (keep as is)
         $productIds = array_filter(array_map('intval', array_column($incomingCart, 'id')));
         $stocks = [];
         if ($productIds) {
@@ -109,18 +109,18 @@ try {
             }
         }
 
-        // B. 写入数据库
+        // B. Write to database
         $pdo->beginTransaction();
 
-        // 先删除旧的
+        // Delete old entries first
         $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?")->execute([$user_id]);
 
         if ($validItems) {
             /**
-             * 🟢 关键修改点：
-             * 我们希望 JS 数组中 index 0 的产品排在最上面。
-             * 因为数据库是按插入先后分配递增 ID 的，
-             * 所以我们【反转数组】，让第 0 项最后插入，从而获得最大的 ID。
+             * 🟢 Key change:
+             * We want the product at index 0 in the JS array to appear at the top.
+             * Since the database assigns incrementing IDs based on insertion order,
+             * we reverse the array so that the item at index 0 is inserted last, thus getting the highest ID.
              */
             $itemsToInsert = array_reverse($validItems);
 

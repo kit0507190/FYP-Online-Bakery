@@ -1,5 +1,5 @@
 <?php
-// header.php - 统一导航栏组件（已修复多账号同步 Bug 版）
+// header.php - Unified Navigation Bar Component (Version with multi-account synchronization bug fixed)
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -58,7 +58,7 @@ window.isLoggedIn = <?php echo $isLoggedIn ? 'true' : 'false'; ?>;
 function updateHeaderCartCount() {
     const cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
     
-    // 🟢 修改这里：不再用 cart.length，改用累加数量
+    // 🟢 Core modification: no longer use cart.length, use sum of quantities instead
     const totalItems = cart.reduce((sum, item) => sum + parseInt(item.quantity || 0), 0);
 
     const cartCountElement = document.querySelector('.cart-count');

@@ -1,6 +1,6 @@
-/* cart.css - 购物车样式文件 */
+/* cart.css - Shopping cart style file */
 
-/* 基础样式 */
+/* Basic styles */
 :root {
     --main-color: #000000;
     --theme-color: #000000;
@@ -45,7 +45,7 @@
     box-sizing: border-box;
 }
 
-/* 1. 增加 body 的顶部预留空间 - 这里的 padding 决定了内容从哪里开始显示 */
+/* 1. Increase top padding of body - This padding determines where the content starts to display */
 body {
     font-family: var(--main-font) !important;
     color: var(--main-color);
@@ -56,7 +56,7 @@ body {
     line-height: 1.4;
     overflow-y: scroll;
     overflow-x: hidden;
-    padding-top: 100px !important; /* 🟢 从 100px 增加到 150px，这是避开 Header 的最强手段 */
+    padding-top: 100px !important; /* 🟢 Increasing the pixel size from 100px to 150px is the most effective way to bypass the header.
     background-color: #fff7ec;
 }
 
@@ -66,7 +66,7 @@ body {
     padding: 20px 20px !important; /* 同步 purchase-container 的 padding */
 }
 
-/* 面包屑导航样式 - 与menu.html保持一致 */
+/* Breadcrumb navigation styles - consistent with menu.html */
 .breadcrumb {
     margin: 25px 0 35px 0;
     padding: 15px 0;
@@ -104,7 +104,7 @@ body {
 }
 
 /* Cart Content */
-/* 3. 统一白色卡片的上方间距 */
+/* 3. Uniform top margin for white cards */
 .cart-content {
     background: white;
     border-radius: 15px;
@@ -112,18 +112,18 @@ body {
     box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08);
     margin-bottom: 30px;
     
-    /* 🟢 修改这里：同步 header-card 的 margin-top */
+    /* 🟢 Modified here: synchronize margin-top with header-card */
     margin-top: 20px !important; 
 }
 
-/* 修改后的 Cart 标题样式 - 匹配 Favorites 风格 */
+/* Modified Cart title style - match Favorites style */
 .cart-title {
     color: #5a3921;
-    font-size: 2.6rem;           /* 与 Favorites 一致 */
-    font-weight: 800;            /* 极粗权重 */
-    margin-bottom: 10px;         /* 缩小间距，留给下方的横线 */
+    font-size: 2.6rem;           /* Match Favorites */
+    font-weight: 800;            /* Extra bold weight */
+    margin-bottom: 10px;         /* Reduce spacing for the underline */
     text-align: center;
-    border-bottom: none !important; /* 移除原本的灰色细线 */
+    border-bottom: none !important; /* Remove original gray underline */
     padding-bottom: 0;
     display: flex;
     align-items: center;
@@ -131,7 +131,7 @@ body {
     gap: 15px;
 }
 
-/* 复用 Favorites 的心跳/律动动画（可选，用于购物车图标） */
+/* Reuse Favorites' pulse animation (optional, for cart icon) */
 .cart-icon-pulse {
     animation: cartPulse 1.5s ease-in-out infinite;
 }
@@ -584,9 +584,9 @@ footer p {
         height: 40px;
     }
 }
-/* 1. 顶部 "TOTAL" 标签 - 匹配 Subtotal 的字体风格 */
+/* 1. Top "TOTAL" label - matches Subtotal's font style */
 .header-label-total {
-    font-family: var(--main-font); /* 使用项目主字体 */
+    font-family: var(--main-font); /* Use the project's main font */
     font-size: 14px;
     color: #888;
     letter-spacing: 1px;
@@ -594,16 +594,16 @@ footer p {
     text-transform: uppercase;
 }
 
-/* 2. 产品右侧金额 - 完全匹配 Subtotal 的字体和颜色 */
+/* 2. Product right-side amount - fully matches Subtotal's font and color */
 .cart-item-total {
-    font-family: var(--main-font); /* 🚀 切换回主字体 */
-    color: #5a3921 !important;    /* 🚀 使用 Subtotal 相同的深褐色 */
-    font-weight: 400;             /* 🚀 Subtotal 通常是常规粗细 */
-    font-size: 18px;              /* 保持与 Subtotal 接近的大小 */
+    font-family: var(--main-font); /* 🚀 Switch back to main font */
+    color: #5a3921 !important;    /* 🚀 Use the same dark brown as Subtotal */
+    font-weight: 400;             /* 🚀 Subtotal is usually regular weight */
+    font-size: 18px;              /* Keep size close to Subtotal */
     margin-bottom: 0;
 }
 
-/* 3. 底部最终总金额 - 保持醒目的金色和加粗 */
+/* 3. Final total amount at the bottom - keep the prominent gold color and bold */
 .final-total-amount {
     color: #d4a76a; 
     font-size: 24px;
@@ -611,24 +611,24 @@ footer p {
     font-family: var(--main-font);
 }
 
-/* 4. 调整容器对齐，确保看起来整齐 */
+/* 4. Adjust container alignment to ensure neat appearance */
 .cart-item-header {
     display: flex;
     justify-content: space-between;
-    align-items: center; /* 垂直居中对齐 */
+    align-items: center; /* Vertically center align */
     width: 100%;
     margin-bottom: 8px;
 }
-/* 1. 顶部 TOTAL 的容器 - 负责把文字推向右边 */
+/* 1. Top "TOTAL" container - responsible for pushing text to the right */
 .cart-list-header {
     display: flex;
-    justify-content: flex-end; /* 🚀 这一行是核心：把内容推向最右侧 */
-    padding: 0 20px 10px 20px;  /* 左右 padding 要和下面的商品卡片对齐 */
-    border-bottom: 1px solid #eee; /* 加一条淡淡的分隔线 */
+    justify-content: flex-end; /* 🚀 This line is key: push content to the far right */
+    padding: 0 20px 10px 20px;  /* Left and right padding should align with product cards below */
+    border-bottom: 1px solid #eee; /* Add a light separator line */
     margin-bottom: 15px;
 }
 
-/* 2. 顶部 "TOTAL" 标签的文字样式 */
+/* 2. Top "TOTAL" label's text style */
 .header-label-total {
     font-family: var(--main-font); 
     font-size: 14px;
@@ -723,13 +723,13 @@ footer p {
     background: #452c1a;
 }
 
-/* 自定义弹窗遮罩层 */
+/* Custom modal overlay */
 .custom-modal-overlay {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.4); /* 背景变暗 */
-    backdrop-filter: blur(3px);      /* 背景模糊 */
+    background: rgba(0, 0, 0, 0.4); /* Darken background */
+    backdrop-filter: blur(3px);      /* Background blur */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -739,17 +739,17 @@ footer p {
     transition: all 0.3s ease;
 }
 
-/* 激活状态 */
+/* Active state */
 .custom-modal-overlay.active {
     opacity: 1;
     visibility: visible;
 }
 
-/* 弹窗白框 */
+/* Modal white box */
 .custom-modal-box {
     background: white;
     padding: 35px 30px;
-    border-radius: 25px; /* 圆角 */
+    border-radius: 25px; /* Rounded corners */
     text-align: center;
     width: 90%;
     max-width: 380px;
@@ -762,7 +762,7 @@ footer p {
     transform: translateY(0);
 }
 
-/* 红色图标圆圈 */
+/* Red icon circle */
 .modal-icon-wrapper {
     width: 70px; height: 70px;
     background: #ffebee;
@@ -789,7 +789,7 @@ footer p {
     margin-bottom: 25px;
 }
 
-/* 按钮样式 */
+/* Button styles */
 .modal-actions-custom {
     display: flex;
     flex-direction: column;

@@ -1,12 +1,12 @@
 <?php
-// cart.php - 购物车主页面（updated 2026 - trust server as source of truth）
+// cart.php - Shopping cart main page (updated 2026 - trust server as source of truth)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 require_once 'config.php';
 
-// 1. 强制登录检查
+// 1. Enforce login check
 if (!isset($_SESSION['user_id'])) {
     header("Location: User_Login.php");
     exit;
@@ -80,9 +80,9 @@ if (isset($_SESSION['checkout_error'])) {
 <?php include 'footer.php'; ?>
 
 <script>
-// --- 核心变更：不再在页面加载时直接读取 localStorage ---
-// 我们让服务器成为唯一真相来源
-let cart = [];  // 页面刚加载时强制为空 — 等待服务器数据
+// --- Core change: no longer directly reading localStorage on page load ---
+// We let the server be the single source of truth
+let cart = [];  // Force empty on page load — wait for server data
 
 const cartContainer = document.getElementById('cartContainer');
 
@@ -101,7 +101,7 @@ function showToast(msg) {
     }, 2800);
 }
 
-// --- 同步本地 cart 到数据库 ---
+// --- Sync local cart to database ---
 async function syncCartToDB() {
     if (!window.isLoggedIn) return;
 
@@ -137,10 +137,10 @@ async function syncCartToDB() {
         showToast("Failed to save cart — some changes may be lost");
     }
 }
-// --- 页面初始化：总是优先从服务器加载购物车 ---
+// --- Page initialization: always load cart from server first ---
 async function initPage() {
     if (!window.isLoggedIn) {
-        loadCartItems(); // 显示空购物车
+        loadCartItems(); // Show empty cart
         return;
     }
 
@@ -149,7 +149,7 @@ async function initPage() {
         const result = await response.json();
 
         if (result.status === 'success') {
-            cart = result.cart || [];  // ← 信任服务器返回的数据
+            cart = result.cart || [];  // ← Trust server-returned data
             localStorage.setItem('bakeryCart', JSON.stringify(cart));
         } else {
             console.warn("Server returned non-success:", result);
@@ -158,7 +158,7 @@ async function initPage() {
         }
     } catch (err) {
         console.error("Failed to load cart from server", err);
-        // 失败时使用本地缓存作为 fallback（但显示提示）
+        // Use local cache as fallback on failure (but show a warning)
         cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
         showToast("Couldn't connect to server — showing last known cart");
     }
@@ -166,7 +166,7 @@ async function initPage() {
     loadCartItems();
 }
 
-// --- 渲染购物车 ---
+// --- Render cart ---
 function loadCartItems() {
     if (cart.length === 0) {
         cartContainer.innerHTML = `
@@ -229,21 +229,21 @@ function loadCartItems() {
     updateHeaderCount();
 }
 
-// --- 清空购物车 ---
+// --- Empty shopping cart ---
 function clearCart() {
     if (cart.length === 0) {
         showToast("Your cart is already empty!");
         return;
     }
 
-    // 以前是 confirm()，现在改成让弹窗显示
+    // Previously was confirm(), now changed to show custom modal
     const modal = document.getElementById('customClearModal');
     if (modal) {
         modal.classList.add('active');
     }
 }
 
-// --- 修改数量 / 删除 ---
+// --- Modify quantity / Remove ---
 function updateQty(id, change) {
     const item = cart.find(i => i.id == id);
     if (!item) return;
@@ -273,13 +273,13 @@ function removeItem(id) {
     finalizeChange();
 }
 
-// --- cart.php 里的修改 ---
+// --- cart.php modifications ---
 function finalizeChange() {
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
     loadCartItems();
     syncCartToDB();
     
-    // 🟢 关键：手动触发 Header 的更新函数
+    // 🟢 Key: Manually trigger Header update function
     if (typeof window.updateHeaderCartCount === 'function') {
         window.updateHeaderCartCount();
     }
@@ -295,38 +295,38 @@ function updateHeaderCount() {
     }
 }
 
-// === 重要：如果你的系统有登出功能，请在登出时调用这个函数 ===
+// === Important: If your system has a logout feature, call this function on logout ===
 function clearCartOnLogout() {
     localStorage.removeItem('bakeryCart');
     cart = [];
-    // 可以在这里添加跳转或其他逻辑
+    // You can add redirection or other logic here
 }
 
-// 初始化
+// Initialization
 document.addEventListener('DOMContentLoaded', () => {
     setTimeout(initPage, 100);
 
-    // --- 新增：处理自定义弹窗的按钮点击 ---
+    // --- Added: Handle custom modal button clicks ---
     const modal = document.getElementById('customClearModal');
     const confirmBtn = document.getElementById('confirmClearBtn');
     const cancelBtn = document.getElementById('cancelClearBtn');
 
-    // 如果用户点 "Yes, Clear Cart"
+    // If user clicks "Yes, Clear Cart"
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {
-            // 执行真正的清空逻辑
+            // Execute actual clear logic
             cart = [];
             localStorage.setItem('bakeryCart', JSON.stringify(cart));
             loadCartItems();
             syncCartToDB();
             showToast("Cart has been cleared");
             
-            // 关闭弹窗
+            // Close modal
             modal.classList.remove('active');
         });
     }
 
-    // 如果用户点 "Cancel"
+    // If user clicks "Cancel"
     if (cancelBtn) {
         cancelBtn.addEventListener('click', () => {
             modal.classList.remove('active');

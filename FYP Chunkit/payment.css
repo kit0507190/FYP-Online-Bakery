@@ -1,4 +1,4 @@
-/* --- 基础变量与重置 --- */
+/* --- Basic variables and resetting --- */
 :root {
     --primary: #5a3921;
     --accent: #d4a76a;
@@ -23,17 +23,17 @@ body {
     box-sizing: border-box;
 }
 
-/* --- 核心布局：防止左侧跳动 --- */
+/* --- Core layout: Prevent left-side bouncing --- */
 .flex-layout {
     display: flex;
     gap: 30px;
-    /* 关键：取消 stretch，改为顶部对齐，允许左右两列高度不同 */
+    /* Key: Cancel stretch, align to top, allow different heights for left and right columns */
     align-items: flex-start; 
 }
 
 .left-column {
     flex: 1;
-    /* 关键：开启粘性定位，随滚动吸顶 */
+    /* Key: Enable sticky positioning to stick to top on scroll */
     position: sticky;
     top: 100px; 
     display: flex;
@@ -46,7 +46,7 @@ body {
     flex-direction: column;
 }
 
-/* --- 卡片样式 --- */
+/* --- Card styles --- */
 .card {
     background: var(--white);
     border-radius: 12px;
@@ -70,15 +70,15 @@ body {
     font-weight: 600;
 }
 
-/* --- 商品列表：数量在名字下方 --- */
+/* --- Product list: Quantity below the name --- */
 #summaryItems {
-    max-height: 400px; /* 限制高度，超出时内部滚动 */
+    max-height: 400px; /* Limit height, internal scroll if exceeded */
     overflow-y: auto;
     padding-right: 8px;
     margin-bottom: 15px;
 }
 
-/* 滚动条美化 */
+/* Scrollbar styling */
 #summaryItems::-webkit-scrollbar { width: 5px; }
 #summaryItems::-webkit-scrollbar-track { background: #fdf8f3; border-radius: 10px; }
 #summaryItems::-webkit-scrollbar-thumb { background: #e0d5c1; border-radius: 10px; }
@@ -106,11 +106,11 @@ body {
     align-items: center;
 }
 
-/* 核心修改：让名字和数量上下排列 */
+/* Core modification: Arrange name and quantity vertically */
 .summary-item-detail {
     display: flex;
-    flex-direction: column; /* 垂直排列 */
-    gap: 4px; /* 名字和数量之间的间距 */
+    flex-direction: column; /* Vertical arrangement */
+    gap: 4px; /* Spacing between name and quantity */
 }
 
 .summary-item-name {
@@ -122,7 +122,7 @@ body {
 
 .summary-item-qty {
     font-size: 12px;
-    color: #999; /* 数量颜色淡化 */
+    color: #999; /* Quantity color faded */
 }
 
 .summary-item-price {
@@ -131,7 +131,7 @@ body {
     font-size: 14px;
 }
 
-/* --- 支付方式选项 --- */
+/* --- Payment method options --- */
 .method-item {
     border: 1px solid var(--border);
     padding: 15px;
@@ -147,7 +147,7 @@ body {
 .method-item.active { border-color: var(--accent); background: #fffcf9; }
 .method-logo { width: 40px; height: 30px; object-fit: contain; }
 
-/* Debit Card 展开表单 */
+/* Debit Card expanded form */
 #cardDetailsSection {
     display: none;
     padding: 20px;
@@ -164,7 +164,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* 表单组件 */
+/* Form components */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; font-size: 11px; color: #888; margin-bottom: 5px; text-transform: uppercase; font-weight: 600; }
 .form-input {
@@ -173,9 +173,9 @@ body {
 .form-input:focus { border-color: var(--accent); outline: none; }
 .form-row { display: flex; gap: 15px; }
 
-/* --- 结算总计区域 --- */
+/* --- Checkout total area --- */
 .total-row { 
-    /* 关键：取消 margin-top: auto，防止跟随容器拉伸而沉底 */
+    /* Key: Cancel margin-top: auto to prevent sticking to bottom when container stretches */
     margin-top: 0; 
     padding-top: 15px; 
     border-top: 2px solid #fdf8f3; 
@@ -184,7 +184,7 @@ body {
     color: var(--primary); 
 }
 
-/* --- 按钮与地址 --- */
+/* --- Buttons and address --- */
 .address-text { color: #666; font-size: 14px; line-height: 1.5; }
 .user-meta { font-weight: 800; font-size: 16px; color: #333; margin-bottom: 5px; }
 
@@ -203,7 +203,7 @@ body {
 }
 .place-order-btn:hover { background: #452c1a; }
 
-/* --- 模态框与响应式 --- */
+/* --- Modals and responsiveness --- */
 .force-modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.6); display: none; 
@@ -221,24 +221,24 @@ body {
     .left-column { position: static; width: 100%; }
     .right-column { width: 100%; }
 }
-/* --- 弹窗内部详细样式 --- */
+/* --- Modal internal detailed styles --- */
 
-/* 顶部图标（大头针/蛋糕） */
+/* Top icons (pin/cake) */
 .modal-icon {
     font-size: 50px;
     margin-bottom: 20px;
     display: block;
 }
 
-/* 弹窗标题 */
+/* Modal title */
 .force-modal-content h2 {
-    color: #5a3921; /* 使用你的 primary 棕色 */
+    color: #5a3921; /* Use your primary brown */
     margin-bottom: 15px;
     font-size: 24px;
     font-weight: 700;
 }
 
-/* 弹窗文字描述 */
+/* Modal text description */
 .force-modal-content p {
     color: #777;
     font-size: 15px;
@@ -246,7 +246,7 @@ body {
     margin-bottom: 30px;
 }
 
-/* 按钮容器 */
+/* Button container */
 .modal-actions {
     display: flex;
     flex-direction: column;
@@ -254,9 +254,9 @@ body {
     align-items: center;
 }
 
-/* “去添加地址” 大按钮 */
+/* “Go to add address” big button */
 .btn-go-address {
-    background-color: #d4a76a; /* 你的 accent 金色/棕色 */
+    background-color: #d4a76a; /* Your accent gold/brown */
     color: white !important;
     text-decoration: none;
     width: 100%;
@@ -274,7 +274,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* “稍后再说” 链接 */
+/* “Maybe later” link */
 .btn-maybe-later {
     color: #aaa;
     font-size: 14px;
@@ -287,7 +287,7 @@ body {
     color: #777;
 }
 
-/* --- 跳出来的动画效果 --- */
+/* --- Pop-in animation effect --- */
 @keyframes popIn {
     0% {
         opacity: 0;
@@ -302,41 +302,41 @@ body {
     }
 }
 
-/* 将动画应用到弹窗内容 */
+/* Apply animation to modal content */
 .force-modal-overlay[style*="display: flex"] .force-modal-content {
     animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-/* 红色报错文字样式 */
+/* Red error message style */
 .error-msg {
     color: #e74c3c;
     font-size: 12px;
     margin-top: 5px;
     font-weight: 500;
-    display: none; /* 默认隐藏 */
+    display: none; /* Default hidden */
 }
 
-/* 当输入框有错时，给输入框加个红边框 */
+/* When input has error, add a red border */
 .form-input.input-error {
     border-color: #e74c3c;
     background-color: #fff8f8;
 }
-/* 地址切换弹窗基础样式 */
-/* 弹窗整体背景 */
+/* Address switch modal base styles */
+/* Modal overall background */
 .modal {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5); /* 遮罩层加深 */
+    background: rgba(0, 0, 0, 0.5); /* Darker overlay */
     display: none;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    backdrop-filter: blur(4px); /* 背景模糊，增加高级感 */
+    backdrop-filter: blur(4px); /* Background blur for a premium feel */
 }
 
 .modal.active { display: flex; animation: fadeIn 0.3s ease; }
 
-/* 弹窗主体 */
+/* Modal main content */
 .modal-content {
     background: #ffffff;
     padding: 30px;
@@ -347,16 +347,16 @@ body {
     border: 1px solid #eee;
 }
 
-/* 标题样式 */
+/* Title styles */
 .modal-content h3 {
-    color: #5a3921; /* 主色调棕色 */
+    color: #5a3921; /* Primary brown */
     font-size: 22px;
     margin-bottom: 20px;
     font-weight: 800;
     text-align: center;
 }
 
-/* 地址选项卡片 */
+/* Address option cards */
 .addr-option {
     padding: 18px;
     border: 1px solid #f0f0f0;
@@ -378,25 +378,25 @@ body {
     box-shadow: 0 4px 10px rgba(212, 167, 106, 0.15);
 }
 
-/* 选中状态 */
+/* Selected state */
 .addr-option.selected {
     border: 2px solid #d4a76a;
     background: #fffcf7;
 }
 
-/* 在选中项右上角加一个勾选图标（伪元素） */
-/* 修改选中的打勾图标 - 确保不被遮挡 */
+/* Add a checkmark icon at the top-right corner of the selected item (pseudo-element) */
+/* Modify the selected checkmark icon - ensure it is not obscured */
 .addr-option.selected::after {
     content: '\f058';
     font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     position: absolute;
-    top: 12px;      /* 稍微往上调一点点 */
-    right: 12px;    /* 稍微往右边靠 */
-    color: #2ecc71; /* 使用和你标签一样的青绿色 */
+    top: 12px;      /* Slightly move up */
+    right: 12px;    /* Slightly move right */
+    color: #2ecc71; /* Use the same teal color as your badge */
     font-size: 22px;
-    z-index: 2;     /* 确保它在标签之上 */
-    background: white; /* 给图标加个白色背景圆底，防止透出下面的颜色 */
+    z-index: 2;     /* Ensure it is above the badge */
+    background: white; /* Add a white background circle to the icon to prevent underlying colors from showing through */
     border-radius: 50%;
 }
 
@@ -411,11 +411,11 @@ body {
     line-height: 1.4;
 }
 
-/* 关闭按钮 */
+/* Close button */
 .btn-modal-close {
     width: 100%;
     padding: 12px;
-    background: #5a3921; /* 使用深棕色按钮 */
+    background: #5a3921; /* Use deep brown button */
     color: white;
     border: none;
     border-radius: 10px;
@@ -430,46 +430,46 @@ body {
     background: #7a5537;
 }
 
-/* 动画效果 */
+/* Animation effects */
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
-/* --- 滚动条美化：匹配面包店的主色调 --- */
+/* --- Scrollbar styling: match the bakery's primary color --- */
 #modalList::-webkit-scrollbar { width: 6px; }
 #modalList::-webkit-scrollbar-track { background: #fff7ec; border-radius: 10px; }
 #modalList::-webkit-scrollbar-thumb { background: #d4a76a; border-radius: 10px; }
 
-/* --- 地址卡片内的动态标题栏 --- */
-/* 标题行优化 */
+/* --- Dynamic title bar inside address cards --- */
+/* Title row optimization */
 .addr-title-row {
     display: flex;
-    justify-content: flex-start; /* 改为向左对齐 */
+    justify-content: flex-start; /* Change to left align */
     align-items: center;
-    gap: 10px;      /* 名字和标签之间的间距 */
+    gap: 10px;      /* Space between name and badge */
     margin-bottom: 5px;
-    padding-right: 35px; /* 重要：给右侧的打勾图标留出 35px 的空白区域 */
+    padding-right: 35px; /* Important: leave 35px space on the right for the checkmark icon */
 }
 
-/* 这样标签就会紧贴在名字后面，而不会挤到打勾的位置 */
+/* This way, the label will be placed right after the name and won't crowd the checkmark area. */
 .default-badge {
     background: #2ecc71;
     color: #ffffff;
     font-size: 10px;
     padding: 2px 8px;
-    border-radius: 4px; /* 改成小方角看起来更精致 */
+    border-radius: 4px; /* Change to small square corners for a more refined look */
     text-transform: uppercase;
     font-weight: bold;
-    flex-shrink: 0; /* 防止标签被挤压 */
+    flex-shrink: 0; /* Prevent the label from being squeezed */
 }
 
-/* --- 交互：点击时的波纹效果反馈 --- */
+/* --- Interaction: ripple effect feedback on click --- */
 .addr-option:active {
     transform: scale(0.98);
     background: #fdf2e2;
 }
 
-/* --- 无地址时的空状态样式 --- */
+/* --- Empty state styling when no address is available --- */
 .empty-addr-state {
     text-align: center;
     padding: 40px 20px;

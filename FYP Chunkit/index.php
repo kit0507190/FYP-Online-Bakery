@@ -1,7 +1,7 @@
 <?php
 /**
- * index.php - 访客首页（未登录状态）
- * 使用 header.php 组件，并引用外部 CSS 和 JS
+ * index.php - Visitor homepage (not logged in)
+ * Uses header.php component and references external CSS and JS
  */
 session_start();
 ?>
@@ -23,7 +23,7 @@ session_start();
         <div class="hero-content">
             <h1 id="heroTitle">Happiness Is a Piece of Cake</h1>
             <p id="heroSubtitle">Our Favorite Bakery House in Town</p>
-            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.html'">Explore Our Menu</button>
+            <button class="hero-btn" id="heroBtn" onclick="window.location.href='menu.php'">Explore Our Menu</button>
         </div>
     </section>
 

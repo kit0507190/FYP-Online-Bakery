@@ -330,23 +330,23 @@ try {
         }
     });
 
-    // 新增：控制弹窗显示的辅助函数
-// 修改后的辅助函数：支持动态按钮文字
+    // Added: Helper function to control the display of pop-ups
+// Modified helper function: supports dynamic button text
 function showMyModal(title, message, showCancel = false) {
     return new Promise((resolve) => {
         const modal = document.getElementById('stockModal');
         const iconContainer = modal.querySelector('.modal-icon-container'); 
-        const confirmBtn = document.getElementById('modalConfirmBtn'); // 获取确认按钮
+        const confirmBtn = document.getElementById('modalConfirmBtn'); // Get confirm button
         
         document.getElementById('modalTitle').innerText = title;
         document.getElementById('modalMessage').innerText = message;
         
-        // 保持红色警告样式
+        // Maintain red warning style
         iconContainer.classList.add('warning'); 
         
-        // 🚀 核心修改：根据模式切换按钮文字
-        // 如果 showCancel 是 false (图1模式) -> 显示 "OK"
-        // 如果 showCancel 是 true  (图2模式) -> 显示 "Yes"
+        // 🚀 Core modification: Switch button text based on mode
+        // If showCancel is false (Mode 1) -> Show "OK"
+        // If showCancel is true  (Mode 2) -> Show "Yes"
         confirmBtn.innerText = showCancel ? "Yes" : "OK"; 
         
         const cancelBtn = document.getElementById('modalCancelBtn');
@@ -370,7 +370,7 @@ function showMyModal(title, message, showCancel = false) {
     async function handleBuyAgain(items) {
     if (!Array.isArray(items) || items.length === 0) return;
 
-    // 【保持原样】检查库存的准备工作
+    // [Keep it as is] Preparations for checking inventory
     const productIds = items.map(item => Number(item.product_id)).filter(id => id > 0);
     console.log('Buy Again: Sent product_ids for stock check', productIds);
 
@@ -384,12 +384,12 @@ function showMyModal(title, message, showCancel = false) {
         stockData = await res.json();
     } catch (err) {
         console.error('Products fetch error:', err);
-        // 【仅更改设计】把原来的 alert 换掉
+        // [Design only] Replace original alert
         await showMyModal("Error", "Error loading product data. Please try again.");
         return;
     }
 
-    // 【保持原样】建立库存映射图
+    // [Keep it as is] Build stock mapping
     const stockMap = {};
     stockData.forEach(p => {
         stockMap[p.id] = { name: p.name, stock: Number(p.stock) || 0 };
@@ -398,7 +398,7 @@ function showMyModal(title, message, showCancel = false) {
     const canAdd = [];
     const cannotAdd = [];
 
-    // 【保持原样】逐一对比库存
+    // [Keep it as is] Compare stock one by one
     items.forEach(item => {
         const pid = Number(item.product_id);
         const want = Number(item.quantity) || 1;
@@ -423,7 +423,7 @@ function showMyModal(title, message, showCancel = false) {
         }
     });
 
-    // 【仅更改设计 1】显示缺货提示（原 alert）
+    // [Design Change 1 Only] Display Out-of-Stock Notice (formerly alert)
     if (cannotAdd.length > 0) {
         let msg = "The following items are currently unavailable:\n\n";
         cannotAdd.forEach(it => {
@@ -432,23 +432,23 @@ function showMyModal(title, message, showCancel = false) {
         await showMyModal("Stock Update", msg.trim());
     }
 
-    // 【仅更改设计 2】如果完全没货（原 alert）
+    // [Design Change 2 Only] If completely out of stock (formerly alert)
     if (canAdd.length === 0) {
         await showMyModal("Empty Order", "None of the items from this order are currently in stock.");
         return;
     }
 
-    // 【仅更改设计 3】部分有货时的询问（原 confirm）
+    // [Design Change Only 3] Some inquiries regarding availability (formerly confirm)
     if (canAdd.length < items.length) {
         const proceed = await showMyModal(
             "Partial Availability", 
             `Only ${canAdd.length} of ${items.length} items are available.\n\nAdd the available ones to your cart?`,
-            true // 这里会显示 Cancel 按钮
+            true // This will show the Cancel button
         );
         if (!proceed) return;
     }
 
-    // 【保持原样】更新本地购物车 localStorage
+    // [Keep it as is] Update local cart in localStorage
     let cart = JSON.parse(localStorage.getItem('bakeryCart')) || [];
 
     canAdd.forEach(newItem => {
@@ -469,7 +469,7 @@ function showMyModal(title, message, showCancel = false) {
 
     localStorage.setItem('bakeryCart', JSON.stringify(cart));
 
-    // 【保持原样】同步到服务器并跳转
+    // [Keep it as is] Sync to server and redirect
     fetch('sync_cart.php?action=update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -32,10 +32,10 @@ $orderItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 
 <style>
     :root {
-        --primary: #5a3921; /* 巧克力棕 */
-        --accent: #d4a76a;  /* 烘焙金 */
-        --bg: #fffcf9;      /* 奶油色背景 */
-        --success: #1f8b45; /* 成功绿 */
+        --primary: #5a3921; /* Chocolate Brown */
+        --accent: #d4a76a;  /* Baking Gold */
+        --bg: #fffcf9;      /* Creamy Background */
+        --success: #1f8b45; /* Success Green */
     }
 
     body {
@@ -104,7 +104,7 @@ $orderItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
         border-bottom: 2px dashed var(--accent);
     }
 
-    /* 修改：栅格改为 2 列以平衡布局 */
+    /* Modification: Change grid to 2 columns for balanced layout */
     .info-bar {
         display: grid;
         grid-template-columns: repeat(2, 1fr);

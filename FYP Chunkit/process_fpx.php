@@ -16,9 +16,9 @@ include 'header.php';
 <link rel="stylesheet" href="process_debit.css?v=<?php echo time(); ?>">
 <style>
     :root { 
-        --fpx-navy: #002e5d; /* FPX 官方深蓝色 */
+        --fpx-navy: #002e5d; /* FPX official dark blue */
     }
-    /* 🚀 模仿 TNG/Debit 设计：顶部 10px 边框 */
+    /* 🚀 Mimic TNG/Debit design: top 10px border */
     .auth-card { 
         border-top: 10px solid var(--fpx-navy); 
     }
@@ -26,7 +26,7 @@ include 'header.php';
     .btn-approve { background: var(--fpx-navy); }
     .btn-approve:hover { background: #001a35; }
 
-    /* FPX Logo 专属尺寸 */
+    /* FPX Logo specific size */
     .fpx-logo {
         width: 130px;
         height: auto;
@@ -112,7 +112,7 @@ include 'header.php';
 </div>
 
 <script>
-    // 模拟银行连接逻辑
+    // Simulated bank connection logic
     setTimeout(() => {
         document.getElementById('loading-spinner').style.display = 'none';
         document.getElementById('success-tick').style.display = 'inline-block';
@@ -127,7 +127,7 @@ include 'header.php';
         document.getElementById('approveForm').submit();
     }
 
-    // 取消逻辑
+    // Cancel handling
     function showCancelModal() { document.getElementById('paymentCancelModal').style.display = 'flex'; }
     function submitCancel() { document.getElementById('cancelForm').submit(); }
 </script>

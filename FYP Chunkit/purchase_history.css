@@ -1,7 +1,7 @@
 /* purchase_history.css */
 :root {
     --primary: #5a3921;
-    --accent: #d4a76a; /* 🟢 统一金色 */
+    --accent: #d4a76a; /* 🟢 Uniform gold color */
     --light-bg: #fff7ec;
     --white: #ffffff;
     --grey-text: #999999;
@@ -14,7 +14,7 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* 🟢 容器保持 1200px 宽度，与 cart.php 对齐 */
+/* 🟢 Container maintains 1200px width, aligned with cart.php */
 .purchase-container {
     max-width: 1200px; 
     width: 100%;
@@ -22,7 +22,7 @@ body {
     padding: 20px 20px;
 }
 
-/* 🟢 新增：标题白色框容器，模拟 cart.php 样式 */
+/* 🟢 New: Title white box container, mimicking cart.php style */
 .header-card {
     background: var(--white);
     border-radius: 15px;
@@ -31,17 +31,17 @@ body {
     box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08);
 }
 
-/* --- 核心修改：让标题变大并居中 --- */
+/* --- Core modification: Make title larger and centered --- */
 .page-title {
     color: var(--primary);
     margin: 0;
-    font-size: 2.6rem !important;  /* 🚀 调大至 2.6rem，匹配 Menu 页面 */
-    font-weight: 800 !important;   /* 🚀 极粗权重，增加气势 */
-    text-align: center;            /* 居中对齐 */
+    font-size: 2.6rem !important;  /* 🚀 Increased to 2.6rem, matching Menu page */
+    font-weight: 800 !important;   /* 🚀 Extra bold weight for impact */
+    text-align: center;            /* Center aligned */
     width: 100%;
 }
 
-/* 调整副标题也居中 */
+/* Adjust subtitle to be centered as well */
 .page-subtitle {
     text-align: center;
     margin: 8px 0 0 0;
@@ -49,28 +49,28 @@ body {
     color: var(--grey-text);
 }
 
-/* 调整原本的工具栏容器：改为垂直布局，确保大标题有足够空间 */
-/* --- 核心优化：压缩白框垂直高度 --- */
+/* Adjust original toolbar container: switch to vertical layout to ensure enough space for the main title */
+/* --- Core optimization: Compress white box vertical height --- */
 .header-card.history-toolbar {
     flex-direction: column;
-    gap: 5px;                       /* 🚀 缩小内部元素之间的间距 */
-    padding: 15px 35px !important;  /* 🚀 上下 Padding 从 30px 减半到 15px */
+    gap: 5px;                       /* 🚀 Reduce spacing between internal elements */
+    padding: 15px 35px !important;  /* 🚀 Halve top and bottom padding from 30px to 15px */
     text-align: center;
 }
 
-/* 进一步压缩过滤器容器的顶部间距 */
+/* Further compress top margin of filter container */
 .filter-container {
     width: 100%;
     display: flex;
     justify-content: flex-end;
-    margin-top: 5px;                /* 🚀 再次拉近与上方文字的距离 */
+    margin-top: 5px;                /* 🚀 Further reduce distance from above text */
 }
 
-/* 订单卡片样式 */
+/* Order card styles */
 .shopee-card {
     background: var(--white);
     border-radius: 15px; 
-    padding: 30px;      /* 🟢 稍微调小内边距 */
+    padding: 30px;      /* 🟢 Slightly reduced padding */
     margin-bottom: 25px;
     box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08); 
     transition: transform 0.3s ease;
@@ -98,7 +98,7 @@ body {
 .shop-brand {
     font-weight: 700;
     color: #333;
-    font-size: 18px; /* 🟢 调小：从 20px 调至 18px */
+    font-size: 18px; /* 🟢 Slightly reduced: from 20px to 18px */
 }
 
 .order-id-tag {
@@ -115,7 +115,7 @@ body {
 }
 
 .order-date {
-    font-size: 14px; /* 🟢 调小：从 16px 调至 14px */
+    font-size: 14px; /* 🟢 Slightly reduced: from 16px to 14px */
     color: #666;
     font-weight: 500;
     display: flex;
@@ -123,7 +123,7 @@ body {
     gap: 8px;
 }
 
-/* 商品项布局 */
+/* Product item layout */
 .product-item {
     display: flex;
     gap: 25px;
@@ -133,7 +133,7 @@ body {
 }
 
 .product-img {
-    width: 90px; /* 🟢 调小图片：从 120px 调至 90px */
+    width: 90px; /* 🟢 Slightly reduced image size: from 120px to 90px */
     height: 90px;
     object-fit: cover;
     border-radius: 8px;
@@ -145,7 +145,7 @@ body {
 }
 
 .product-details .name {
-    font-size: 17px; /* 🟢 调小：从 22px 调至 17px */
+    font-size: 17px; /* 🟢 Slightly reduced: from 22px to 17px */
     color: #333;
     margin-bottom: 5px;
     font-weight: 600;
@@ -157,12 +157,12 @@ body {
 }
 
 .product-item .price {
-    font-size: 16px; /* 🟢 调小：从 20px 调至 16px */
+    font-size: 16px; /* 🟢 Slightly reduced: from 20px to 16px */
     color: #444;
     font-weight: 600;
 }
 
-/* 底部操作区 */
+/* Bottom action area */
 .card-footer {
     border-top: 1px dotted #e8e8e8;
     padding-top: 20px;
@@ -179,7 +179,7 @@ body {
 }
 
 .total-row .amount {
-    font-size: 26px; /* 🟢 调小：从 34px 调至 26px */
+    font-size: 26px; /* 🟢 Slightly reduced: from 34px to 26px */
     color: var(--accent) !important; 
     font-weight: 800;
 }
@@ -188,17 +188,17 @@ body {
     background-color: var(--accent) !important; 
     color: white;
     border: none;
-    padding: 10px 40px; /* 🟢 调小按钮尺寸 */
+    padding: 10px 40px; /* 🟢 Slightly reduced button size */
     border-radius: 8px;
     cursor: pointer;
     font-weight: 700;
-    font-size: 15px; /* 🟢 调小：从 18px 调至 15px */
+    font-size: 15px; /* 🟢 Slightly reduced: from 18px to 15px */
     transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(212, 167, 106, 0.2); 
 }
 
 .buy-again-btn:hover {
-    background-color: #c2955a; 
+    background-color: #c2955a; /* 🟢 Slightly darker on hover */
     transform: scale(1.05);
 }
 
@@ -218,19 +218,19 @@ body {
 
 .status-badge {
     padding: 5px 14px;
-    border-radius: 50px; /* 胶囊形状 */
+    border-radius: 50px; /* Capsule shape */
     font-size: 11px;
     font-weight: 800;
     text-transform: uppercase;
     margin-right: 15px;
     display: inline-flex;
     align-items: center;
-    gap: 6px; /* 图标和文字的间距 */
+    gap: 6px; /* Gap between icon and text */
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: all 0.3s ease;
 }
 
-/* 🟠 Preparing: 橙色 + 呼吸灯动画 */
+/* 🟠 Preparing: Orange + Breathing Light Animation */
 .status-preparing { 
     background: #fff4e5; 
     color: #ff9800; 
@@ -238,7 +238,7 @@ body {
     animation: status-pulse 2s infinite; 
 }
 
-/* 🔵 Ready: 亮蓝色 + 微弱发光 */
+/* 🔵 Ready: Bright Blue + Subtle Glow */
 .status-ready { 
     background: #e3f2fd; 
     color: #2196f3; 
@@ -246,14 +246,14 @@ body {
     box-shadow: 0 0 10px rgba(33, 150, 243, 0.2);
 }
 
-/* 🟢 Delivered: 柔和绿色 */
+/* 🟢 Delivered: Soft Green */
 .status-delivered { 
     background: #e8f5e9; 
     color: #2e7d32; 
     border: 1px solid #c8e6c9; 
 }
 
-/* 🔴 Cancelled: 灰色调 */
+/* 🔴 Cancelled: Gray Tone */
 .status-cancelled { 
     background: #f5f5f5; 
     color: #d32f2f; 
@@ -261,14 +261,14 @@ body {
     opacity: 0.7;
 }
 
-/* ⚪ Pending/Default: 灰色 */
+/* ⚪ Pending/Default: Gray */
 .status-pending {
     background: #f9f9f9;
     color: #999;
     border: 1px solid #eee;
 }
 
-/* 呼吸灯动画定义 */
+/* Breathing light animation definition */
 @keyframes status-pulse {
     0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.4); }
     70% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(255, 152, 0, 0); }
@@ -278,28 +278,28 @@ body {
    NEW: Order Filter Dropdown Styles (Added at the end)
    ============================================================ */
 
-/* 1. 标题栏布局：让标题和下拉框左右对齐 */
+/* 1. Header layout: Align title and dropdown horizontally */
 .header-card.history-header-flex {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* 2. 过滤器容器 */
+/* 2. Filter container */
 .filter-wrapper {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-/* 3. 过滤器文字标签 */
+/* 3. Filter label */
 .filter-label {
     font-size: 14px;
     color: var(--grey-text);
     font-weight: 500;
 }
 
-/* 4. 下拉选择框样式：匹配 Bakery House 的金色与圆角风格 */
+/* 4. Dropdown select styles: Match Bakery House's gold and rounded style */
 .filter-select {
     padding: 8px 16px;
     border-radius: 10px;
@@ -312,7 +312,7 @@ body {
     outline: none;
     transition: all 0.3s ease;
     box-shadow: 0 2px 8px rgba(90, 57, 33, 0.03);
-    -webkit-appearance: none; /* 移除默认箭头以统一样式 */
+    -webkit-appearance: none; /* Remove default arrow for consistent styling */
     -moz-appearance: none;
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a3921' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
@@ -322,7 +322,7 @@ body {
     padding-right: 40px;
 }
 
-/* 5. 悬停与聚焦效果 */
+/* 5. Hover and focus effects */
 .filter-select:hover {
     border-color: var(--accent);
     box-shadow: 0 4px 12px rgba(212, 167, 106, 0.1);
@@ -333,7 +333,7 @@ body {
     box-shadow: 0 0 0 3px rgba(212, 167, 106, 0.15);
 }
 
-/* 6. 过滤时的淡入淡出过渡动画 */
+/* 6. Fade-in and fade-out transition animation during filtering */
 .shopee-card {
     transition: opacity 0.3s ease, transform 0.3s ease;
 }
@@ -341,12 +341,12 @@ body {
    PRO UI OPTIMIZATION (Bakery House Special)
    ============================================================ */
 
-/* 1. 增强型工具栏布局 */
+/* 1. Enhanced toolbar layout */
 .history-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-left: 5px solid var(--accent); /* 侧边金色装饰线，增加高级感 */
+    border-left: 5px solid var(--accent); /* Side gold decorative line for a premium feel */
     padding: 25px 35px !important;
 }
 
@@ -356,7 +356,7 @@ body {
     color: var(--grey-text);
 }
 
-/* 2. 现代过滤器包装器 */
+/* 2. Modern filter wrapper */
 .filter-box {
     position: relative;
     display: flex;
@@ -380,7 +380,7 @@ body {
     margin-right: -5px;
 }
 
-/* 3. 彻底重塑下拉框 */
+/* 3. Completely restyled dropdown */
 .modern-select {
     border: none !important;
     background: transparent !important;
@@ -394,9 +394,9 @@ body {
     cursor: pointer;
 }
 
-/* 自定义下拉箭头 */
+/* Custom dropdown arrow */
 .filter-box::after {
-    content: "\f107"; /* FontAwesome 下箭头 */
+    content: "\f107"; /* FontAwesome down arrow */
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
     position: absolute;
@@ -405,7 +405,7 @@ body {
     pointer-events: none;
 }
 
-/* 4. 卡片列表的入场动画 */
+/* 4. Entrance animation for card list */
 .shopee-card {
     border: 1px solid transparent;
 }
@@ -416,19 +416,19 @@ body {
     box-shadow: 0 10px 30px rgba(90, 57, 33, 0.12);
 }
 
-/* --- 自定义库存弹窗样式 (模拟图4) --- */
+/* --- Custom inventory modal styles (Mockup 4) --- */
 .custom-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.4); /* 暗色半透明背景 */
-    display: none; /* 初始隐藏 */
+    background: rgba(0, 0, 0, 0.4); /* Dark semi-transparent background */
+    display: none; /* Initially hidden */
     align-items: center;
     justify-content: center;
     z-index: 9999;
-    backdrop-filter: blur(3px); /* 背景模糊效果 */
+    backdrop-filter: blur(3px); /* Background blur effect */
 }
 
 .custom-modal-content {
@@ -436,7 +436,7 @@ body {
     width: 90%;
     max-width: 420px;
     padding: 40px 30px;
-    border-radius: 40px; /* 超大圆角，匹配图4 */
+    border-radius: 40px; /* Extra large rounded corners, matching Mockup 4 */
     text-align: center;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
     animation: modalBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -447,12 +447,12 @@ body {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* 1. 图标容器基础样式 */
+/* 1. Basic icon container styles */
 .modal-icon-container {
     width: 85px;
     height: 85px;
-    background-color: #e8f5e9; /* 默认绿色背景 */
-    color: #4caf50; /* 默认绿色图标 */
+    background-color: #e8f5e9; /* Default green background */
+    color: #4caf50; /* Default green icon */
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -461,10 +461,10 @@ body {
     font-size: 45px;
 }
 
-/* 🚀 修改：感叹号警告色风格改为红色主题 */
+/* 🚀 Modification: Warning icon style changed to red theme */
 .modal-icon-container.warning {
-    background-color: #ffebee; /* 浅红色背景 */
-    color: #f44336;           /* 鲜红色图标 */
+    background-color: #ffebee; /* Light red background */
+    color: #f44336;           /* Bright red icon */
 }
 
 .custom-modal-content h3 {
@@ -482,7 +482,7 @@ body {
     white-space: pre-line;
 }
 
-/* 2. Done 按钮（保持金色主题） */
+/* 2. Done button (maintaining gold theme) */
 .modal-btn-primary {
     background-color: #d4a76a; 
     color: white;
@@ -503,28 +503,28 @@ body {
     box-shadow: 0 8px 20px rgba(212, 167, 106, 0.4);
 }
 
-/* 🚀 新增/修改：Cancel 按钮，样式完全对标 Done 按钮，但颜色改为红色 */
+/* 🚀 Added/Modified: Cancel button, style fully aligned with Done button but color changed to red */
 .modal-btn-secondary {
-    background-color: #f44336; /* 红色背景 */
+    background-color: #f44336; /* Red background */
     color: white;
     border: none;
     padding: 14px 0;
-    width: 180px;           /* 宽度与 Done 一致 */
-    border-radius: 30px;    /* 圆角与 Done 一致 */
+    width: 180px;           /* Width consistent with Done button */
+    border-radius: 30px;    /* Rounded corners consistent with Done button */
     font-weight: 700;
     font-size: 17px;
     cursor: pointer;
     transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3); /* 红色阴影 */
+    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3); /* Red shadow */
 }
 
 .modal-btn-secondary:hover {
-    background-color: #d32f2f; /* 悬停时深红色 */
+    background-color: #d32f2f; /* Dark red on hover */
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(244, 67, 54, 0.4);
 }
 
-/* 按钮布局容器，确保两个按钮排列美观 */
+/* Button layout container, ensuring both buttons are arranged nicely */
 .modal-buttons {
     display: flex;
     gap: 15px;
