@@ -489,8 +489,8 @@ if (!empty($search)) {
                         <td>
                             <a href="?edit=<?= $row['id'] ?>" class="action-btn edit-btn">Edit</a>
                             <a href="?delete=<?= $row['id'] ?>" 
-                               onclick="return confirm('Move this product to trash?\n\nIt can be restored later from the Restore Deleted page.');" 
-                               class="action-btn delete-btn">Trash</a>
+                               onclick="return confirm('Delete this product?\n\nIt can be restored later from the Restore Deleted page.');" 
+                               class="action-btn delete-btn">Delete</a>
                         </td>
                     </tr>
                     <?php
