@@ -8,15 +8,30 @@ $success = $error = '';
 // Handle adding new category
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
     $name = cleanAdminInput($_POST['name']);
-    if (!empty($name)) {
-        $stmt = $pdo->prepare("INSERT INTO categories (name) VALUES (?)");
-        if ($stmt->execute([$name])) {
-            $success = "Category added successfully!";
-        } else {
-            $error = "Failed to add category.";
-        }
-    } else {
+
+    if (empty($name)) {
         $error = "Category name is required.";
+    } else {
+        // Check if category with this name already exists (case-insensitive)
+        $check = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM categories 
+            WHERE LOWER(name) = LOWER(?) 
+            AND deleted_at IS NULL
+        ");
+        $check->execute([$name]);
+        $exists = $check->fetchColumn() > 0;
+
+        if ($exists) {
+            $error = "A category with this name already exists.";
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO categories (name) VALUES (?)");
+            if ($stmt->execute([$name])) {
+                $success = "Category added successfully!";
+            } else {
+                $error = "Failed to add category.";
+            }
+        }
     }
 }
 
@@ -24,15 +39,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_category'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_subcategory'])) {
     $category_id = (int)$_POST['category_id'];
     $name = cleanAdminInput($_POST['name']);
-    if ($category_id > 0 && !empty($name)) {
-        $stmt = $pdo->prepare("INSERT INTO subcategories (category_id, name) VALUES (?, ?)");
-        if ($stmt->execute([$category_id, $name])) {
-            $success = "Subcategory added successfully!";
-        } else {
-            $error = "Failed to add subcategory.";
-        }
-    } else {
+
+    if ($category_id <= 0 || empty($name)) {
         $error = "Please select a category and enter a name.";
+    } else {
+        // Check if subcategory with this name already exists UNDER THE SAME PARENT CATEGORY
+        $check = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM subcategories 
+            WHERE category_id = ? 
+            AND LOWER(name) = LOWER(?) 
+            AND deleted_at IS NULL
+        ");
+        $check->execute([$category_id, $name]);
+        $exists = $check->fetchColumn() > 0;
+
+        if ($exists) {
+            $error = "This subcategory name already exists in the selected category.";
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO subcategories (category_id, name) VALUES (?, ?)");
+            if ($stmt->execute([$category_id, $name])) {
+                $success = "Subcategory added successfully!";
+            } else {
+                $error = "Failed to add subcategory.";
+            }
+        }
     }
 }
 
