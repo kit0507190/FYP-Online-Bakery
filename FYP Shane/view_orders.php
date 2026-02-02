@@ -1,31 +1,27 @@
 <?php
-require_once 'admin_auth.php';  // Secure login + loads $current_admin with role
-require_once 'admin_config.php';  // Main database connection
+require_once 'admin_auth.php';  
+require_once 'admin_config.php';  
 
-// =============================================
-// STATUS TRANSITION RULES (Business Logic)
-// =============================================
+// STATUS TRANSITION RULES 
 function isValidTransition($old_status, $new_status) {
     $rules = [
-        'pending' => ['preparing', 'cancelled'],      // Pending → Preparing/Cancelled
-        'preparing' => ['ready', 'cancelled'],        // Preparing → Ready/Cancelled  
-        'ready' => ['delivered', 'cancelled'],        // Ready → Delivered/Cancelled
-        'delivered' => [],                            // Delivered → FINAL (no changes)
-        'cancelled' => []                             // Cancelled → FINAL (no changes)
+        'pending' => ['preparing', 'cancelled'],      
+        'preparing' => ['ready', 'cancelled'],         
+        'ready' => ['delivered', 'cancelled'],       
+        'delivered' => [],                            
+        'cancelled' => []                             
     ];
     
     $old = strtolower($old_status);
     $new = strtolower($new_status);
     
-    // Same status = allowed (no change)
     if ($old === $new) return true;
     
     return in_array($new, $rules[$old] ?? []);
 }
 
-// ───────────────────────────────────────────────
+
 // AJAX endpoint for status change
-// ───────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'], $_POST['order_id'], $_POST['new_status'])) {
     header('Content-Type: application/json; charset=utf-8');
 
@@ -145,9 +141,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'], $_POST['order
     exit;
 }
 
-// =============================================
-// HANDLE STATUS UPDATE (POST) → then REDIRECT (fallback for no JS)
-// =============================================
+
+// HANDLE STATUS UPDATE 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['new_status'])) {
     $order_id   = (int)$_POST['order_id'];
     $new_status = trim($_POST['new_status']);
@@ -158,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
         exit();
     }
 
-    // Get current order details (including old status)
+    // Get current order details 
     $stmt = $pdo->prepare("SELECT * FROM orders WHERE id = ?");
     $stmt->execute([$order_id]);
     $order = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -168,15 +163,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     }
     $old_status = $order['status'] ?: 'pending';
 
-    // 🚫 BLOCK INVALID TRANSITIONS
+    // BLOCK INVALID TRANSITIONS
     if (!isValidTransition($old_status, $new_status)) {
         header("Location: view_orders.php?error=invalid_transition&order_id=$order_id");
         exit();
     }
 
-    // ────────────────────────────────────────────────
-    // Begin transaction — important for atomicity
-    // ────────────────────────────────────────────────
     $pdo->beginTransaction();
 
     try {
@@ -188,10 +180,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
         $credit_added   = false;
         $credit_amount  = 0.00;
 
-        // Restore stock & add credit ONLY when going TO cancelled (and wasn't already cancelled)
-        // ✅ Now protected by transition rules above
+        // Restore stock & add credit 
         if ($new_status === 'cancelled' && strtolower($old_status) !== 'cancelled') {
-            // ──────────────── 1. Restore inventory ────────────────
+            //  Restore inventory 
             $items_stmt = $pdo->prepare("SELECT product_id, quantity FROM orders_detail WHERE order_id = ?");
             $items_stmt->execute([$order_id]);
             $items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -207,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                 }
             }
 
-            // ──────────────── 2. Add store credit (email match) ────────────────
+            //  Add store credit (email match)
             $email = trim($order['customer_email'] ?? '');
 
             if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -221,7 +212,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                 $user_stmt->execute([':email' => $email]);
                 $users = $user_stmt->fetchAll(PDO::FETCH_COLUMN);
 
-                // Only proceed if EXACTLY ONE active user matches this email
+                
                 if (count($users) === 1) {
                     $target_user_id = $users[0];
                     $credit_amount  = (float) $order['total'];
@@ -239,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
 
                     $credit_added = ($credit_stmt->rowCount() === 1);
                 }
-                // else: skip — either no user, or ambiguous (multiple accounts with same email)
+                
             }
         }
 
@@ -253,7 +244,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
         if ($credit_added) {
             $redirect .= "&credit_added=" . number_format($credit_amount, 2);
         } else if ($new_status === 'cancelled' && strtolower($old_status) !== 'cancelled') {
-            // Optional: show reason (helps debugging)
+        
             $reason = "no matching active user";
             if (empty($order['customer_email'])) {
                 $reason = "no email on order";
@@ -452,7 +443,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
                             default      => 'status'
                         };
 
-                        // ✅ GENERATE VALID OPTIONS ONLY
+                        //  GENERATE VALID OPTIONS ONLY
                         $valid_options = [];
                         $allowed = [
                             'pending' => ['pending', 'preparing', 'cancelled'],
@@ -632,7 +623,7 @@ document.addEventListener('change', async function(e) {
         const row = select.closest('tr');
         const current = select.dataset.current;
 
-        if (newStatus === current) return; // No change
+        if (newStatus === current) return; 
 
         if (!confirmStatusChange(select, newStatus)) {
             select.value = current;
@@ -673,7 +664,7 @@ document.addEventListener('change', async function(e) {
             showToast(err.message || 'Connection error', '#dc3545');
             select.value = current;
         } finally {
-            // Only enable if the select still exists (not replaced for final status)
+            
             if (document.body.contains(select)) {
                 select.disabled = false;
             }

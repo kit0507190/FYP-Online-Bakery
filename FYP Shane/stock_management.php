@@ -1,7 +1,7 @@
 <?php
 
-require_once 'admin_auth.php';  // Secure login + loads $current_admin
-require_once 'admin_config.php';  // Main DB connection
+require_once 'admin_auth.php';  
+require_once 'admin_config.php';  
 
 // Handle classic form POST (fallback / no JS)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST['adjust'])) {
@@ -20,9 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['product_id'], $_POST[
     exit();
 }
 
-// ───────────────────────────────────────────────
+
 // AJAX endpoint
-// ───────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax'], $_POST['product_id'], $_POST['action'])) {
     header('Content-Type: application/json; charset=utf-8');
 
