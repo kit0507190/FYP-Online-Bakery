@@ -56,14 +56,14 @@ body {
     line-height: 1.4;
     overflow-y: scroll;
     overflow-x: hidden;
-    padding-top: 100px !important; /* 🟢 Increasing the pixel size from 100px to 150px is the most effective way to bypass the header.
+    padding-top: 100px !important; 
     background-color: #fff7ec;
 }
 
 .container {
     max-width: 1200px; 
     margin: 0 auto;
-    padding: 20px 20px !important; /* 同步 purchase-container 的 padding */
+    padding: 20px 20px !important; /*  purchase-container 的 padding */
 }
 
 /* Breadcrumb navigation styles - consistent with menu.html */
@@ -108,7 +108,7 @@ body {
 .cart-content {
     background: white;
     border-radius: 15px;
-    padding: 30px;
+    padding: 30px 50px;
     box-shadow: 0 5px 25px rgba(90, 57, 33, 0.08);
     margin-bottom: 30px;
     
