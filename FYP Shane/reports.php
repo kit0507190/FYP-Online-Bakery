@@ -1,7 +1,6 @@
 <?php
-// reports.php
 
-require_once 'admin_auth.php';  // Secure login + loads $current_admin
+require_once 'admin_auth.php'; 
 
 // Restrict to Super Admin only
 if ($current_admin['role'] !== 'super_admin') {
@@ -12,11 +11,11 @@ if ($current_admin['role'] !== 'super_admin') {
 
 require_once 'admin_config.php';
 
-// Set default date range: last 30 days to today
+// Set default date range
 $start = $_GET['startDate'] ?? date('Y-m-d', strtotime('-30 days'));
 $end = $_GET['endDate'] ?? date('Y-m-d');
 
-// Handle CSV Export FIRST (before any output)
+// Handle CSV Export 
 if (isset($_GET['export_csv'])) {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="bakery_report_' . $start . '_to_' . $end . '.csv"');
@@ -79,7 +78,7 @@ $topSalesStmt = $pdo->prepare("
 $topSalesStmt->execute([$start, $end]);
 $topSales = $topSalesStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// NEW: Calculate total units sold from the already fetched data
+// Calculate total units sold from the already fetched data
 $totalUnitsSold = 0;
 foreach ($topSales as $item) {
     $totalUnitsSold += (int)$item['units_sold'];

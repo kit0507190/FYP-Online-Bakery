@@ -1,5 +1,5 @@
 <?php
-require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
+require_once 'admin_auth.php';  
 
 require_once 'admin_config.php';
 
@@ -126,8 +126,7 @@ if (isset($_GET['mark_read'])) {
             </select>
         </div>
 
-        <!-- Optional: you can also add search later -->
-        <!-- <input type="text" id="searchInput" class="search-box" placeholder="Search by name, email or message..." onkeyup="searchAndFilter()"> -->
+        
     </div>
 
     <div class="table-card">
@@ -195,7 +194,7 @@ function filterMessages() {
     const filterValue = document.getElementById('statusFilter').value;
     const rows = document.querySelectorAll('#messagesTable tbody tr');
 
-    // Skip "no messages" row if present
+
     if (rows.length === 1 && rows[0].cells.length === 1) return;
 
     rows.forEach(row => {
@@ -213,11 +212,9 @@ function filterMessages() {
     });
 }
 
-// Optional: run filter on page load (useful if you want to default to unread)
+
 document.addEventListener('DOMContentLoaded', () => {
-    // You can change default here if desired
-    // document.getElementById('statusFilter').value = 'unread';
-    // filterMessages();
+    
 });
 </script>
 

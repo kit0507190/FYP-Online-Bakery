@@ -1,9 +1,8 @@
 <?php
-// admin/admin_login.php
 
 require_once 'admin_config.php';
 
-// If already logged in → redirect
+
 if (isAdminLoggedIn()) {
     redirectToAdminDashboard();
 }
@@ -43,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($loginSuccess) {
-                // ─── SUCCESS ───────────────────────────────────────────────
+               
 
                 // Update last login time
                 $pdo->prepare("
@@ -52,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     WHERE id = :id
                 ")->execute([':id' => $admin['id']]);
 
-                // Set session variables
+                
                 $_SESSION['admin_id']            = $admin['id'];
                 $_SESSION['admin_username']      = $admin['username'];
                 $_SESSION['admin_email']         = $admin['email'];
@@ -62,21 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 redirectToAdminDashboard();
                 exit;
             } else {
-                // ─── FAILURE ───────────────────────────────────────────────
-                // (wrong password / user not found / inactive)
                 $error = "Invalid username or password.";
-
-                // Optional future improvement: count failed attempts
-                /*
-                if ($admin) {
-                    $pdo->prepare("
-                        UPDATE admins
-                        SET failed_attempts = failed_attempts + 1,
-                            last_failed_attempt = NOW()
-                        WHERE id = :id
-                    ")->execute([':id' => $admin['id']]);
-                }
-                */
             }
         } catch (PDOException $e) {
             error_log("Admin Login PDO Error: " . $e->getMessage());

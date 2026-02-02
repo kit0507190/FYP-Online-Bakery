@@ -1,7 +1,7 @@
 <?php
-require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
+require_once 'admin_auth.php';  
 
-// Restrict this page to Super Admin only
+
 if ($current_admin['role'] !== 'super_admin') {
     $_SESSION['error_message'] = "Access denied. This page is restricted to Super Admins only.";
     header("Location: admin_dashboard.php");
@@ -21,7 +21,7 @@ try {
     $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $error_message = "Database error: " . $e->getMessage();
-    // In production: error_log("User fetch error: " . $e->getMessage());
+    
 }
 
 // Handle Deactivate
@@ -44,7 +44,7 @@ if (isset($_GET['deactivate'])) {
             }
         } catch (PDOException $e) {
             $_SESSION['error_message'] = "Database error while deactivating user.";
-            // error_log("Deactivate error: " . $e->getMessage());
+            
         }
         header("Location: user_accounts.php");
         exit();
@@ -71,7 +71,7 @@ if (isset($_GET['reactivate'])) {
             }
         } catch (PDOException $e) {
             $_SESSION['error_message'] = "Database error while reactivating user.";
-            // error_log("Reactivate error: " . $e->getMessage());
+            
         }
         header("Location: user_accounts.php");
         exit();
@@ -199,13 +199,13 @@ function searchTable() {
     const rows = document.querySelectorAll('#userTable tbody tr');
     
     rows.forEach(row => {
-        // Skip the "no users found" row if it exists
+        
         if (row.cells.length === 1) return;
         
         const name  = row.cells[1].textContent.toLowerCase();
         const email = row.cells[2].textContent.toLowerCase();
         
-        // Show row if name OR email contains the search term
+        
         if (name.includes(input) || email.includes(input)) {
             row.style.display = '';
         } else {

@@ -1,8 +1,8 @@
 <?php
-require_once 'admin_auth.php';  // Secure auth + loads $current_admin
-require_once 'admin_config.php';  // For PDO connection
+require_once 'admin_auth.php';  
+require_once 'admin_config.php';  
 
-// Messages
+
 $success = $error = '';
 
 // Handle adding new category
@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_subcategory'])
     }
 }
 
-// New: only active (not deleted)
+
 $categories = $pdo->query("
     SELECT * FROM categories 
     WHERE deleted_at IS NULL 
