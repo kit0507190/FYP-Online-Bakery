@@ -164,6 +164,25 @@ if ($editing) {
         $editing = false;
     }
 }
+// ────────────────────────────────────────────────
+// SEARCH 
+// ────────────────────────────────────────────────
+$search = trim($_GET['search'] ?? '');
+$search = htmlspecialchars($search); 
+
+$where_clauses = ["p.deleted_at IS NULL"];
+$params = [];
+
+if (!empty($search)) {
+    $where_clauses[] = "(
+        p.name LIKE ? OR 
+        p.id = ? OR
+        c.name LIKE ? OR 
+        s.name LIKE ?
+    )";
+    $like = "%$search%";
+    $params = [$like, $search, $like, $like];
+}
 ?>
 
 <!DOCTYPE html>
@@ -176,15 +195,16 @@ if ($editing) {
     <link rel="stylesheet" href="css/manage_product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Existing styles from your CSS are linked; these are minor additions for visibility */
+        
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
         .form-group input, .form-group select, .form-group textarea { 
             padding: 0.8rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; background: #fff; color: #333;
         }
-        .form-group.full-width { grid-column: span 2; } /* For full-width fields on wider screens */
+        .form-group.full-width { grid-column: span 2; } 
         @media (max-width: 768px) { .form-group.full-width { grid-column: span 1; } }
         .add-btn { background: #8B4513; color: white; padding: 1rem 2rem; border: none; border-radius: 50px; cursor: pointer; }
         .add-btn:hover { background: #A0522D; }
+        
     </style>
 </head>
 <body>
@@ -403,66 +423,83 @@ if ($editing) {
     <?php endif; ?>
 
     <!-- PRODUCT LIST -->
-    <div class="table-card">
-        <h2>Product List</h2>
-        <table id="productTable">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Image</th>
-                    <th>Name</th>
-                    <th>Price</th>
-                    <th>Category</th>
-                    <th>Subcategory</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $stmt = $pdo->query("
-                    SELECT p.*, c.name AS cat_name, s.name AS subcat_name 
-                    FROM products p 
-                    LEFT JOIN categories c ON p.category_id = c.id 
-                    LEFT JOIN subcategories s ON p.subcategory_id = s.id
-                    WHERE p.deleted_at IS NULL 
-                    ORDER BY p.id DESC
-                ");
-                if ($stmt->rowCount() == 0) {
-                    echo '<tr><td colspan="8" style="text-align:center; padding:3rem; color:#888;">No products found.</td></tr>';
-                } else {
-                    while ($row = $stmt->fetch()) {
-                        $img = $row['image'] && file_exists('product_images/' . $row['image'])
-                            ? 'product_images/' . htmlspecialchars($row['image'])
-                             : 'images/placeholder.jpg';
-                        $sub = $row['subcat_name'] ? htmlspecialchars($row['subcat_name']) : '—';
-                        ?>
-                        <tr>
-                            <td><?= $row['id'] ?></td>
-                            <td>
-                                <img src="<?= $img ?>" class="product-thumb" 
-                                     alt="<?= htmlspecialchars($row['name']) ?>"
-                                     onclick="openModal('<?= $img ?>', '<?= htmlspecialchars($row['name']) ?>')">
-                            </td>
-                            <td><?= htmlspecialchars($row['name']) ?></td>
-                            <td>RM <?= number_format($row['price'], 2) ?></td>
-                            <td><?= htmlspecialchars($row['cat_name'] ?? '—') ?></td>
-                            <td><?= $sub ?></td>
-                            <td><?= $row['stock'] ?></td>
-                            <td>
-                                <a href="?edit=<?= $row['id'] ?>" class="action-btn edit-btn">Edit</a>
-                                <a href="?delete=<?= $row['id'] ?>" 
-                                onclick="return confirm('Delete this product?\n\nIt can be restored later.');" 
-                                class="action-btn delete-btn">Delete</a>
-                            </td>
-                        </tr>
-                        <?php
-                    }
+<div class="table-card">
+    <h2>Product List</h2>
+
+   <!-- Search Form -->
+<div class="controls">
+    <input type="text" 
+           id="searchInput" 
+           class="search-box" 
+           placeholder="Search by product name..." 
+           onkeyup="searchTable()">
+</div>
+
+    <table id="productTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Category</th>
+                <th>Subcategory</th>
+                <th>Stock</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $sql = "
+                SELECT p.*, c.name AS cat_name, s.name AS subcat_name 
+                FROM products p 
+                LEFT JOIN categories c ON p.category_id = c.id 
+                LEFT JOIN subcategories s ON p.subcategory_id = s.id
+                WHERE " . implode(" AND ", $where_clauses) . "
+                ORDER BY p.id DESC
+            ";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+
+            if ($stmt->rowCount() == 0) {
+                $message = empty($search) 
+                    ? "No products found." 
+                    : "No products found matching <strong>'" . htmlspecialchars($search) . "'</strong>.";
+                echo '<tr><td colspan="8" style="text-align:center; padding:3rem; color:#888;">' . $message . '</td></tr>';
+            } else {
+                while ($row = $stmt->fetch()) {
+                    $img = $row['image'] && file_exists('product_images/' . $row['image'])
+                        ? 'product_images/' . htmlspecialchars($row['image'])
+                        : 'images/placeholder.jpg';
+                    $sub = $row['subcat_name'] ? htmlspecialchars($row['subcat_name']) : '—';
+                    ?>
+                    <tr>
+                        <td><?= $row['id'] ?></td>
+                        <td>
+                            <img src="<?= $img ?>" class="product-thumb" 
+                                 alt="<?= htmlspecialchars($row['name']) ?>"
+                                 onclick="openModal('<?= $img ?>', '<?= htmlspecialchars($row['name']) ?>')">
+                        </td>
+                        <td><?= htmlspecialchars($row['name']) ?></td>
+                        <td>RM <?= number_format($row['price'], 2) ?></td>
+                        <td><?= htmlspecialchars($row['cat_name'] ?? '—') ?></td>
+                        <td><?= $sub ?></td>
+                        <td><?= $row['stock'] ?></td>
+                        <td>
+                            <a href="?edit=<?= $row['id'] ?>" class="action-btn edit-btn">Edit</a>
+                            <a href="?delete=<?= $row['id'] ?>" 
+                               onclick="return confirm('Move this product to trash?\n\nIt can be restored later from the Restore Deleted page.');" 
+                               class="action-btn delete-btn">Trash</a>
+                        </td>
+                    </tr>
+                    <?php
                 }
-                ?>
-            </tbody>
-        </table>
-    </div>
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
     <!-- Image Zoom Modal -->
     <div id="imageModal" class="modal">
@@ -530,6 +567,17 @@ function loadSubcategories() {
 
 // Run once on page load (especially useful for edit mode)
 document.addEventListener('DOMContentLoaded', loadSubcategories);
+</script>
+
+<script>
+function searchTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#productTable tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+    });
+}
 </script>
 
 </body>
