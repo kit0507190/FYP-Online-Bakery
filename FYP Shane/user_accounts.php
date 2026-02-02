@@ -131,6 +131,12 @@ if (isset($_GET['reactivate'])) {
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
+    <h1 class="page-title">User Accounts Management</h1>
+
+    <div class="controls">
+        <input type="text" id="searchInput" class="search-box" placeholder="Search by name or email..." onkeyup="searchTable()">
+    </div>
+
     <div class="table-card">
         <h2>Customer User Accounts</h2>
 
@@ -186,6 +192,28 @@ if (isset($_GET['reactivate'])) {
         </table>
     </div>
 </main>
+
+<script>
+function searchTable() {
+    const input = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#userTable tbody tr');
+    
+    rows.forEach(row => {
+        // Skip the "no users found" row if it exists
+        if (row.cells.length === 1) return;
+        
+        const name  = row.cells[1].textContent.toLowerCase();
+        const email = row.cells[2].textContent.toLowerCase();
+        
+        // Show row if name OR email contains the search term
+        if (name.includes(input) || email.includes(input)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
 
 </body>
 </html>

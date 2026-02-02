@@ -47,6 +47,26 @@ if (isset($_GET['mark_read'])) {
     <link rel="stylesheet" href="css/admin_style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        .controls select {
+    padding: 0.7rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    min-width: 180px;
+    background: white;
+    cursor: pointer;
+}
+
+.controls select:focus {
+    outline: none;
+    border-color: #8b5a2b;
+    box-shadow: 0 0 0 3px rgba(139,90,43,0.15);
+}
+
+.unread-row {
+    background-color: #fff8e1;
+    font-weight: 500;
+}
         .message-cell { 
             max-width: 300px; 
             white-space: pre-wrap; 
@@ -80,6 +100,7 @@ if (isset($_GET['mark_read'])) {
 </nav>
 
 <main class="main">
+
     <?php if (isset($_SESSION['error_message'])): ?>
         <div class="alert error" style="padding:1rem; background:#ffebee; color:#c62828; border-radius:8px; margin-bottom:2rem;">
             <?= htmlspecialchars($_SESSION['error_message']) ?>
@@ -94,15 +115,31 @@ if (isset($_GET['mark_read'])) {
         <?php unset($_SESSION['success_message']); ?>
     <?php endif; ?>
 
+    <h1 class="page-title">User Comments & Messages</h1>
+
+    <div class="controls" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <select id="statusFilter" onchange="filterMessages()">
+                <option value="all">All Comments</option>
+                <option value="unread">Unread Only</option>
+                <option value="read">Read Only</option>
+            </select>
+        </div>
+
+        <!-- Optional: you can also add search later -->
+        <!-- <input type="text" id="searchInput" class="search-box" placeholder="Search by name, email or message..." onkeyup="searchAndFilter()"> -->
+    </div>
+
     <div class="table-card">
         <h2>User Comments</h2>
+
         <table id="messagesTable">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>Sender</th>
                     <th>Email</th>
-                    <th>Message</th>
+                    <th>Comments</th>
                     <th>Submitted</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -118,7 +155,8 @@ if (isset($_GET['mark_read'])) {
                     </tr>
                 <?php else: ?>
                     <?php foreach ($messages as $msg): ?>
-                        <tr class="<?= $msg['status'] === 'unread' ? 'unread-row' : '' ?>">
+                        <tr class="<?= $msg['status'] === 'unread' ? 'unread-row' : '' ?>"
+                            data-status="<?= $msg['status'] ?>">
                             <td><?= htmlspecialchars($msg['id']) ?></td>
                             <td>
                                 <?= htmlspecialchars($msg['name']) ?>
@@ -151,6 +189,39 @@ if (isset($_GET['mark_read'])) {
         </table>
     </div>
 </main>
+
+<script>
+function filterMessages() {
+    const filterValue = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#messagesTable tbody tr');
+
+    // Skip "no messages" row if present
+    if (rows.length === 1 && rows[0].cells.length === 1) return;
+
+    rows.forEach(row => {
+        const status = row.getAttribute('data-status');
+
+        if (filterValue === 'all') {
+            row.style.display = '';
+        } else if (filterValue === 'unread' && status === 'unread') {
+            row.style.display = '';
+        } else if (filterValue === 'read' && status === 'read') {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+// Optional: run filter on page load (useful if you want to default to unread)
+document.addEventListener('DOMContentLoaded', () => {
+    // You can change default here if desired
+    // document.getElementById('statusFilter').value = 'unread';
+    // filterMessages();
+});
+</script>
+
+
 
 </body>
 </html>
