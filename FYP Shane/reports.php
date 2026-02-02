@@ -24,7 +24,6 @@ if (isset($_GET['export_csv'])) {
     $output = fopen('php://output', 'w');
     fputcsv($output, ['Rank', 'Product', 'Category', 'Units Sold', 'Revenue', 'Profit (60%)']);
 
-    // FIXED: Single WHERE clause, proper joins
     $stmt = $pdo->prepare("
         SELECT od.product_id, p.name AS product_name, c.name AS category_name, 
                SUM(od.quantity) AS units_sold, SUM(od.subtotal) AS revenue
@@ -63,7 +62,7 @@ $totalStmt = $pdo->prepare("SELECT SUM(total) AS total_revenue FROM orders WHERE
 $totalStmt->execute([$start, $end]);
 $totalRevenue = $totalStmt->fetchColumn() ?: 0;
 
-// FIXED Top Sales Query - now includes revenue + category
+// Top Sales Query
 $topSalesStmt = $pdo->prepare("
     SELECT od.product_id, p.name AS product_name, c.name AS category_name,
            SUM(od.quantity) AS units_sold, SUM(od.subtotal) AS revenue
@@ -79,6 +78,12 @@ $topSalesStmt = $pdo->prepare("
 ");
 $topSalesStmt->execute([$start, $end]);
 $topSales = $topSalesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// NEW: Calculate total units sold from the already fetched data
+$totalUnitsSold = 0;
+foreach ($topSales as $item) {
+    $totalUnitsSold += (int)$item['units_sold'];
+}
 
 $lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 5 AND deleted_at IS NULL")->fetchColumn();
 
@@ -160,11 +165,14 @@ while ($current <= $endDate) {
             <p>Top Product</p>
             <p style="color:#27AE60; font-weight:bold;"><?= $topUnits ?> units</p>
         </div>
+        
+        <!-- Updated card -->
         <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-            <h3><?= count($topSales) ?></h3>
-            <p>Products Sold</p>
+            <div class="stat-icon"><i class="fas fa-boxes-stacked"></i></div>
+            <h3><?= number_format($totalUnitsSold) ?></h3>
+            <p>Total Units Sold</p>
         </div>
+
         <div class="stat-card" style="<?= $lowStock > 0 ? 'border-left: 6px solid #D97706;' : '' ?>">
             <div class="stat-icon"><i class="fas fa-exclamation-triangle" style="color:#D97706;"></i></div>
             <h3><?= $lowStock ?></h3>
@@ -172,6 +180,7 @@ while ($current <= $endDate) {
         </div>
     </div>
 
+    <!-- Rest of your page remains unchanged -->
     <div style="background:white; padding:2rem; border-radius:12px; margin-bottom:3rem;">
         <h2 style="margin-bottom:1rem; color:#8B4513;">Sales Trend (Delivered Orders)</h2>
         <canvas id="salesChart"></canvas>
