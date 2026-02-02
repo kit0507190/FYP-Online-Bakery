@@ -1,5 +1,5 @@
 <?php
-require_once 'admin_auth.php';  // Secure auth + loads $current_admin
+require_once 'admin_auth.php';  
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +43,7 @@ require_once 'admin_auth.php';  // Secure auth + loads $current_admin
     <h1 style="margin-bottom: 2rem;">Dashboard Overview</h1>
 
     <?php
-    require_once 'admin_config.php';  // For main DB connection (orders, products)
+    require_once 'admin_config.php';  
 
     $today = date('Y-m-d');
     

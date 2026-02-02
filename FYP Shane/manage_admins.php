@@ -1,9 +1,7 @@
 <?php
-// admin/manage_admins.php
 
-require_once 'admin_auth.php';  // Loads $current_admin and checks login
+require_once 'admin_auth.php';  
 
-// Restrict to Super Admin only
 if ($current_admin['role'] !== 'super_admin') {
     $_SESSION['error_message'] = "Access denied. Only Super Admins can manage admin accounts.";
     header("Location: admin_dashboard.php");
@@ -41,13 +39,13 @@ if (isset($_POST['add_admin'])) {
     }
 }
 
-// Handle Update Admin (only username + email)
+// Handle Update Admin 
 if (isset($_POST['update_admin'])) {
     $id = (int)$_POST['id'];
     $username = trim($_POST['username']);
     $email    = trim($_POST['email']);
 
-    // Optional: prevent changing your own account (still good practice)
+    
     if ($id == $current_admin['id']) {
         $error_message = "You cannot modify your own account here.";
     } else {
@@ -80,7 +78,7 @@ if (isset($_POST['reset_password'])) {
     }
 }
 
-// Handle Deactivate Admin (instead of delete)
+// Handle Deactivate Admin 
 if (isset($_GET['deactivate'])) {
     $id = (int)$_GET['deactivate'];
     if ($id == $current_admin['id']) {

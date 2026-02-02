@@ -1,13 +1,10 @@
 <?php
-// admin/logout.php
 
-// Start the same session that was used during login
 session_start();
 
-// Destroy the session
 session_destroy();
 
-// Clear any remaining session cookie (extra safety)
+// Clear any remaining session cookie 
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,

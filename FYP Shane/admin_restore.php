@@ -1,11 +1,8 @@
 <?php
-require_once 'admin_auth.php';  // Secure auth + loads $current_admin with role
+require_once 'admin_auth.php';  
 require_once 'admin_config.php';
 
-// Get current script name once (used for redirects)
-$current_page = basename(__FILE__);  // will be "admin_restore.php"
 
-// Messages
 $success = $error = '';
 
 // Handle RESTORE actions
@@ -50,7 +47,7 @@ if (isset($_GET['perm_delete'])) {
         if ($table) {
             try {
                 if ($type === 'product') {
-                    // Special: delete image file if exists
+                    
                     $stmt = $pdo->prepare("SELECT image FROM products WHERE id = ?");
                     $stmt->execute([$id]);
                     $image = $stmt->fetchColumn();
@@ -261,7 +258,7 @@ $deleted_subcategories = $pdo->query("
 </main>
 
 <script>
-// Simple tab switching
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
