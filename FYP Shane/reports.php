@@ -80,7 +80,7 @@ $topSalesStmt = $pdo->prepare("
 $topSalesStmt->execute([$start, $end]);
 $topSales = $topSalesStmt->fetchAll(PDO::FETCH_ASSOC);
 
-$lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 10 AND deleted_at IS NULL")->fetchColumn();
+$lowStock = $pdo->query("SELECT COUNT(*) FROM products WHERE stock <= 5 AND deleted_at IS NULL")->fetchColumn();
 
 $topName = $topSales[0]['product_name'] ?? 'None';
 $topUnits = $topSales[0]['units_sold'] ?? 0;
