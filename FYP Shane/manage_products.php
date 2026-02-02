@@ -123,16 +123,31 @@ if (isset($_POST['update_product'])) {
     }
 }
 
-// DELETE PRODUCT
 // SOFT DELETE PRODUCT
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
-    try {
+    
+    if ($id > 0) {
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE products 
+                SET deleted_at = NOW()
+                WHERE id = ? 
+                AND deleted_at IS NULL
+            ");
+            $stmt->execute([$id]);
 
-        header("Location: manage_products.php?success=delete");
-        exit();
-    } catch (PDOException $e) {
-        $error_message = 'Delete failed: ' . $e->getMessage();
+            if ($stmt->rowCount() > 0) {
+                header("Location: manage_products.php?success=delete");
+                exit();
+            } else {
+                $error_message = "Product not found or already deleted.";
+            }
+        } catch (PDOException $e) {
+            $error_message = 'Delete failed: ' . $e->getMessage();
+        }
+    } else {
+        $error_message = 'Invalid product ID';
     }
 }
 
@@ -437,8 +452,8 @@ if ($editing) {
                             <td>
                                 <a href="?edit=<?= $row['id'] ?>" class="action-btn edit-btn">Edit</a>
                                 <a href="?delete=<?= $row['id'] ?>" 
-                                   onclick="return confirm('Delete this product permanently?')" 
-                                   class="action-btn delete-btn">Delete</a>
+                                onclick="return confirm('Delete this product?\n\nIt can be restored later.');" 
+                                class="action-btn delete-btn">Delete</a>
                             </td>
                         </tr>
                         <?php

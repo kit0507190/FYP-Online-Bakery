@@ -222,7 +222,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
 
         <div class="login-footer">
-            <a href="../index.php">← Back to Main Site</a>
             <p style="margin-top:10px; font-size:12px; color:#999;">
                 Authorized admin access only
             </p>
