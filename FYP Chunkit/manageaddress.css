@@ -33,9 +33,7 @@ body {
     padding: 0 20px;
 }
 
-.back-navigation {
-    margin-bottom: 20px;
-}
+.back-navigation { margin-bottom: 20px; }
 
 .back-link {
     display: inline-flex;
@@ -54,7 +52,7 @@ body {
 }
 
 /* ============================================================
-   3. Head ornaments
+   3. Header Section
    ============================================================ */
 .profile-header {
     background: linear-gradient(135deg, var(--bakery-brown) 0%, #7a5537 100%);
@@ -72,7 +70,7 @@ body {
 }
 
 /* ============================================================
-   4. Address Card List
+   4. Address Cards
    ============================================================ */
 .address-list {
     display: flex;
@@ -88,12 +86,9 @@ body {
     transition: transform 0.2s ease;
 }
 
-
 .address-card.is-default {
     border: 2px solid var(--bakery-gold);
     background-color: #fffdfa;
-    position: relative;
-    overflow: hidden;
 }
 
 .address-body {
@@ -113,7 +108,6 @@ body {
 .address-icon {
     color: var(--bakery-gold);
     font-size: 1.4rem;
-    margin-top: 2px;
 }
 
 .address-text {
@@ -123,7 +117,7 @@ body {
 }
 
 /* ============================================================
-   5. Buttons, Labels, and Actions
+   5. Actions and Buttons
    ============================================================ */
 .address-actions {
     display: flex;
@@ -157,33 +151,13 @@ body {
     color: var(--white);
 }
 
-.btn-edit-icon {
-    color: #999;
-    font-size: 1.1rem;
-    transition: color 0.3s, transform 0.2s;
-}
+.btn-edit-icon { color: #999; font-size: 1.1rem; transition: 0.3s; }
+.btn-edit-icon:hover { color: var(--bakery-brown); transform: scale(1.1); }
 
-.btn-edit-icon:hover {
-    color: var(--bakery-brown);
-    transform: scale(1.1);
-}
+.btn-delete { color: #999; font-size: 1.1rem; transition: 0.3s; }
+.btn-delete:hover { color: var(--danger-red); transform: scale(1.1); }
 
-.btn-delete {
-    color: #999;
-    font-size: 1.1rem;
-    transition: color 0.3s, transform 0.2s;
-}
-
-.btn-delete:hover {
-    color: var(--danger-red);
-    transform: scale(1.1);
-}
-
-
-.add-action {
-    text-align: center;
-    margin-top: 40px;
-}
+.add-action { text-align: center; margin-top: 40px; }
 
 .btn-primary {
     display: inline-flex;
@@ -199,25 +173,68 @@ body {
     transition: 0.3s;
 }
 
-.btn-primary:hover {
-    background-color: #c2955a;
+/* ============================================================
+   6. TOAST & MODAL OVERLAY (Premium Effects)
+   ============================================================ */
+.toast-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px); 
+}
+
+.toast-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 25px; 
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    animation: slideUpFade 0.4s ease-out; 
+}
+
+.toast-icon {
+    width: 75px; height: 75px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    color: white;
+    font-size: 32px;
+}
+
+.close-toast {
+    color: white;
+    border: none;
+    border-radius: 30px; 
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.close-toast:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(212, 167, 106, 0.4);
+    filter: brightness(0.9);
+}
+
+@keyframes slideUpFade {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 /* ============================================================
-   6. responsive adjustment
+   7. Responsive Adjustment
    ============================================================ */
 @media (max-width: 600px) {
-    .address-body {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .address-actions {
-        width: 100%;
-        justify-content: flex-end;
-        padding-top: 15px;
-        border-top: 1px solid #eee;
-    }
+    .address-body { flex-direction: column; align-items: flex-start; }
+    .address-actions { width: 100%; justify-content: flex-end; border-top: 1px solid #eee; padding-top: 15px; }
 }
