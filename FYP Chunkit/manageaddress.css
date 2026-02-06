@@ -211,19 +211,22 @@ body {
 }
 
 .close-toast {
-    color: white;
-    border: none;
-    border-radius: 30px; 
+    background: #5a3921 !important; 
+    color: white !important;
+    border: none !important;
+    padding: 12px 60px !important; 
+    border-radius: 30px !important; 
     font-weight: bold;
     font-size: 16px;
     cursor: pointer;
-    transition: 0.3s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(90, 57, 33, 0.2); 
 }
 
 .close-toast:hover {
-    transform: translateY(-2px);
-    filter: brightness(0.9);
+    background: #d4a76a !important; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 15px rgba(212, 167, 106, 0.3);
 }
 
 @keyframes slideUpFade {
